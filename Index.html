@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú | La Casa Del Arroz</title>
+    <title>Menú | Cooking Pollos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* PROTECCIÓN ADICIONAL CSS */
@@ -76,7 +76,8 @@
         #zoomModal img { max-width: 95%; max-height: 85%; border-radius: 10px; }
     </style>
 </head>
-<body oncontextmenu="return false;"> <div class="container">
+<body oncontextmenu="return false;"> 
+<div class="container">
     <header>
         <div class="logo-box">Co</div>
         <div class="logo-box logo-po">Po</div>
@@ -85,7 +86,7 @@
 
     <div class="nota-uso">
         <strong>⚠️ NOTA IMPORTANTE:</strong>
-        <span>• <b>Si estás en casa:</b> Seleccioná tus productos y envianos tu pedido por WhatsApp.<br>• <b>Si estás en el local:</b> puedes mirar el menú y hacer tu pedido en caja.</span>
+        <span>• <b>Si estás en casa:</b> Seleccioná tus productos y envianos tu pedido por WhatsApp.<br>• <b>Si estás en el local:</b> Consultá el menú aquí. Haz tu pedido en la caja por favor.</span>
     </div>
 
     <div class="location-box">
@@ -218,11 +219,11 @@
             <div class="ticket-logo-box">Co</div>
             <div class="ticket-logo-box ticket-logo-po">Po</div>
         </div>
-        <div id="ticket-list" style="text-align: left; font-size: 0.85rem;"></div>
-        <div style="border-top:1px dashed #000; margin-top:15px; padding-top:10px; font-weight:bold; display:flex; justify-content:space-between; font-size:1.1rem;">
+        <div id="ticket-list" style="text-align: left; font-size: 0.85rem; color: black;"></div>
+        <div style="border-top:1px dashed #000; margin-top:15px; padding-top:10px; font-weight:bold; display:flex; justify-content:space-between; font-size:1.1rem; color: black;">
             <span>TOTAL:</span><span>₡<span id="t-total">0</span></span>
         </div>
-        <button style="margin-top:20px; width:100%; padding:12px; background:#0026ff; color:white; border:none; border-radius:5px; font-weight:bold;" onclick="closeModals()">CERRAR</button>
+        <button style="margin-top:20px; width:100%; padding:12px; background:#0026ff; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="closeModals()">CERRAR</button>
     </div>
 </div>
 
@@ -255,7 +256,9 @@
     
     function changeQty(name, val, price) {
         if (!cart[name]) cart[name] = { qty: 0, price: price };
-        manualQty(name, cart[name].qty + val, price);
+        let newQty = cart[name].qty + val;
+        if (newQty < 0) newQty = 0;
+        manualQty(name, newQty, price);
     }
 
     function manualQty(name, value, price) {
@@ -265,7 +268,7 @@
         total += (newQty - cart[name].qty) * price;
         cart[name].qty = newQty;
         document.getElementById('qty-' + name).value = cart[name].qty;
-        document.getElementById('grand-total').innerText = total.toLocaleString();
+        document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
     }
 
     function zoomImg(src) { 
@@ -302,7 +305,7 @@
         }
         if (!hasItems) { alert("Agrega productos."); return; }
         document.getElementById('ticket-list').innerHTML = listHtml;
-        document.getElementById('t-total').innerText = total.toLocaleString();
+        document.getElementById('t-total').innerText = total.toLocaleString('en-US');
         document.getElementById('ticketModal').style.display = "flex";
     }
 
@@ -334,7 +337,7 @@
             return; 
         }
 
-        let msg = `¡Hola La Casa Del Arroz! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
+        let msg = `¡Hola Cooking Pollos! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
         
         for (let item in cart) {
             if (cart[item].qty > 0) {
@@ -348,7 +351,7 @@
             msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
         }
         
-        window.location.href = "https://wa.me/50685135269?text=" + msg;
+        window.location.href = "https://wa.me/50685135259?text=" + msg;
     }
 </script>
 </body>
