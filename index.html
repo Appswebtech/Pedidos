@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú | Cooking Pollos</title>
+    <title>Web Pedidos | Cooking Pollos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* PROTECCIÓN ADICIONAL CSS */
@@ -17,17 +17,27 @@
             -ms-user-select: none;
         }
 
-        body { background-color: #0b0b0b; color: #ffffff; font-family: 'Segoe UI', Roboto, Arial, sans-serif; margin: 0; padding-bottom: 220px; }
+        body { 
+            background-color: #0b0b0b; 
+            color: #ffffff; 
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif; 
+            margin: 0; 
+            padding-bottom: 220px;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            transition: background 0.5s ease;
+        }
         .container { max-width: 500px; margin: 0 auto; padding: 20px; text-align: center; }
         
         header { padding: 30px 0; }
-        .logo-box { display: inline-block; border: 3px solid white; padding: 8px 12px; font-size: 2rem; font-weight: bold; margin: 2px; }
-        .logo-po { position: relative; top: 15px; }
+        .header-title { letter-spacing: 2px; font-size: 2.2rem; margin: 0; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .version-tag { color: #0026ff; font-weight: bold; margin: 5px 0 0 0; font-size: 0.9rem; }
 
-        .nota-uso { background-color: #111; border: 2px dashed #0026ff; padding: 15px; margin: 20px auto; border-radius: 10px; text-align: left; }
+        .nota-uso { background-color: rgba(17, 17, 17, 0.9); border: 2px dashed #0026ff; padding: 15px; margin: 20px auto; border-radius: 10px; text-align: left; }
         .nota-uso strong { color: #0026ff; display: block; margin-bottom: 5px; }
 
-        .location-box { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: left; }
+        .location-box { background: rgba(26, 26, 26, 0.9); border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: left; }
         .delivery-btns { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
         .btn-loc, .btn-pickup { flex: 1; min-width: 140px; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         
@@ -40,8 +50,8 @@
         .name-input { width: 100%; background: #0f0f0f; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-top: 15px; box-sizing: border-box; outline: none; font-size: 1rem; }
         .name-input:focus { border-color: #0026ff; }
 
-        .category-btn { background-color: #111; color: #fff; width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #333; border-radius: 12px; text-align: left; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .category-content { display: none; background: #161616; padding: 15px; border-radius: 0 0 12px 12px; border: 1px solid #333; border-top: none; margin-top: -10px; margin-bottom: 15px; }
+        .category-btn { background-color: rgba(17, 17, 17, 0.9); color: #fff; width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #333; border-radius: 12px; text-align: left; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .category-content { display: none; background: rgba(22, 22, 22, 0.95); padding: 15px; border-radius: 0 0 12px 12px; border: 1px solid #333; border-top: none; margin-top: -10px; margin-bottom: 15px; }
 
         .menu-item { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid #222; padding-bottom: 12px; }
         .item-main { display: flex; align-items: center; gap: 12px; width: 100%; }
@@ -69,19 +79,26 @@
         
         .ticket-style { font-family: 'Courier New', Courier, monospace; background: white; color: black; padding: 25px; border-radius: 5px; width: 85%; max-width: 350px; text-align: center; }
         .ticket-header { border-bottom: 1px dashed #000; margin-bottom: 15px; padding-bottom: 15px; }
-        .ticket-logo-box { display: inline-block; border: 2px solid black; padding: 4px 6px; font-size: 1.2rem; font-weight: bold; font-family: sans-serif; margin: 1px; color: black; }
-        .ticket-logo-po { position: relative; top: 8px; }
 
         #zoomModal { background-color: rgba(0, 0, 0, 0.95); cursor: zoom-out; }
         #zoomModal img { max-width: 95%; max-height: 85%; border-radius: 10px; }
+
+        /* ESTILOS DEL PANEL ADMINISTRATIVO */
+        #adminModal .modal-box { max-width: 400px; text-align: left; background: #1a1a1a; color: white; border: 2px solid #0026ff; }
+        .admin-field { margin-bottom: 15px; }
+        .admin-field label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 5px; font-weight: bold; }
+        .admin-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; }
+        .admin-input:focus { border-color: #0026ff; }
+        .admin-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-admin-save { flex: 1; background: #0026ff; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-admin-close { flex: 1; background: #333; color: white; border: 1px solid #444; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body oncontextmenu="return false;"> 
 <div class="container">
     <header>
-        <div class="logo-box">Co</div>
-        <div class="logo-box logo-po">Po</div>
-        <h2 style="margin-top: 40px; letter-spacing: 2px; font-size: 1.2rem;">99.1% CALIDAD</h2>
+        <h1 class="header-title" id="main-title">Web Pedidos</h1>
+        <p class="version-tag">Versión 9.3</p>
     </header>
 
     <div class="nota-uso">
@@ -206,6 +223,8 @@
         <button class="btn-send" onclick="openPayModal()">
             <i class="fab fa-whatsapp"></i> ENVIAR PEDIDO
         </button>
+        <!-- ACCESO SECRETO ADMINISTRADOR (Invisible abajo a la derecha) -->
+        <div onclick="initAdminAccess()" style="position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; cursor: pointer; background: transparent; z-index: 9999;"></div>
     </div>
 </div>
 
@@ -216,8 +235,7 @@
 <div id="ticketModal" class="modal-overlay" onclick="closeModals()">
     <div class="ticket-style" onclick="event.stopPropagation()">
         <div class="ticket-header">
-            <div class="ticket-logo-box">Co</div>
-            <div class="ticket-logo-box ticket-logo-po">Po</div>
+            <h3 style="margin: 0; font-family: sans-serif;">Web Pedidos</h3>
         </div>
         <div id="ticket-list" style="text-align: left; font-size: 0.85rem; color: black;"></div>
         <div style="border-top:1px dashed #000; margin-top:15px; padding-top:10px; font-weight:bold; display:flex; justify-content:space-between; font-size:1.1rem; color: black;">
@@ -239,15 +257,62 @@
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3>📲 Datos SINPE</h3>
         <div style="background:#f0f4ff; border:2px solid #0026ff; padding:15px; border-radius:8px;">
-            <span style="font-size:1.4rem; font-weight:bold; color:#0026ff;">8740-4456</span><br>
+            <span style="font-size:1.4rem; font-weight:bold; color:#0026ff;">8513-5269</span><br>
             <span style="font-size:0.85rem; font-weight:600;">Jesús Antonio Madrigal Barrientos</span>
         </div>
         <button class="btn-send" style="width:100%; margin-top:15px;" onclick="sendWhatsApp('SINPE')">CONFIRMAR Y ENVIAR</button>
     </div>
 </div>
 
+<!-- MODAL DEL PANEL DE CONTROL -->
+<div id="adminModal" class="modal-overlay" onclick="closeModals()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0; color: #0026ff;"><i class="fas fa-cogs"></i> Panel de Control (v9.3)</h3>
+        
+        <div class="admin-field">
+            <label for="input-bg-url">URL de Imagen de Fondo</label>
+            <input type="text" id="input-bg-url" class="admin-input" placeholder="https://enlace-de-tu-imagen.jpg">
+        </div>
+
+        <div class="admin-field">
+            <label for="input-page-title">Nombre del Negocio</label>
+            <input type="text" id="input-page-title" class="admin-input" value="Web Pedidos">
+        </div>
+
+        <div class="admin-actions">
+            <button class="btn-admin-save" onclick="applyAdminChanges()">Aplicar Cambios</button>
+            <button class="btn-admin-close" onclick="closeModals()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <script>
     let cart = {}; let total = 0; let deliveryMode = ""; let isSelected = false;
+
+    // Ejecución del Control Secreto de Inicio de Sesión Administrativo
+    function initAdminAccess() {
+        let accessPass = prompt("Por favor ingresa la contraseña de administrador:");
+        if (accessPass === "1234") {
+            document.getElementById('adminModal').style.display = "flex";
+        } else if (accessPass !== null) {
+            alert("Contraseña incorrecta.");
+        }
+    }
+
+    // Aplicar los ajustes locales dinámicos desde el panel
+    function applyAdminChanges() {
+        let newBg = document.getElementById('input-bg-url').value.trim();
+        let newTitle = document.getElementById('input-page-title').value.trim();
+
+        if (newBg !== "") {
+            document.body.style.backgroundImage = `url('${newBg}')`;
+        }
+        if (newTitle !== "") {
+            document.getElementById('main-title').innerText = newTitle;
+        }
+        closeModals();
+        alert("Cambios aplicados de forma temporal en la vista.");
+    }
 
     function toggle(id) { 
         let el = document.getElementById(id); 
@@ -351,10 +416,9 @@
             msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
         }
         
-        window.location.href = "https://wa.me/50687404456?text=" + msg;
+        window.location.href = "https://wa.me/50685135269?text=" + msg;
     }
 </script>
 </body>
 </html>
 
-Funciones completas (9.2)
