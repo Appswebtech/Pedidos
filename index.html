@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Pedidos | Cooking Pollos</title>
+    <title>Web Pedidos | Gestión Profesional</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* PROTECCIÓN ADICIONAL CSS */
@@ -22,10 +22,11 @@
             color: #ffffff; 
             font-family: 'Segoe UI', Roboto, Arial, sans-serif; 
             margin: 0; 
-            padding-bottom: 220px;
+            padding-bottom: 240px;
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
+            background-repeat: no-repeat;
             transition: background 0.5s ease;
         }
         .container { max-width: 500px; margin: 0 auto; padding: 20px; text-align: center; }
@@ -83,22 +84,31 @@
         #zoomModal { background-color: rgba(0, 0, 0, 0.95); cursor: zoom-out; }
         #zoomModal img { max-width: 95%; max-height: 85%; border-radius: 10px; }
 
+        /* SECCIÓN INFORMATIVA DEL FOOTER */
+        .business-info-section { margin-top: 40px; padding: 20px; background: rgba(20,20,20,0.85); border-radius: 15px; border: 1px solid #333; text-align: center; }
+        .business-desc { font-size: 0.9rem; color: #ccc; font-style: italic; line-height: 1.4; display: none; }
+        .maps-btn-container { margin: 15px 0; display: none; }
+        .btn-maps-link { background: #ea4335; color: white; padding: 10px 18px; border-radius: 30px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .señas-text { font-size: 0.85rem; color: #aaa; margin: 8px 0 0 0; font-weight: 500; }
+        .social-container { display: flex; justify-content: center; gap: 25px; margin-top: 15px; font-size: 1.6rem; }
+        .social-container a { transition: 0.3s; display: none; }
+        .social-container a:hover { transform: scale(1.1); }
+
         /* ESTILOS DEL PANEL ADMINISTRATIVO */
-        #adminModal .modal-box { max-width: 400px; text-align: left; background: #1a1a1a; color: white; border: 2px solid #0026ff; }
-        .admin-field { margin-bottom: 15px; }
-        .admin-field label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 5px; font-weight: bold; }
-        .admin-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; }
+        #adminModal .modal-box { max-width: 420px; text-align: left; background: #141414; color: white; border: 2px solid #0026ff; max-height: 80vh; overflow-y: auto; padding: 20px; }
+        .admin-section-title { font-size: 1rem; color: #0026ff; border-bottom: 1px solid #333; padding-bottom: 5px; margin: 15px 0 10px 0; font-weight: bold; }
+        .admin-field { margin-bottom: 12px; }
+        .admin-field label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px; font-weight: bold; }
+        .admin-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 0.9rem; }
         .admin-input:focus { border-color: #0026ff; }
-        .admin-actions { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-admin-save { flex: 1; background: #0026ff; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-admin-close { flex: 1; background: #333; color: white; border: 1px solid #444; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .admin-actions { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 0; background: #141414; padding-top: 10px; }
     </style>
 </head>
 <body oncontextmenu="return false;"> 
 <div class="container">
     <header>
         <h1 class="header-title" id="main-title">Web Pedidos</h1>
-        <p class="version-tag">Versión 9.3</p>
+        <p class="version-tag">Versión 9.4</p>
     </header>
 
     <div class="nota-uso">
@@ -117,8 +127,15 @@
             </button>
         </div>
         <input type="text" id="user-name" class="name-input" placeholder="Tu nombre por favor...">
+        
+        <!-- Cuadro dinámico para dirección manual de envíos -->
+        <div id="address-block" style="display: none; margin-top: 15px;">
+            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 5px;">Dirección de Entrega / Señas:</p>
+            <input type="text" id="delivery-address" class="name-input" placeholder="Ej: Frente a Goyo, casa de portón verde..." style="margin-top:0;">
+        </div>
     </div>
 
+    <!-- Secciones del menú (Inalteradas) -->
     <button class="category-btn" onclick="toggle('c1')">🍗 Pollo Frito <span>▼</span></button>
     <div id="c1" class="category-content">
         <div class="menu-item">
@@ -167,54 +184,25 @@
         </div>
     </div>
 
-    <button class="category-btn" onclick="toggle('c4')">🥤 Refrescos 500ml <span>▼</span></button>
-    <div id="c4" class="category-content">
-        <div class="menu-item">
-            <div class="item-main">
-                <img src="https://images.unsplash.com/photo-1543253687-c931c8e01820?q=80&w=200&auto=format&fit=crop" class="item-img" onclick="zoomImg(this.src)" onmousedown="return false;">
-                <div class="item-info"><span class="item-title">Natural MFS 500ml</span><span class="item-price">₡1,000</span></div>
-                <div class="item-controls">
-                    <button class="btn-qty" onclick="changeQty('Natural MFS 500ml', -1, 1000)">-</button>
-                    <input type="number" id="qty-Natural MFS 500ml" class="qty-input" value="0" onchange="manualQty('Natural MFS 500ml', this.value, 1000)">
-                    <button class="btn-qty" onclick="changeQty('Natural MFS 500ml', 1, 1000)">+</button>
-                </div>
-            </div>
-            <input type="text" id="note-Natural MFS 500ml" class="item-note" placeholder="indicanos tu comentario">
+    <!-- SECCIÓN INFORMATIVA EDITABLE Y REDES SOCIALES -->
+    <div class="business-info-section">
+        <p id="display-description" class="business-desc"></p>
+        
+        <div id="display-maps-container" class="maps-btn-container">
+            <a id="display-maps-link" href="#" target="_blank" class="btn-maps-link">
+                <i class="fas fa-map-marked-alt"></i> Ver Ubicación en Google Maps
+            </a>
+            <p id="display-señas-local" class="señas-text"></p>
+        </div>
+
+        <div class="social-container">
+            <a id="link-fb" href="#" target="_blank" style="color: #1877f2;"><i class="fab fa-facebook"></i></a>
+            <a id="link-ig" href="#" target="_blank" style="color: #c13584;"><i class="fab fa-instagram"></i></a>
+            <a id="link-tk" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i></a>
         </div>
     </div>
 
-    <button class="category-btn" onclick="toggle('c5')">🥤 Tropical y Gaseosas <span>▼</span></button>
-    <div id="c5" class="category-content">
-        <div class="menu-item">
-            <div class="item-main">
-                <img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=200&auto=format&fit=crop" class="item-img" onclick="zoomImg(this.src)" onmousedown="return false;">
-                <div class="item-info"><span class="item-title">Bebida Envasada</span><span class="item-price">₡1,200</span></div>
-                <div class="item-controls">
-                    <button class="btn-qty" onclick="changeQty('Bebida Envasada', -1, 1200)">-</button>
-                    <input type="number" id="qty-Bebida Envasada" class="qty-input" value="0" onchange="manualQty('Bebida Envasada', this.value, 1200)">
-                    <button class="btn-qty" onclick="changeQty('Bebida Envasada', 1, 1200)">+</button>
-                </div>
-            </div>
-            <input type="text" id="note-Bebida Envasada" class="item-note" placeholder="indicanos tu comentario">
-        </div>
-    </div>
-
-    <button class="category-btn" onclick="toggle('c6')">🍯 Aderezos <span>▼</span></button>
-    <div id="c6" class="category-content">
-        <div class="menu-item">
-            <div class="item-main">
-                <img src="https://images.unsplash.com/photo-1475332433629-a2046c85e85f?q=80&w=200&auto=format&fit=crop" class="item-img" onclick="zoomImg(this.src)" onmousedown="return false;">
-                <div class="item-info"><span class="item-title">Salsa Zafran Extra</span><span class="item-price">₡300</span></div>
-                <div class="item-controls">
-                    <button class="btn-qty" onclick="changeQty('Salsa Zafran Extra', -1, 300)">-</button>
-                    <input type="number" id="qty-Salsa Zafran Extra" class="qty-input" value="0" onchange="manualQty('Salsa Zafran Extra', this.value, 300)">
-                    <button class="btn-qty" onclick="changeQty('Salsa Zafran Extra', 1, 300)">+</button>
-                </div>
-            </div>
-            <input type="text" id="note-Salsa Zafran Extra" class="item-note" placeholder="indicanos tu comentario">
-        </div>
-    </div>
-
+    <!-- Footer Fijo -->
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
         <div class="footer-btns">
@@ -223,8 +211,8 @@
         <button class="btn-send" onclick="openPayModal()">
             <i class="fab fa-whatsapp"></i> ENVIAR PEDIDO
         </button>
-        <!-- ACCESO SECRETO ADMINISTRADOR (Invisible abajo a la derecha) -->
-        <div onclick="initAdminAccess()" style="position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; cursor: pointer; background: transparent; z-index: 9999;"></div>
+        <!-- ACCESO SECRETO ADMINISTRADOR (Invisible abajo a la derecha de 40x40px) -->
+        <div onclick="processAdminClick()" style="position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; cursor: pointer; background: transparent; z-index: 9999;"></div>
     </div>
 </div>
 
@@ -235,7 +223,7 @@
 <div id="ticketModal" class="modal-overlay" onclick="closeModals()">
     <div class="ticket-style" onclick="event.stopPropagation()">
         <div class="ticket-header">
-            <h3 style="margin: 0; font-family: sans-serif;">Web Pedidos</h3>
+            <h3 id="ticket-title" style="margin: 0; font-family: sans-serif;">Web Pedidos</h3>
         </div>
         <div id="ticket-list" style="text-align: left; font-size: 0.85rem; color: black;"></div>
         <div style="border-top:1px dashed #000; margin-top:15px; padding-top:10px; font-weight:bold; display:flex; justify-content:space-between; font-size:1.1rem; color: black;">
@@ -249,7 +237,7 @@
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3 style="margin-top:0;">💳 Método de Pago</h3>
         <button class="pay-option-btn" onclick="showSinpe()"><i class="fas fa-mobile-alt" style="color:#0026ff"></i> SINPE MÓVIL</button>
-        <button class="pay-option-btn" onclick="sendWhatsApp('EFECTIVO')"><i class="fas fa-money-bill-wave" style="color:#25D366"></i> EFECTIVO</button>
+        <button class="pay-option-btn" onclick="askCashAmount()"><i class="fas fa-money-bill-wave" style="color:#25D366"></i> EFECTIVO</button>
     </div>
 </div>
 
@@ -257,61 +245,205 @@
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3>📲 Datos SINPE</h3>
         <div style="background:#f0f4ff; border:2px solid #0026ff; padding:15px; border-radius:8px;">
-            <span style="font-size:1.4rem; font-weight:bold; color:#0026ff;">8513-5269</span><br>
-            <span style="font-size:0.85rem; font-weight:600;">Jesús Antonio Madrigal Barrientos</span>
+            <span id="display-sinpe-num" style="font-size:1.4rem; font-weight:bold; color:#0026ff;">8513-5269</span><br>
+            <span id="display-sinpe-name" style="font-size:0.85rem; font-weight:600;">Jesús Antonio Madrigal Barrientos</span>
         </div>
         <button class="btn-send" style="width:100%; margin-top:15px;" onclick="sendWhatsApp('SINPE')">CONFIRMAR Y ENVIAR</button>
     </div>
 </div>
 
-<!-- MODAL DEL PANEL DE CONTROL -->
+<!-- MODAL EFECTIVO: CONTROL DE VUELTO -->
+<div id="cashModal" class="modal-overlay" onclick="closeModals()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0; color:#25D366;"><i class="fas fa-money-bill-wave"></i> Vuelto Exacto</h3>
+        <p style="font-size:0.9rem; color:#444; margin-bottom:15px;">¿Con cuánto dinero en efectivo vas a cancelar tu orden?</p>
+        <input type="number" id="input-cash-amount" class="name-input" placeholder="Ej: 5000 o 10000" style="color: black; background: #f5f5f5; border: 1px solid #ccc; text-align:center;">
+        <button class="btn-send" style="width:100%; margin-top:20px;" onclick="processCashPayment()">CONFIRMAR Y ENVIAR</button>
+    </div>
+</div>
+
+<!-- MODAL COMPLETO DEL PANEL DE CONTROL -->
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff;"><i class="fas fa-cogs"></i> Panel de Control (v9.3)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Pro (v9.4)</h3>
         
-        <div class="admin-field">
-            <label for="input-bg-url">URL de Imagen de Fondo</label>
-            <input type="text" id="input-bg-url" class="admin-input" placeholder="https://enlace-de-tu-imagen.jpg">
-        </div>
+        <div class="admin-section-title">Identidad del Negocio</div>
+        <div class="admin-field"><label>Nombre del Local</label><input type="text" id="input-page-title" class="admin-input"></div>
+        <div class="admin-field"><label>WhatsApp receptor de Pedidos</label><input type="text" id="input-whatsapp" class="admin-input"></div>
+        <div class="admin-field"><label>URL Imagen de Fondo</label><input type="text" id="input-bg-url" class="admin-input"></div>
+        <div class="admin-field"><label>Descripción / Historia (Footer)</label><textarea id="input-description" class="admin-input" style="height:60px; font-family:sans-serif;"></textarea></div>
 
-        <div class="admin-field">
-            <label for="input-page-title">Nombre del Negocio</label>
-            <input type="text" id="input-page-title" class="admin-input" value="Web Pedidos">
-        </div>
+        <div class="admin-section-title">Finanzas &amp; SINPE</div>
+        <div class="admin-field"><label>Número de Teléfono SINPE</label><input type="text" id="input-sinpe-num" class="admin-input"></div>
+        <div class="admin-field"><label>Nombre del Titular de Cuenta</label><input type="text" id="input-sinpe-name" class="admin-input"></div>
+
+        <div class="admin-section-title">Geolocalización &amp; Mapas</div>
+        <div class="admin-field"><label>Enlace de Google Maps del Local</label><input type="text" id="input-maps-url" class="admin-input" placeholder="https://maps.google.com/..."></div>
+        <div class="admin-field"><label>Dirección Manual / Señas Locales</label><input type="text" id="input-señas-local" class="admin-input" placeholder="Ej: Frente al INA o frente a Goyo"></div>
+
+        <div class="admin-section-title">Redes Sociales</div>
+        <div class="admin-field"><label>Enlace de Facebook</label><input type="text" id="input-fb" class="admin-input" placeholder="https://facebook.com/..."></div>
+        <div class="admin-field"><label>Enlace de Instagram</label><input type="text" id="input-ig" class="admin-input" placeholder="https://instagram.com/..."></div>
+        <div class="admin-field"><label>Enlace de TikTok</label><input type="text" id="input-tk" class="admin-input" placeholder="https://tiktok.com/..."></div>
 
         <div class="admin-actions">
-            <button class="btn-admin-save" onclick="applyAdminChanges()">Aplicar Cambios</button>
-            <button class="btn-admin-close" onclick="closeModals()">Cerrar</button>
+            <button class="btn-admin-save" onclick="applyAdminChanges()">Guardar Todo</button>
+            <button class="btn-admin-close" onclick="closeModals()">Cancelar</button>
         </div>
     </div>
 </div>
 
 <script>
     let cart = {}; let total = 0; let deliveryMode = ""; let isSelected = false;
+    let adminClicks = 0; let adminTimeout;
+    let gpsLink = ""; let cashPaidAmount = 0; let changeNeeded = 0;
 
-    // Ejecución del Control Secreto de Inicio de Sesión Administrativo
-    function initAdminAccess() {
-        let accessPass = prompt("Por favor ingresa la contraseña de administrador:");
-        if (accessPass === "1234") {
-            document.getElementById('adminModal').style.display = "flex";
-        } else if (accessPass !== null) {
-            alert("Contraseña incorrecta.");
+    // Carga de configuraciones desde LocalStorage al iniciar la app web
+    document.addEventListener('DOMContentLoaded', () => {
+        let savedBg = localStorage.getItem('app_bg_url') || "";
+        let savedTitle = localStorage.getItem('app_page_title') || "Web Pedidos";
+        let savedWhatsApp = localStorage.getItem('app_whatsapp') || "85135269";
+        let savedSinpeNum = localStorage.getItem('app_sinpe_num') || "85135269";
+        let savedSinpeName = localStorage.getItem('app_sinpe_name') || "Jesús Antonio Madrigal Barrientos";
+        let savedMapsUrl = localStorage.getItem('app_maps_url') || "";
+        let savedSeñasLocal = localStorage.getItem('app_señas_local') || "";
+        let savedDesc = localStorage.getItem('app_description') || "";
+        let savedFb = localStorage.getItem('app_fb') || "";
+        let savedIg = localStorage.getItem('app_ig') || "";
+        let savedTk = localStorage.getItem('app_tk') || "";
+
+        // Aplicación estructural a la interfaz
+        if (savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
+        document.getElementById('main-title').innerText = savedTitle;
+        document.getElementById('ticket-title').innerText = savedTitle;
+        document.getElementById('display-sinpe-num').innerText = formatSinpeSpacing(savedSinpeNum);
+        document.getElementById('display-sinpe-name').innerText = savedSinpeName;
+
+        if (savedDesc) {
+            document.getElementById('display-description').innerText = savedDesc;
+            document.getElementById('display-description').style.display = "block";
+        }
+        if (savedMapsUrl) {
+            document.getElementById('display-maps-link').href = savedMapsUrl;
+            document.getElementById('display-señas-local').innerText = savedSeñasLocal;
+            document.getElementById('display-maps-container').style.display = "block";
+        }
+        if (savedFb) { document.getElementById('link-fb').href = savedFb; document.getElementById('link-fb').style.display = "inline-block"; }
+        if (savedIg) { document.getElementById('link-ig').href = savedIg; document.getElementById('link-ig').style.display = "inline-block"; }
+        if (savedTk) { document.getElementById('link-tk').href = savedTk; document.getElementById('link-tk').style.display = "inline-block"; }
+
+        // Rellenar campos internos del panel de administración
+        document.getElementById('input-bg-url').value = savedBg;
+        document.getElementById('input-page-title').value = savedTitle;
+        document.getElementById('input-whatsapp').value = savedWhatsApp;
+        document.getElementById('input-sinpe-num').value = savedSinpeNum;
+        document.getElementById('input-sinpe-name').value = savedSinpeName;
+        document.getElementById('input-maps-url').value = savedMapsUrl;
+        document.getElementById('input-señas-local').value = savedSeñasLocal;
+        document.getElementById('input-description').value = savedDesc;
+        document.getElementById('input-fb').value = savedFb;
+        document.getElementById('input-ig').value = savedIg;
+        document.getElementById('input-tk').value = savedTk;
+    });
+
+    function formatSinpeSpacing(num) {
+        if(num.length === 8) return num.substring(0,4) + "-" + num.substring(4);
+        return num;
+    }
+
+    // Lógica del contador de 7 clics seguidos para abrir el panel (Estilo desarrollador)
+    function processAdminClick() {
+        adminClicks++;
+        clearTimeout(adminTimeout);
+        if (adminClicks >= 7) {
+            adminClicks = 0;
+            let accessPass = prompt("Ingresa la clave de administrador:");
+            if (accessPass === "1234") {
+                document.getElementById('adminModal').style.display = "flex";
+            } else if (accessPass !== null) {
+                alert("Contraseña inválida.");
+            }
+        } else {
+            adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500);
         }
     }
 
-    // Aplicar los ajustes locales dinámicos desde el panel
+    // Persistencia local total de campos configurados
     function applyAdminChanges() {
-        let newBg = document.getElementById('input-bg-url').value.trim();
-        let newTitle = document.getElementById('input-page-title').value.trim();
+        localStorage.setItem('app_bg_url', document.getElementById('input-bg-url').value.trim());
+        localStorage.setItem('app_page_title', document.getElementById('input-page-title').value.trim());
+        localStorage.setItem('app_whatsapp', document.getElementById('input-whatsapp').value.trim());
+        localStorage.setItem('app_sinpe_num', document.getElementById('input-sinpe-num').value.trim());
+        localStorage.setItem('app_sinpe_name', document.getElementById('input-sinpe-name').value.trim());
+        localStorage.setItem('input-maps-url', document.getElementById('input-maps-url').value.trim());
+        localStorage.setItem('app_maps_url', document.getElementById('input-maps-url').value.trim());
+        localStorage.setItem('app_señas_local', document.getElementById('input-señas-local').value.trim());
+        localStorage.setItem('app_description', document.getElementById('input-description').value.trim());
+        localStorage.setItem('app_fb', document.getElementById('input-fb').value.trim());
+        localStorage.setItem('app_ig', document.getElementById('input-ig').value.trim());
+        localStorage.setItem('app_tk', document.getElementById('input-tk').value.trim());
+        
+        alert("¡Ajustes almacenados con éxito! Actualizando la vista global...");
+        location.reload();
+    }
 
-        if (newBg !== "") {
-            document.body.style.backgroundImage = `url('${newBg}')`;
+    // Solicitud inteligente de geolocalización GPS al activar Express
+    function setExpress() {
+        deliveryMode = "ENVÍO EXPRESS";
+        isSelected = true;
+        document.getElementById('btn-location').classList.add('active');
+        document.getElementById('btn-pickup').classList.remove('active');
+        document.getElementById('btn-location').innerHTML = '<i class="fas fa-check"></i> EXPRESS SELECCIONADO';
+        document.getElementById('btn-pickup').innerHTML = '<i class="fas fa-store"></i> PASO A RETIRAR';
+        
+        document.getElementById('address-block').style.display = "block";
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    gpsLink = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
+                    alert("📍 Ubicación GPS vinculada con éxito al pedido.");
+                },
+                (error) => {
+                    gpsLink = "";
+                    alert("📍 El GPS está desactivado o denegado. Por favor ingresa la dirección de entrega de forma manual.");
+                }
+            );
         }
-        if (newTitle !== "") {
-            document.getElementById('main-title').innerText = newTitle;
+    }
+
+    function setPickup() {
+        deliveryMode = "RETIRO EN LOCAL";
+        isSelected = true;
+        gpsLink = "";
+        document.getElementById('btn-pickup').classList.add('active');
+        document.getElementById('btn-location').classList.remove('active');
+        document.getElementById('btn-pickup').innerHTML = '<i class="fas fa-check"></i> LISTO PARA RETIRO';
+        document.getElementById('btn-location').innerHTML = '<i class="fas fa-motorcycle"></i> EXPRESS';
+        
+        document.getElementById('address-block').style.display = "none";
+    }
+
+    // Disparadores del control de vuelto para pagos en efectivo
+    function askCashAmount() {
+        document.getElementById('payModal').style.display = "none";
+        document.getElementById('cashModal').style.display = "flex";
+    }
+
+    function processCashPayment() {
+        let moneyGiven = parseFloat(document.getElementById('input-cash-amount').value) || 0;
+        if (moneyGiven < total) {
+            alert(`El dinero ingresado debe cubrir al menos el total de la orden (₡${total.toLocaleString()})`);
+            return;
         }
-        closeModals();
-        alert("Cambios aplicados de forma temporal en la vista.");
+        cashPaidAmount = moneyGiven;
+        changeNeeded = cashPaidAmount - total;
+        sendWhatsApp('EFECTIVO');
+    }
+
+    function showSinpe() { 
+        document.getElementById('payModal').style.display = "none"; 
+        document.getElementById('sinpeModal').style.display = "flex"; 
     }
 
     function toggle(id) { 
@@ -341,24 +473,6 @@
         document.getElementById('zoomModal').style.display = "flex"; 
     }
 
-    function setExpress() {
-        deliveryMode = "ENVÍO EXPRESS";
-        isSelected = true;
-        document.getElementById('btn-location').classList.add('active');
-        document.getElementById('btn-pickup').classList.remove('active');
-        document.getElementById('btn-location').innerHTML = '<i class="fas fa-check"></i> EXPRESS SELECCIONADO';
-        document.getElementById('btn-pickup').innerHTML = '<i class="fas fa-store"></i> PASO A RETIRAR';
-    }
-
-    function setPickup() {
-        deliveryMode = "RETIRO EN LOCAL";
-        isSelected = true;
-        document.getElementById('btn-pickup').classList.add('active');
-        document.getElementById('btn-location').classList.remove('active');
-        document.getElementById('btn-pickup').innerHTML = '<i class="fas fa-check"></i> LISTO PARA RETIRO';
-        document.getElementById('btn-location').innerHTML = '<i class="fas fa-motorcycle"></i> EXPRESS';
-    }
-
     function showTicket() {
         let listHtml = ""; let hasItems = false;
         for (let item in cart) {
@@ -375,26 +489,16 @@
     }
 
     function openPayModal() { 
-        if (total <= 0) { 
-            alert("Agrega productos al carrito primero."); 
-            return; 
-        }
-        if (!isSelected) { 
-            alert("Por favor selecciona si necesitas Express o pasarás a Retirar."); 
-            return; 
-        }
+        if (total <= 0) { alert("Agrega productos al carrito primero."); return; }
+        if (!isSelected) { alert("Por favor selecciona si necesitas Express o pasarás a Retirar."); return; }
         document.getElementById('payModal').style.display = "flex"; 
-    }
-
-    function showSinpe() { 
-        document.getElementById('payModal').style.display = "none"; 
-        document.getElementById('sinpeModal').style.display = "flex"; 
     }
     
     function closeModals() { 
         document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = "none"); 
     }
 
+    // Construcción y envío estructurado final por API de WhatsApp Link
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim();
         if (userName === "") { 
@@ -402,7 +506,10 @@
             return; 
         }
 
-        let msg = `¡Hola mi pedido es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
+        let currentTitle = localStorage.getItem('app_page_title') || "Web Pedidos";
+        let targetPhone = localStorage.getItem('app_whatsapp') || "85135269";
+
+        let msg = `¡Hola, mi pedido para *${currentTitle}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
         
         for (let item in cart) {
             if (cart[item].qty > 0) {
@@ -410,13 +517,27 @@
                 msg += `• ${cart[item].qty}x ${item}${note ? ' ('+note+')' : ''}%0A`;
             }
         }
-        msg += `%0A*Subtotal Orden: ₡${total.toLocaleString()}*%0A*Pago: ${method}*`;
+        msg += `%0A*Subtotal Orden: ₡${total.toLocaleString()}*%0A*Método de Pago:* ${method}`;
         
+        // Desglose de vuelto exacto si cancela en efectivo
+        if (method === 'EFECTIVO' && cashPaidAmount > 0) {
+            msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`;
+        }
+
+        // Inyección de parámetros de dirección y enlace de mapas GPS
         if (deliveryMode === "ENVÍO EXPRESS") {
+            if (gpsLink !== "") {
+                msg += `%0A📍 *Ubicación GPS:* ${gpsLink}`;
+            }
+            let manualDir = document.getElementById('delivery-address').value.trim();
+            if (manualDir !== "") {
+                msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
+            }
             msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
         }
         
-        window.location.href = "https://wa.me/50685135269?text=" + msg;
+        closeModals();
+        window.location.href = `https://wa.me/506${targetPhone}?text=${msg}`;
     }
 </script>
 </body>
