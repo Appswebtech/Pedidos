@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Pedidos | Gestión Profesional</title>
+    <title>Web Pedidos | Cloud Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         /* PROTECCIÓN ADICIONAL CSS */
         img { 
@@ -107,8 +111,8 @@
 <body oncontextmenu="return false;"> 
 <div class="container">
     <header>
-        <h1 class="header-title" id="main-title">Web Pedidos</h1>
-        <p class="version-tag">Versión 9.4</p>
+        <h1 class="header-title" id="main-title">Conectando con Google...</h1>
+        <p class="version-tag">Versión 9.5 (Cloud Edition)</p>
     </header>
 
     <div class="nota-uso">
@@ -166,32 +170,14 @@
         </div>
     </div>
 
-    <button class="category-btn" onclick="toggle('c3')">🍟 Papas Fritas <span>▼</span></button>
-    <div id="c3" class="category-content">
-        <div class="menu-item">
-            <div class="item-main">
-                <img src="https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?q=80&w=200&auto=format&fit=crop" class="item-img" onclick="zoomImg(this.src)" onmousedown="return false;">
-                <div class="item-info"><span class="item-title">Papas Regulares</span><span class="item-price">₡1,000</span></div>
-                <div class="item-controls">
-                    <button class="btn-qty" onclick="changeQty('Papas Regulares', -1, 1000)">-</button>
-                    <input type="number" id="qty-Papas Regulares" class="qty-input" value="0" onchange="manualQty('Papas Regulares', this.value, 1000)">
-                    <button class="btn-qty" onclick="changeQty('Papas Regulares', 1, 1000)">+</button>
-                </div>
-            </div>
-            <input type="text" id="note-Papas Regulares" class="item-note" placeholder="indicanos tu comentario">
-        </div>
-    </div>
-
     <div class="business-info-section">
         <p id="display-description" class="business-desc"></p>
-        
         <div id="display-maps-container" class="maps-btn-container">
             <a id="display-maps-link" href="#" target="_blank" class="btn-maps-link">
                 <i class="fas fa-map-marked-alt"></i> Ver Ubicación en Google Maps
             </a>
             <p id="display-señas-local" class="señas-text"></p>
         </div>
-
         <div class="social-container">
             <a id="link-fb" href="#" target="_blank" style="color: #1877f2;"><i class="fab fa-facebook"></i></a>
             <a id="link-ig" href="#" target="_blank" style="color: #c13584;"><i class="fab fa-instagram"></i></a>
@@ -211,15 +197,10 @@
     </div>
 </div>
 
-<div id="zoomModal" class="modal-overlay" onclick="this.style.display='none'">
-    <img id="imgZoomed" src="" oncontextmenu="return false;" onmousedown="return false;">
-</div>
-
+<div id="zoomModal" class="modal-overlay" onclick="this.style.display='none'"><img id="imgZoomed" src=""></div>
 <div id="ticketModal" class="modal-overlay" onclick="closeModals()">
     <div class="ticket-style" onclick="event.stopPropagation()">
-        <div class="ticket-header">
-            <h3 id="ticket-title" style="margin: 0; font-family: sans-serif;">Web Pedidos</h3>
-        </div>
+        <div class="ticket-header"><h3 id="ticket-title" style="margin: 0; font-family: sans-serif;">Cargando...</h3></div>
         <div id="ticket-list" style="text-align: left; font-size: 0.85rem; color: black;"></div>
         <div style="border-top:1px dashed #000; margin-top:15px; padding-top:10px; font-weight:bold; display:flex; justify-content:space-between; font-size:1.1rem; color: black;">
             <span>TOTAL:</span><span>₡<span id="t-total">0</span></span>
@@ -227,7 +208,6 @@
         <button style="margin-top:20px; width:100%; padding:12px; background:#0026ff; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="closeModals()">CERRAR</button>
     </div>
 </div>
-
 <div id="payModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3 style="margin-top:0;">💳 Método de Pago</h3>
@@ -235,116 +215,135 @@
         <button class="pay-option-btn" onclick="askCashAmount()"><i class="fas fa-money-bill-wave" style="color:#25D366"></i> EFECTIVO</button>
     </div>
 </div>
-
 <div id="sinpeModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3>📲 Datos SINPE</h3>
         <div style="background:#f0f4ff; border:2px solid #0026ff; padding:15px; border-radius:8px;">
-            <span id="display-sinpe-num" style="font-size:1.4rem; font-weight:bold; color:#0026ff;">8513-5269</span><br>
-            <span id="display-sinpe-name" style="font-size:0.85rem; font-weight:600;">Jesús Antonio Madrigal Barrientos</span>
+            <span id="display-sinpe-num" style="font-size:1.4rem; font-weight:bold; color:#0026ff;">--------</span><br>
+            <span id="display-sinpe-name" style="font-size:0.85rem; font-weight:600;">Cargando titular...</span>
         </div>
         <button class="btn-send" style="width:100%; margin-top:15px;" onclick="sendWhatsApp('SINPE')">CONFIRMAR Y ENVIAR</button>
     </div>
 </div>
-
 <div id="cashModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3 style="margin-top:0; color:#25D366;"><i class="fas fa-money-bill-wave"></i> Vuelto Exacto</h3>
-        <p style="font-size:0.9rem; color:#444; margin-bottom:15px;">¿Con cuánto dinero en efectivo vas a cancelar tu orden?</p>
-        <input type="number" id="input-cash-amount" class="name-input" placeholder="Ej: 5000 o 10000" style="color: black; background: #f5f5f5; border: 1px solid #ccc; text-align:center;">
+        <input type="number" id="input-cash-amount" class="name-input" placeholder="¿Con cuánto vas a pagar?" style="color: black; background: #f5f5f5; border: 1px solid #ccc; text-align:center;">
         <button class="btn-send" style="width:100%; margin-top:20px;" onclick="processCashPayment()">CONFIRMAR Y ENVIAR</button>
     </div>
 </div>
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Pro (v9.4)</h3>
-        
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.5)</h3>
         <div class="admin-section-title">Identidad del Negocio</div>
         <div class="admin-field"><label>Nombre del Local</label><input type="text" id="input-page-title" class="admin-input"></div>
         <div class="admin-field"><label>WhatsApp receptor de Pedidos</label><input type="text" id="input-whatsapp" class="admin-input"></div>
         <div class="admin-field"><label>URL Imagen de Fondo</label><input type="text" id="input-bg-url" class="admin-input"></div>
         <div class="admin-field"><label>Descripción / Historia (Footer)</label><textarea id="input-description" class="admin-input" style="height:60px; font-family:sans-serif;"></textarea></div>
-
         <div class="admin-section-title">Finanzas & SINPE</div>
         <div class="admin-field"><label>Número de Teléfono SINPE</label><input type="text" id="input-sinpe-num" class="admin-input"></div>
         <div class="admin-field"><label>Nombre del Titular de Cuenta</label><input type="text" id="input-sinpe-name" class="admin-input"></div>
-
         <div class="admin-section-title">Geolocalización & Mapas</div>
-        <div class="admin-field"><label>Enlace de Google Maps del Local</label><input type="text" id="input-maps-url" class="admin-input" placeholder="https://maps.google.com/..."></div>
-        <div class="admin-field"><label>Dirección Manual / Señas Locales</label><input type="text" id="input-señas-local" class="admin-input" placeholder="Ej: Frente al INA o frente a Goyo"></div>
-
+        <div class="admin-field"><label>Enlace Google Maps del Local</label><input type="text" id="input-maps-url" class="admin-input"></div>
+        <div class="admin-field"><label>Dirección Manual / Señas Locales</label><input type="text" id="input-señas-local" class="admin-input"></div>
         <div class="admin-section-title">Redes Sociales</div>
-        <div class="admin-field"><label>Enlace de Facebook</label><input type="text" id="input-fb" class="admin-input" placeholder="https://facebook.com/..."></div>
-        <div class="admin-field"><label>Enlace de Instagram</label><input type="text" id="input-ig" class="admin-input" placeholder="https://instagram.com/..."></div>
-        <div class="admin-field"><label>Enlace de TikTok</label><input type="text" id="input-tk" class="admin-input" placeholder="https://tiktok.com/..."></div>
-
+        <div class="admin-field"><label>Enlace de Facebook</label><input type="text" id="input-fb" class="admin-input"></div>
+        <div class="admin-field"><label>Enlace de Instagram</label><input type="text" id="input-ig" class="admin-input"></div>
+        <div class="admin-field"><label>Enlace de TikTok</label><input type="text" id="input-tk" class="admin-input"></div>
         <div class="admin-actions">
-            <button class="btn-admin-save" onclick="applyAdminChanges()">Guardar Todo</button>
+            <button class="btn-admin-save" onclick="applyAdminChanges()">Guardar en la Nube</button>
             <button class="btn-admin-close" onclick="closeModals()">Cancelar</button>
         </div>
     </div>
 </div>
 
 <script>
+    // CREDENCIALES REALES ENLAZADAS DIRECTO CON GOOGLE FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyDzNsBj-W-9yEVqrFQejWr_IQVn8IcWVeA",
+        authDomain: "cooking-pollos.firebaseapp.com",
+        projectId: "cooking-pollos",
+        storageBucket: "cooking-pollos.firebasestorage.app",
+        messagingSenderId: "25242186743",
+        appId: "1:25242186743:web:ba235270917ffd51b1f4f2"
+    };
+
+    // Inicialización del motor Firestore
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     let cart = {}; let total = 0; let deliveryMode = ""; let isSelected = false;
     let adminClicks = 0; let adminTimeout;
     let gpsLink = ""; let cashPaidAmount = 0; let changeNeeded = 0;
+    
+    let currentGlobalWhatsApp = "85135269";
+    let currentGlobalTitle = "Web Pedidos";
 
-    // Carga de configuraciones desde LocalStorage al iniciar la app web
+    // SINCRONIZACIÓN EN TIEMPO REAL DESDE LA NUBE DE FIREBASE
     document.addEventListener('DOMContentLoaded', () => {
-        let savedBg = localStorage.getItem('app_bg_url') || "";
-        let savedTitle = localStorage.getItem('app_page_title') || "Web Pedidos";
-        let savedWhatsApp = localStorage.getItem('app_whatsapp') || "85135269";
-        let savedSinpeNum = localStorage.getItem('app_sinpe_num') || "85135269";
-        let savedSinpeName = localStorage.getItem('app_sinpe_name') || "Jesús Antonio Madrigal Barrientos";
-        let savedMapsUrl = localStorage.getItem('app_maps_url') || "";
-        let savedSeñasLocal = localStorage.getItem('app_señas_local') || "";
-        let savedDesc = localStorage.getItem('app_description') || "";
-        let savedFb = localStorage.getItem('app_fb') || "";
-        let savedIg = localStorage.getItem('app_ig') || "";
-        let savedTk = localStorage.getItem('app_tk') || "";
+        db.collection("configuraciones").doc("cooking-pollos").onSnapshot((doc) => {
+            if (doc.exists) {
+                let data = doc.data();
+                
+                currentGlobalTitle = data.page_title || "Web Pedidos";
+                currentGlobalWhatsApp = data.whatsapp || "85135269";
 
-        // Aplicación estructural a la interfaz
-        if (savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
-        document.getElementById('main-title').innerText = savedTitle;
-        document.getElementById('ticket-title').innerText = savedTitle;
-        document.getElementById('display-sinpe-num').innerText = formatSinpeSpacing(savedSinpeNum);
-        document.getElementById('display-sinpe-name').innerText = savedSinpeName;
+                document.getElementById('main-title').innerText = currentGlobalTitle;
+                document.getElementById('ticket-title').innerText = currentGlobalTitle;
+                
+                if (data.bg_url && data.bg_url.trim() !== "") document.body.style.backgroundImage = `url('${data.bg_url}')`;
+                else document.body.style.backgroundImage = "none";
 
-        if (savedDesc) {
-            document.getElementById('display-description').innerText = savedDesc;
-            document.getElementById('display-description').style.display = "block";
-        }
-        if (savedMapsUrl) {
-            document.getElementById('display-maps-link').href = savedMapsUrl;
-            document.getElementById('display-señas-local').innerText = savedSeñasLocal;
-            document.getElementById('display-maps-container').style.display = "block";
-        }
-        if (savedFb) { document.getElementById('link-fb').href = savedFb; document.getElementById('link-fb').style.display = "inline-block"; }
-        if (savedIg) { document.getElementById('link-ig').href = savedIg; document.getElementById('link-ig').style.display = "inline-block"; }
-        if (savedTk) { document.getElementById('link-tk').href = savedTk; document.getElementById('link-tk').style.display = "inline-block"; }
+                document.getElementById('display-sinpe-num').innerText = formatSinpeSpacing(data.sinpe_num || "85135269");
+                document.getElementById('display-sinpe-name').innerText = data.sinpe_name || "Jesús Antonio Madrigal Barrientos";
 
-        // Rellenar campos internos del panel de administración
-        document.getElementById('input-bg-url').value = savedBg;
-        document.getElementById('input-page-title').value = savedTitle;
-        document.getElementById('input-whatsapp').value = savedWhatsApp;
-        document.getElementById('input-sinpe-num').value = savedSinpeNum;
-        document.getElementById('input-sinpe-name').value = savedSinpeName;
-        document.getElementById('input-maps-url').value = savedMapsUrl;
-        document.getElementById('input-señas-local').value = savedSeñasLocal;
-        document.getElementById('input-description').value = savedDesc;
-        document.getElementById('input-fb').value = savedFb;
-        document.getElementById('input-ig').value = savedIg;
-        document.getElementById('input-tk').value = savedTk;
+                if (data.description && data.description.trim() !== "") {
+                    document.getElementById('display-description').innerText = data.description;
+                    document.getElementById('display-description').style.display = "block";
+                } else { document.getElementById('display-description').style.display = "none"; }
+
+                if (data.maps_url && data.maps_url.trim() !== "") {
+                    document.getElementById('display-maps-link').href = data.maps_url;
+                    document.getElementById('display-señas-local').innerText = data.señas_local || "";
+                    document.getElementById('display-maps-container').style.display = "block";
+                } else { document.getElementById('display-maps-container').style.display = "none"; }
+
+                toggleSocialIcon('link-fb', data.fb);
+                toggleSocialIcon('link-ig', data.ig);
+                toggleSocialIcon('link-tk', data.tk);
+
+                // Rellenar automáticamente el panel al abrirlo con la data real de Google
+                document.getElementById('input-bg-url').value = data.bg_url || "";
+                document.getElementById('input-page-title').value = currentGlobalTitle;
+                document.getElementById('input-whatsapp').value = currentGlobalWhatsApp;
+                document.getElementById('input-sinpe-num').value = data.sinpe_num || "";
+                document.getElementById('input-sinpe-name').value = data.sinpe_name || "";
+                document.getElementById('input-maps-url').value = data.maps_url || "";
+                document.getElementById('input-señas-local').value = data.señas_local || "";
+                document.getElementById('input-description').value = data.description || "";
+                document.getElementById('input-fb').value = data.fb || "";
+                document.getElementById('input-ig').value = data.ig || "";
+                document.getElementById('input-tk').value = data.tk || "";
+            } else {
+                document.getElementById('main-title').innerText = "Cooking Pollos (Sin Configurar)";
+                document.getElementById('ticket-title').innerText = "Cooking Pollos";
+            }
+        });
     });
+
+    function toggleSocialIcon(id, value) {
+        let el = document.getElementById(id);
+        if(value && value.trim() !== "") {
+            el.href = value; el.style.display = "inline-block";
+        } else { el.style.display = "none"; }
+    }
 
     function formatSinpeSpacing(num) {
         if(num.length === 8) return num.substring(0,4) + "-" + num.substring(4);
         return num;
     }
 
-    // Lógica del contador de 7 clics seguidos para abrir el panel (Estilo desarrollador)
     function processAdminClick() {
         adminClicks++;
         clearTimeout(adminTimeout);
@@ -353,36 +352,74 @@
             let accessPass = prompt("Ingresa la clave de administrador:");
             if (accessPass === "1234") {
                 document.getElementById('adminModal').style.display = "flex";
-            } else if (accessPass !== null) {
-                alert("Contraseña inválida.");
-            }
-        } else {
-            adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500);
+            } else if (accessPass !== null) { alert("Contraseña inválida."); }
+        } else { adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500); }
+    }
+
+    // ESCRITURA REAL EN TIEMPO REAL HACIA FIRESTORE
+    function applyAdminChanges() {
+        db.collection("configuraciones").doc("cooking-pollos").set({
+            bg_url: document.getElementById('input-bg-url').value.trim(),
+            page_title: document.getElementById('input-page-title').value.trim(),
+            whatsapp: document.getElementById('input-whatsapp').value.trim(),
+            sinpe_num: document.getElementById('input-sinpe-num').value.trim(),
+            sinpe_name: document.getElementById('input-sinpe-name').value.trim(),
+            maps_url: document.getElementById('input-maps-url').value.trim(),
+            señas_local: document.getElementById('input-señas-local').value.trim(),
+            description: document.getElementById('input-description').value.trim(),
+            fb: document.getElementById('input-fb').value.trim(),
+            ig: document.getElementById('input-ig').value.trim(),
+            tk: document.getElementById('input-tk').value.trim()
+        })
+        .then(() => {
+            alert("¡Cambios guardados en la Nube de Google con éxito! Se actualizará automáticamente en todas las pantallas.");
+            closeModals();
+        })
+        .catch((error) => {
+            console.error("Error al guardar: ", error);
+            alert("Error de guardado. Asegúrate de activar 'Cloud Firestore' en modo de prueba en tu consola.");
+        });
+    }
+
+    function setExpress() {
+        deliveryMode = "ENVÍO EXPRESS"; isSelected = true;
+        document.getElementById('btn-location').classList.add('active');
+        document.getElementById('btn-pickup').classList.remove('active');
+        document.getElementById('address-block').style.display = "block";
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    gpsLink = `http://googleusercontent.com/maps.google.com/${position.coords.latitude},${position.coords.longitude}`;
+                    alert("📍 Ubicación GPS vinculada con éxito al pedido.");
+                },
+                (error) => { gpsLink = ""; alert("📍 GPS inactivo. Por favor escribe tu dirección manual."); }
+            );
         }
     }
 
-    // Persistencia local total de campos configurados
-    function applyAdminChanges() {
-        localStorage.setItem('app_bg_url', document.getElementById('input-bg-url').value.trim());
-        localStorage.setItem('app_page_title', document.getElementById('input-page-title').value.trim());
-        localStorage.setItem('app_whatsapp', document.getElementById('input-whatsapp').value.trim());
-        localStorage.setItem('app_sinpe_num', document.getElementById('input-sinpe-num').value.trim());
-        localStorage.setItem('app_sinpe_name', document.getElementById('input-sinpe-name').value.trim());
-        localStorage.setItem('app_maps_url', document.getElementById('input-maps-url').value.trim());
-        localStorage.setItem('app_señas_local', document.getElementById('input-señas-local').value.trim());
-        localStorage.setItem('app_description', document.getElementById('input-description').value.trim());
-        localStorage.setItem('app_fb', document.getElementById('input-fb').value.trim());
-        localStorage.setItem('app_ig', document.getElementById('input-ig').value.trim());
-        localStorage.setItem('app_tk', document.getElementById('input-tk').value.trim());
-        
-        alert("¡Ajustes almacenados con éxito! Actualizando la vista global...");
-        location.reload();
+    function setPickup() {
+        deliveryMode = "RETIRO EN LOCAL"; isSelected = true; gpsLink = "";
+        document.getElementById('btn-pickup').classList.add('active');
+        document.getElementById('btn-location').classList.remove('active');
+        document.getElementById('address-block').style.display = "none";
     }
 
-    function toggle(id) { 
-        let el = document.getElementById(id); 
-        el.style.display = (el.style.display === "block") ? "none" : "block"; 
+    function askCashAmount() {
+        document.getElementById('payModal').style.display = "none";
+        document.getElementById('cashModal').style.display = "flex";
     }
+
+    function processCashPayment() {
+        let moneyGiven = parseFloat(document.getElementById('input-cash-amount').value) || 0;
+        if (moneyGiven < total) { alert("El monto no cubre el total de la orden."); return; }
+        cashPaidAmount = moneyGiven;
+        changeNeeded = cashPaidAmount - total;
+        sendWhatsApp('EFECTIVO');
+    }
+
+    function showSinpe() { document.getElementById('payModal').style.display = "none"; document.getElementById('sinpeModal').style.display = "flex"; }
+    function toggle(id) { let el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; }
     
     function changeQty(name, val, price) {
         if (!cart[name]) cart[name] = { qty: 0, price: price };
@@ -401,46 +438,8 @@
         document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
     }
 
-    function zoomImg(src) { 
-        document.getElementById('imgZoomed').src = src; 
-        document.getElementById('zoomModal').style.display = "flex"; 
-    }
-
-    function setExpress() {
-        deliveryMode = "ENVÍO EXPRESS";
-        isSelected = true;
-        document.getElementById('btn-location').classList.add('active');
-        document.getElementById('btn-pickup').classList.remove('active');
-        document.getElementById('btn-location').innerHTML = '<i class="fas fa-check"></i> EXPRESS SELECCIONADO';
-        document.getElementById('btn-pickup').innerHTML = '<i class="fas fa-store"></i> PASO A RETIRAR';
-        
-        document.getElementById('address-block').style.display = "block";
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    gpsLink = `http://googleusercontent.com/maps.google.com/${position.coords.latitude},${position.coords.longitude}`;
-                    alert("📍 Ubicación GPS vinculada con éxito al pedido.");
-                },
-                (error) => {
-                    gpsLink = "";
-                    alert("📍 El GPS está desactivado o denegado. Por favor ingresa la dirección de entrega de forma manual.");
-                }
-            );
-        }
-    }
-
-    function setPickup() {
-        deliveryMode = "RETIRO EN LOCAL";
-        isSelected = true;
-        gpsLink = "";
-        document.getElementById('btn-pickup').classList.add('active');
-        document.getElementById('btn-location').classList.remove('active');
-        document.getElementById('btn-pickup').innerHTML = '<i class="fas fa-check"></i> LISTO PARA RETIRO';
-        document.getElementById('btn-location').innerHTML = '<i class="fas fa-motorcycle"></i> EXPRESS';
-        
-        document.getElementById('address-block').style.display = "none";
-    }
+    function zoomImg(src) { document.getElementById('imgZoomed').src = src; document.getElementById('zoomModal').style.display = "flex"; }
+    function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = "none"); }
 
     function showTicket() {
         let listHtml = ""; let hasItems = false;
@@ -462,23 +461,12 @@
         if (!isSelected) { alert("Por favor selecciona si necesitas Express o pasarás a Retirar."); return; }
         document.getElementById('payModal').style.display = "flex"; 
     }
-    
-    function closeModals() { 
-        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = "none"); 
-    }
 
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim();
-        if (userName === "") { 
-            alert("Por favor escribe tu nombre para el pedido."); 
-            return; 
-        }
+        if (userName === "") { alert("Por favor escribe tu nombre."); return; }
 
-        let currentTitle = localStorage.getItem('app_page_title') || "Web Pedidos";
-        let targetPhone = localStorage.getItem('app_whatsapp') || "85135269";
-
-        let msg = `¡Hola, mi pedido para *${currentTitle}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
-        
+        let msg = `¡Hola, mi pedido para *${currentGlobalTitle}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
         for (let item in cart) {
             if (cart[item].qty > 0) {
                 let note = document.getElementById('note-' + item).value;
@@ -486,24 +474,17 @@
             }
         }
         msg += `%0A*Subtotal Orden: ₡${total.toLocaleString()}*%0A*Método de Pago:* ${method}`;
-        
         if (method === 'EFECTIVO' && cashPaidAmount > 0) {
             msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`;
         }
-
         if (deliveryMode === "ENVÍO EXPRESS") {
-            if (gpsLink !== "") {
-                msg += `%0A📍 *Ubicación GPS:* ${gpsLink}`;
-            }
+            if (gpsLink !== "") msg += `%0A📍 *Ubicación GPS:* ${gpsLink}`;
             let manualDir = document.getElementById('delivery-address').value.trim();
-            if (manualDir !== "") {
-                msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
-            }
+            if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
             msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
         }
-        
         closeModals();
-        window.location.href = `https://wa.me/506${targetPhone}?text=${msg}`;
+        window.location.href = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
     }
 </script>
 </body>
