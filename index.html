@@ -6,9 +6,11 @@
     <title>Web Pedidos | Cloud Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE (COMPAT MODE) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+    <!-- LIBRERÍA DE SEGURIDAD CRIPTOGRÁFICA -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
@@ -20,7 +22,7 @@
             -o-user-drag: none; 
             user-select: none;
             -webkit-user-select: none;
-            -ms-user-select: none;
+            -webkit-touch-callout: none;
         }
 
         body { 
@@ -35,10 +37,15 @@
             background-repeat: no-repeat;
             transition: background 0.5s ease;
         }
-        .container { max-width: 500px; margin: 0 auto; padding: 20px; text-align: center; }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; text-align: center; position: relative; }
         
-        header { padding: 30px 0; }
+        header { padding: 40px 0 30px; }
         .header-title { letter-spacing: 2px; font-size: 2.2rem; margin: 0; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+
+        /* INDICADOR DE HORARIO PREMIUM DINÁMICO */
+        .badge-horario { position: absolute; top: 20px; left: 20px; background: rgba(17,17,17,0.85); border: 1px solid #333; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 8px; cursor: pointer; z-index: 10; backdrop-filter: blur(5px); transition: 0.3s; }
+        .badge-horario:hover { background: rgba(30,30,30,0.95); transform: scale(1.03); }
+        .dot-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
 
         .nota-uso { background-color: rgba(17, 17, 17, 0.9); border: 2px dashed #0026ff; padding: 15px; margin: 20px auto; border-radius: 10px; text-align: left; }
         .nota-uso strong { color: #0026ff; display: block; margin-bottom: 5px; }
@@ -96,7 +103,7 @@
         .btn-maps-link { background: #ea4335; color: white; padding: 10px 18px; border-radius: 30px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .señas-text { font-size: 0.85rem; color: #aaa; margin: 8px 0 0 0; font-weight: 500; }
         
-        /* DISEÑO PREMIUM DE BOTONES DE REDES SOCIALES HASTA ABAJO */
+        /* BOTONES DE REDES SOCIALES HASTA ABAJO */
         .social-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; width: 100%; }
         .social-row-btn { display: none; align-items: center; gap: 12px; text-decoration: none; color: white; font-size: 0.95rem; font-weight: 600; background: rgba(255,255,255,0.04); padding: 10px 16px; border-radius: 30px; border: 1px solid #222; width: 85%; max-width: 280px; box-sizing: border-box; transition: 0.3s; }
         .social-row-btn i { font-size: 1.3rem; }
@@ -106,17 +113,30 @@
         .version-tag { color: #555; font-weight: bold; margin: 40px auto 10px; font-size: 0.8rem; text-align: center; letter-spacing: 1px; }
         
         /* ESTILOS PANEL ADMINISTRATIVO */
-        #adminModal .modal-box { max-width: 420px; text-align: left; background: #141414; color: white; border: 2px solid #0026ff; max-height: 80vh; overflow-y: auto; padding: 20px; }
+        #adminModal .modal-box { max-width: 440px; text-align: left; background: #141414; color: white; border: 2px solid #0026ff; max-height: 80vh; overflow-y: auto; padding: 20px; }
         .admin-section-title { font-size: 1rem; color: #0026ff; border-bottom: 1px solid #333; padding-bottom: 5px; margin: 15px 0 10px 0; font-weight: bold; }
         .admin-field { margin-bottom: 12px; }
         .admin-field label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px; font-weight: bold; }
         .admin-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 0.9rem; }
         .admin-input:focus { border-color: #0026ff; }
+        
+        /* CALENDARIO SEMANAL CONFIG */
+        .schedule-config-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; background: rgba(255,255,255,0.02); padding: 6px; border-radius: 6px; border: 1px solid #222; }
+        .schedule-day-label { width: 75px; font-size: 0.85rem; font-weight: bold; color: #fff; }
+        .schedule-select { background: #333; border: 1px solid #555; color: white; padding: 6px; border-radius: 4px; font-size: 0.8rem; outline: none; }
+        .schedule-time-input { width: 85px; background: #222; border: 1px solid #444; color: white; padding: 6px; border-radius: 4px; font-size: 0.85rem; text-align: center; outline: none; }
+
         .admin-actions { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 0; background: #141414; padding-top: 10px; }
     </style>
 </head>
 <body oncontextmenu="return false;"> 
 <div class="container">
+    
+    <!-- BADGE DE HORARIO NATIVO SUPERIOR IZQUIERDO -->
+    <div id="schedule-badge" class="badge-horario" onclick="showScheduleDetails()">
+        <span class="dot-status" style="color: #666;"></span><i class="fas fa-clock"></i> Evaluar...
+    </div>
+
     <header>
         <h1 class="header-title" id="main-title">Conectando con Google...</h1>
     </header>
@@ -144,6 +164,7 @@
         </div>
     </div>
 
+    <!-- Secciones del menú -->
     <button class="category-btn" onclick="toggle('c1')">🍗 Pollo Frito <span>▼</span></button>
     <div id="c1" class="category-content">
         <div class="menu-item">
@@ -176,6 +197,7 @@
         </div>
     </div>
 
+    <!-- SECCIÓN INFORMATIVA Y REDES SOCIALES -->
     <div class="business-info-section">
         <p id="display-description" class="business-desc"></p>
         <div id="display-maps-container" class="maps-btn-container">
@@ -192,8 +214,10 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 9.10 (Cloud & Security Edition)</p>
+    <!-- VERSIÓN AL FINAL ABSOLUTO DE LA PÁGINA -->
+    <p class="version-tag">Versión 9.14 (UI Contrast & Visibility Edition)</p>
 
+    <!-- Footer Fixed -->
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
         <div class="footer-btns">
@@ -206,6 +230,7 @@
     </div>
 </div>
 
+<!-- Modales -->
 <div id="zoomModal" class="modal-overlay" onclick="this.style.display='none'"><img id="imgZoomed" src=""></div>
 <div id="ticketModal" class="modal-overlay" onclick="closeModals()">
     <div class="ticket-style" onclick="event.stopPropagation()">
@@ -265,6 +290,7 @@
     </div>
 </div>
 
+<!-- MODAL DE NOTIFICACIÓN CUSTOMIZADO -->
 <div id="customAlertModal" class="modal-overlay" onclick="closeCustomAlert()" style="z-index: 9999;">
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #0026ff; max-width: 320px; text-align: center; padding: 25px; border-radius: 12px;">
         <h3 id="customAlertTitle" style="margin-top:0; color: #0026ff; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -275,14 +301,22 @@
     </div>
 </div>
 
+<!-- MODAL PANEL DE CONTROL -->
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.10)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.14)</h3>
         
         <div class="admin-section-title">Seguridad Criptográfica</div>
         <div class="admin-field">
             <label>Cambiar PIN de Acceso Administrador</label>
             <input type="text" id="input-admin-pin" class="admin-input" placeholder="🔒 PIN Protegido (Escribe uno nuevo para cambiar)">
+        </div>
+
+        <div class="admin-section-title">Calendario Semanal Comercial (AM / PM)</div>
+        <div style="margin-bottom:15px; font-size:0.8rem; color:#aaa;">Indica las horas usando el formato AM o PM. Ejemplo: <b>11:30 AM</b> o <b>10:00 PM</b>.</div>
+        
+        <div id="admin-schedule-container">
+            <!-- Inyección síncrona por JS -->
         </div>
 
         <div class="admin-section-title">Identidad del Negocio</div>
@@ -301,13 +335,11 @@
         
         <div class="admin-section-title">Redes Sociales (Enlaces y Nombres)</div>
         <div class="admin-field"><label>Enlace de Facebook</label><input type="text" id="input-fb" class="admin-input"></div>
-        <div class="admin-field"><label>Nombre de Usuario Facebook</label><input type="text" id="input-fb-name" class="admin-input" placeholder="Ej: Cooking Pollos"></div>
-        
+        <div class="admin-field"><label>Nombre de Usuario Facebook</label><input type="text" id="input-fb-name" class="admin-input"></div>
         <div class="admin-field"><label>Enlace de Instagram</label><input type="text" id="input-ig" class="admin-input"></div>
-        <div class="admin-field"><label>Nombre de Usuario Instagram</label><input type="text" id="input-ig-name" class="admin-input" placeholder="Ej: @cookingpollos"></div>
-        
+        <div class="admin-field"><label>Nombre de Usuario Instagram</label><input type="text" id="input-ig-name" class="admin-input"></div>
         <div class="admin-field"><label>Enlace de TikTok</label><input type="text" id="input-tk" class="admin-input"></div>
-        <div class="admin-field"><label>Nombre de Usuario TikTok</label><input type="text" id="input-tk-name" class="admin-input" placeholder="Ej: @cookingpollos_cr"></div>
+        <div class="admin-field"><label>Nombre de Usuario TikTok</label><input type="text" id="input-tk-name" class="admin-input"></div>
         
         <div class="admin-actions">
             <button class="btn-admin-save" onclick="applyAdminChanges()">Guardar en la Nube</button>
@@ -337,15 +369,55 @@
     let currentGlobalTitle = "Web Pedidos";
     let currentGlobalPin = "1234";
 
+    const daysOrder = ['lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do'];
+    const daysNames = { lu: "Lunes", ma: "Martes", mi: "Miércoles", ju: "Jueves", vi: "Viernes", sa: "Sábado", do: "Domingo" };
+    window.currentScheduleData = {};
+
     function customAlert(message, title = "Aviso del Sistema") {
         document.getElementById('customAlertTitle').innerHTML = title;
-        document.getElementById('customAlertMessage').innerText = message;
+        document.getElementById('customAlertMessage').innerHTML = message;
         document.getElementById('customAlertModal').style.display = "flex";
     }
     function closeCustomAlert() { document.getElementById('customAlertModal').style.display = "none"; }
 
-    // SNAPSHOT EN TIEMPO REAL
+    function convertTimeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        let match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+        if (!match) return 0;
+        
+        let hours = parseInt(match[1]);
+        let minutes = parseInt(match[2]);
+        let ampm = match[3];
+        
+        if (ampm) {
+            ampm = ampm.toUpperCase();
+            if (ampm === "PM" && hours < 12) hours += 12;
+            if (ampm === "AM" && hours === 12) hours = 0;
+        }
+        return (hours * 60) + minutes;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+        let scheduleContainer = document.getElementById('admin-schedule-container');
+        let htmlSchedule = "";
+        daysOrder.forEach(day => {
+            htmlSchedule += `
+                <div class="schedule-config-row">
+                    <span class="schedule-day-label">${daysNames[day]}:</span>
+                    <select id="input-${day}-status" class="schedule-select" onchange="toggleTimeInputs('${day}')">
+                        <option value="abierto">Abierto</option>
+                        <option value="cerrado">Cerrado</option>
+                    </select>
+                    <div id="row-times-${day}" style="display:inline-flex; align-items:center; gap:4px;">
+                        <input type="text" id="input-${day}-open" class="schedule-time-input" placeholder="11:30 AM">
+                        <span style="font-size:0.75rem; color:#aaa;">a</span>
+                        <input type="text" id="input-${day}-close" class="schedule-time-input" placeholder="10:00 PM">
+                    </div>
+                </div>
+            `;
+        });
+        scheduleContainer.innerHTML = htmlSchedule;
+
         db.collection("configuraciones").doc("cooking-pollos").onSnapshot((doc) => {
             if (doc.exists) {
                 let data = doc.data();
@@ -353,6 +425,19 @@
                 currentGlobalTitle = data.page_title || "Web Pedidos";
                 currentGlobalWhatsApp = data.whatsapp || "85135269";
                 currentGlobalPin = data.admin_pin || "1234";
+
+                daysOrder.forEach(day => {
+                    window.currentScheduleData[day + '_status'] = data[day + '_status'] || "abierto";
+                    window.currentScheduleData[day + '_open'] = data[day + '_open'] || "11:00 AM";
+                    window.currentScheduleData[day + '_close'] = data[day + '_close'] || "11:00 PM";
+
+                    document.getElementById(`input-${day}-status`).value = window.currentScheduleData[day + '_status'];
+                    document.getElementById(`input-${day}-open`).value = window.currentScheduleData[day + '_open'];
+                    document.getElementById(`input-${day}-close`).value = window.currentScheduleData[day + '_close'];
+                    toggleTimeInputs(day);
+                });
+
+                ejecutarEvaluadorCalendarioCR();
 
                 document.getElementById('main-title').innerText = currentGlobalTitle;
                 document.getElementById('ticket-title').innerText = currentGlobalTitle;
@@ -374,7 +459,6 @@
                     document.getElementById('display-maps-container').style.display = "block";
                 } else { document.getElementById('display-maps-container').style.display = "none"; }
 
-                // Activación Dinámica de Filas de Redes Sociales con sus Textos handle
                 toggleSocialRow('link-fb', 'text-fb', data.fb, data.fb_name, "Facebook");
                 toggleSocialRow('link-ig', 'text-ig', data.ig, data.ig_name, "Instagram");
                 toggleSocialRow('link-tk', 'text-tk', data.tk, data.tk_name, "TikTok");
@@ -401,7 +485,81 @@
                 document.getElementById('main-title').innerText = "Cooking Pollos (Sin Configurar)";
             }
         });
+
+        setInterval(ejecutarEvaluadorCalendarioCR, 20000);
     });
+
+    function toggleTimeInputs(day) {
+        let status = document.getElementById(`input-${day}-status`).value;
+        document.getElementById(`row-times-${day}`).style.display = (status === 'cerrado') ? 'none' : 'inline-flex';
+    }
+
+    function ejecutarEvaluadorCalendarioCR() {
+        try {
+            let crLocaleString = new Date().toLocaleString("en-US", { timeZone: "America/Costa_Rica" });
+            let crDate = new Date(crLocaleString);
+            let currentDayIndex = crDate.getDay(); 
+            
+            const mapperKeys = ['do', 'lu', 'ma', 'mi', 'ju', 'vi', 'sa'];
+            let todayKey = mapperKeys[currentDayIndex];
+
+            let statusHoy = window.currentScheduleData[todayKey + '_status'] || "abierto";
+            let badge = document.getElementById('schedule-badge');
+
+            if (statusHoy === "cerrado") {
+                badge.innerHTML = `<span class="dot-status" style="color: #ea4335; background: #ea4335;"></span> Cerrado`;
+                badge.style.borderColor = "#ea4335"; badge.style.color = "#ea4335";
+                return;
+            }
+
+            let optionsTime = { timeZone: "America/Costa_Rica", hour: "2-digit", minute: "2-digit", hour12: false };
+            let crTimeFormatter = new Intl.DateTimeFormat("en-US", optionsTime);
+            let [crHour, crMin] = crTimeFormatter.format(new Date()).split(':').map(Number);
+
+            let openStr = window.currentScheduleData[todayKey + '_open'] || "11:00 AM";
+            let closeStr = window.currentScheduleData[todayKey + '_close'] || "11:00 PM";
+
+            let currentMins = (crHour * 60) + crMin;
+            let openMins = convertTimeToMinutes(openStr);
+            let closeMins = convertTimeToMinutes(closeStr);
+            
+            let isOpen = false;
+            if (closeMins > openMins) {
+                isOpen = (currentMins >= openMins && currentMins < closeMins);
+            } else {
+                isOpen = (currentMins >= openMins || currentMins < closeMins);
+            }
+            
+            if (isOpen) {
+                badge.innerHTML = `<span class="dot-status" style="color: #25D366; background: #25D366;"></span> Abierto`;
+                badge.style.borderColor = "#25D366"; badge.style.color = "#25D366";
+            } else {
+                badge.innerHTML = `<span class="dot-status" style="color: #ea4335; background: #ea4335;"></span> Cerrado`;
+                badge.style.borderColor = "#ea4335"; badge.style.color = "#ea4335";
+            }
+        } catch (e) { console.error("Error al calcular el calendario: ", e); }
+    }
+
+    // 🛠️ FUNCIÓN CORREGIDA: LETRAS BLANCAS CON ALTO CONTRASTE PARA EL MODAL OSCURO
+    function showScheduleDetails() {
+        let htmlList = `<div style="text-align:left; font-size:0.95rem; line-height:1.6; color:#ffffff; padding:5px 0;">`;
+        daysOrder.forEach(key => {
+            let status = window.currentScheduleData[key + '_status'] || "abierto";
+            let open = window.currentScheduleData[key + '_open'] || "11:00 AM";
+            let close = window.currentScheduleData[key + '_close'] || "11:00 PM";
+            
+            let printText = (status === 'cerrado') ? `<span style="color:#ff4d4d; font-weight:bold;">Cerrado todo el día</span>` : `De ${open} a ${close}`;
+            
+            htmlList += `
+                <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #333; padding:8px 0;">
+                    <span style="color:#ffffff;"><b>${daysNames[key]}:</b></span>
+                    <span style="color:#ffffff;">${printText}</span>
+                </div>
+            `;
+        });
+        htmlList += `</div>`;
+        customAlert(htmlList, "<i class='fas fa-calendar-alt' style='color:#0026ff;'></i> Horario de la Semana");
+    }
 
     function toggleSocialRow(linkId, textId, urlValue, nameValue, defaultText) {
         let btn = document.getElementById(linkId);
@@ -443,14 +601,13 @@
         }
     }
 
-    // ESCRITURA INCLUYENDO LOS NUEVOS ATRIBUTOS DE REDES SOCIALES
     function applyAdminChanges() {
         let newPinInput = document.getElementById('input-admin-pin').value.trim();
         let pinToSave = currentGlobalPin;
         
         if (newPinInput !== "") { pinToSave = CryptoJS.SHA256(newPinInput).toString(); }
 
-        db.collection("configuraciones").doc("cooking-pollos").set({
+        let updateConfigObject = {
             admin_pin: pinToSave,
             bg_url: document.getElementById('input-bg-url').value.trim(),
             page_title: document.getElementById('input-page-title').value.trim(),
@@ -466,9 +623,17 @@
             ig_name: document.getElementById('input-ig-name').value.trim(),
             tk: document.getElementById('input-tk').value.trim(),
             tk_name: document.getElementById('input-tk-name').value.trim()
-        })
+        };
+
+        daysOrder.forEach(day => {
+            updateConfigObject[day + '_status'] = document.getElementById(`input-${day}-status`).value;
+            updateConfigObject[day + '_open'] = document.getElementById(`input-${day}-open`).value.trim() || "11:00 AM";
+            updateConfigObject[day + '_close'] = document.getElementById(`input-${day}-close`).value.trim() || "11:00 PM";
+        });
+
+        db.collection("configuraciones").doc("cooking-pollos").set(updateConfigObject)
         .then(() => {
-            customAlert("¡Cambios guardados con éxito!", "<i class='fas fa-lock' style='color:#25D366;'></i> Nube Protegida");
+            customAlert("¡Calendario semanal en AM/PM sincronizado correctamente!", "<i class='fas fa-calendar-check' style='color:#25D366;'></i> Éxito Cloud");
             closeModals();
         })
         .catch((error) => {
@@ -476,7 +641,6 @@
         });
     }
 
-    // GEOLOCALIZACIÓN REESTRUCTURADA: CON ALERTA PREMIUM DE ÉXITO O ERROR
     function setExpress() {
         deliveryMode = "ENVÍO EXPRESS"; isSelected = true;
         document.getElementById('btn-location').classList.add('active');
@@ -486,7 +650,6 @@
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    // Guarda estrictamente solo las coordenadas puras numericas lat,lng
                     gpsCoords = `${position.coords.latitude},${position.coords.longitude}`;
                     customAlert("Tus coordenadas han sido guardadas con éxito.", "<i class='fas fa-check-circle' style='color:#25D366;'></i> GPS Exitoso");
                 },
@@ -496,8 +659,7 @@
                 }
             );
         } else {
-            gpsCoords = "";
-            customAlert("Tu dispositivo no soporta geolocalización.", "<i class='fas fa-exclamation-triangle' style='color:#ff9900;'></i> Error");
+            gpsCoords = ""; customAlert("Tu dispositivo no soporta geolocalización.", "<i class='fas fa-exclamation-triangle' style='color:#ff9900;'></i> Error");
         }
     }
 
@@ -546,6 +708,7 @@
         document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
     }
 
+    // Cierra modales normales, exceptuando la alerta del sistema
     function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => { if(m.id !== 'customAlertModal') m.style.display = "none"; }); }
     function zoomImg(src) { document.getElementById('imgZoomed').src = src; document.getElementById('zoomModal').style.display = "flex"; }
 
@@ -592,7 +755,6 @@
         }
 
         if (deliveryMode === "ENVÍO EXPRESS") {
-            // FORMATO REQUERIDO: Envía única y estrictamente los números de las coordenadas puras lat,lng
             if (gpsCoords !== "") msg += `%0A📍 *Coordenadas GPS:* ${gpsCoords}`;
             let manualDir = document.getElementById('delivery-address').value.trim();
             if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
@@ -604,4 +766,3 @@
 </script>
 </body>
 </html>
-
