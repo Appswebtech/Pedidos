@@ -9,6 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
     <style>
         /* PROTECCIÓN ADICIONAL CSS */
         img { 
@@ -112,7 +114,7 @@
 <div class="container">
     <header>
         <h1 class="header-title" id="main-title">Conectando con Google...</h1>
-        <p class="version-tag">Versión 9.7 (Cloud Edition)</p>
+        <p class="version-tag">Versión 9.8 (Cloud & Security Edition)</p>
     </header>
 
     <div class="nota-uso">
@@ -225,11 +227,22 @@
         <button class="btn-send" style="width:100%; margin-top:15px;" onclick="sendWhatsApp('SINPE')">CONFIRMAR Y ENVIAR</button>
     </div>
 </div>
+
 <div id="cashModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color:#25D366;"><i class="fas fa-money-bill-wave"></i> Vuelto Exacto</h3>
-        <input type="number" id="input-cash-amount" class="name-input" placeholder="¿Con cuánto vas a pagar?" style="color: black; background: #f5f5f5; border: 1px solid #ccc; text-align:center;">
-        <button class="btn-send" style="width:100%; margin-top:20px;" onclick="processCashPayment()">CONFIRMAR Y ENVIAR</button>
+        <h3 style="margin-top:0; color:#25D366;"><i class="fas fa-money-bill-wave"></i> Pago en Efectivo</h3>
+        <p style="font-size:0.85rem; color:#444; margin-bottom:15px;">Selecciona cómo vas a cancelar tu orden en la entrega:</p>
+        
+        <button class="pay-option-btn" onclick="payExactCash()" style="border-color: #25D366; background: #f0fff4; color: #1e7e34;">
+            <i class="fas fa-check-double"></i> Pago Exacto: ₡<span id="cash-exact-total">0</span>
+        </button>
+        
+        <div style="margin: 15px 0; font-size: 0.8rem; color: #888; font-weight: bold; letter-spacing: 1px;">O REQUIERE VUELTO CON:</div>
+        
+        <input type="number" id="input-cash-amount" class="name-input" placeholder="Ej: 5000 o 10000" inputmode="numeric" style="color: black; background: #f5f5f5; border: 1px solid #ccc; text-align:center; font-size: 1.2rem; font-weight: bold;">
+        <button class="btn-send" style="width:100%; margin-top:15px;" onclick="processCustomCashPayment()">
+            <i class="fas fa-calculator"></i> CALCULAR VUELTO Y ENVIAR
+        </button>
     </div>
 </div>
 
@@ -257,10 +270,13 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.7)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.8)</h3>
         
-        <div class="admin-section-title">Seguridad del Sistema</div>
-        <div class="admin-field"><label>Cambiar PIN de Acceso Administrador</label><input type="text" id="input-admin-pin" class="admin-input" placeholder="Ej: 1234" maxlength="10"></div>
+        <div class="admin-section-title">Seguridad Criptográfica</div>
+        <div class="admin-field">
+            <label>Cambiar PIN de Acceso Administrador</label>
+            <input type="text" id="input-admin-pin" class="admin-input" placeholder="Escribe un nuevo PIN numérico para cambiarlo">
+        </div>
 
         <div class="admin-section-title">Identidad del Negocio</div>
         <div class="admin-field"><label>Nombre del Local</label><input type="text" id="input-page-title" class="admin-input"></div>
@@ -308,19 +324,17 @@
     
     let currentGlobalWhatsApp = "85135269";
     let currentGlobalTitle = "Web Pedidos";
-    let currentGlobalPin = "1234";
+    let currentGlobalPin = "1234"; // Fallback por defecto
 
-    // MOTOR EXCLUSIVO DE ALERTAS CUSTOMIZADAS DEL SISTEMA
+    // NOTIFICACIONES CUSTOM DE LA APLICACIÓN
     function customAlert(message, title = "Aviso del Sistema") {
         document.getElementById('customAlertTitle').innerHTML = title;
         document.getElementById('customAlertMessage').innerText = message;
         document.getElementById('customAlertModal').style.display = "flex";
     }
-    function closeCustomAlert() {
-        document.getElementById('customAlertModal').style.display = "none";
-    }
+    function closeCustomAlert() { document.getElementById('customAlertModal').style.display = "none"; }
 
-    // SINCRONIZACIÓN EN TIEMPO REAL DESDE LA NUBE
+    // ESCUCHA ACTIVA DESDE FIREBASE
     document.addEventListener('DOMContentLoaded', () => {
         db.collection("configuraciones").doc("cooking-pollos").onSnapshot((doc) => {
             if (doc.exists) {
@@ -328,7 +342,7 @@
                 
                 currentGlobalTitle = data.page_title || "Web Pedidos";
                 currentGlobalWhatsApp = data.whatsapp || "85135269";
-                currentGlobalPin = data.admin_pin || "1234";
+                currentGlobalPin = data.admin_pin || "1234"; // Jala el hash desde la nube
 
                 document.getElementById('main-title').innerText = currentGlobalTitle;
                 document.getElementById('ticket-title').innerText = currentGlobalTitle;
@@ -354,7 +368,10 @@
                 toggleSocialIcon('link-ig', data.ig);
                 toggleSocialIcon('link-tk', data.tk);
 
-                document.getElementById('input-admin-pin').value = currentGlobalPin;
+                // Mapear el panel administrativo sin revelar el Hash por seguridad visual
+                document.getElementById('input-admin-pin').value = "";
+                document.getElementById('input-admin-pin').placeholder = "🔒 PIN Protegido (Escribe uno nuevo para cambiar)";
+                
                 document.getElementById('input-bg-url').value = data.bg_url || "";
                 document.getElementById('input-page-title').value = currentGlobalTitle;
                 document.getElementById('input-whatsapp').value = currentGlobalWhatsApp;
@@ -368,7 +385,6 @@
                 document.getElementById('input-tk').value = data.tk || "";
             } else {
                 document.getElementById('main-title').innerText = "Cooking Pollos (Sin Configurar)";
-                document.getElementById('ticket-title').innerText = "Cooking Pollos";
             }
         });
     });
@@ -396,24 +412,34 @@
         } else { adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500); }
     }
 
+    // VERIFICACIÓN INTELIGENTE DE SEGURIDAD (COMPARA HASH VS HASH)
     function verifyAdminPin() {
         let enteredPin = document.getElementById('input-login-pin').value.trim();
-        if (enteredPin === currentGlobalPin) {
+        let hashedEntered = CryptoJS.SHA256(enteredPin).toString(); // Encriptamos el intento
+        
+        // Permite entrar si coincide con el texto plano viejo (1234) o con el nuevo hash guardado
+        if (enteredPin === currentGlobalPin || hashedEntered === currentGlobalPin) {
             document.getElementById('loginModal').style.display = "none";
             document.getElementById('adminModal').style.display = "flex";
+            document.getElementById('input-login-pin').value = "";
         } else {
             customAlert("PIN incorrecto. Acceso denegado.", "<i class='fas fa-shield-alt' style='color:#ea4335;'></i> Seguridad");
             document.getElementById('input-login-pin').value = "";
         }
     }
 
-    // ESCRITURA EN FIRESTORE CLOUD
+    // GUARDADO CON ENCRIPTACIÓN HASH REFORZADO
     function applyAdminChanges() {
-        let newPin = document.getElementById('input-admin-pin').value.trim();
-        if (newPin === "") { customAlert("El PIN de acceso no puede quedar vacío.", "<i class='fas fa-exclamation-triangle' style='color:#ff9900;'></i> Error"); return; }
+        let newPinInput = document.getElementById('input-admin-pin').value.trim();
+        let pinToSave = currentGlobalPin; // Por defecto mantiene el PIN existente
+        
+        // Si el usuario escribió un nuevo PIN, lo hacheamos antes de enviarlo a la nube de Google
+        if (newPinInput !== "") {
+            pinToSave = CryptoJS.SHA256(newPinInput).toString();
+        }
 
         db.collection("configuraciones").doc("cooking-pollos").set({
-            admin_pin: newPin,
+            admin_pin: pinToSave,
             bg_url: document.getElementById('input-bg-url').value.trim(),
             page_title: document.getElementById('input-page-title').value.trim(),
             whatsapp: document.getElementById('input-whatsapp').value.trim(),
@@ -427,7 +453,7 @@
             tk: document.getElementById('input-tk').value.trim()
         })
         .then(() => {
-            customAlert("¡Cambios guardados en la Nube de Google con éxito! Se actualizará automáticamente en todos los celulares.", "<i class='fas fa-cloud-upload-alt' style='color:#25D366;'></i> Éxito Cloud");
+            customAlert("¡Cambios guardados con hacheo criptográfico SHA-256 de forma exitosa!", "<i class='fas fa-lock' style='color:#25D366;'></i> Nube Protegida");
             closeModals();
         })
         .catch((error) => {
@@ -448,10 +474,7 @@
                     gpsLink = `http://googleusercontent.com/maps.google.com/${position.coords.latitude},${position.coords.longitude}`;
                     customAlert("Ubicación GPS vinculada con éxito al pedido.", "<i class='fas fa-map-marker-alt' style='color:#0026ff;'></i> GPS Activado");
                 },
-                (error) => { 
-                    gpsLink = ""; 
-                    customAlert("El GPS está desactivado o denegado. Por favor escribe tu dirección de entrega de forma manual.", "<i class='fas fa-map-signs' style='color:#ff9900;'></i> GPS Inactivo"); 
-                }
+                (error) => { gpsLink = ""; customAlert("GPS inactivo o denegado. Por favor escribe tu dirección manual.", "<i class='fas fa-map-signs' style='color:#ff9900;'></i> GPS Manual"); }
             );
         }
     }
@@ -463,12 +486,23 @@
         document.getElementById('address-block').style.display = "none";
     }
 
+    // DISPARADOR DE CONFIGURACIÓN DEL MODAL DE CAJA DE EFECTIVO
     function askCashAmount() {
         document.getElementById('payModal').style.display = "none";
+        document.getElementById('cash-exact-total').innerText = total.toLocaleString('en-US');
+        document.getElementById('input-cash-amount').value = ""; // Limpiar residuo
         document.getElementById('cashModal').style.display = "flex";
     }
 
-    function processCashPayment() {
+    // LOGICA 1: PAGO COMPLETO (EXACTO)
+    function payExactCash() {
+        cashPaidAmount = total;
+        changeNeeded = 0;
+        sendWhatsApp('EFECTIVO (Monto Exacto)');
+    }
+
+    // LOGICA 2: PAGO CON DETERMINACIÓN DE CAMBIO
+    function processCustomCashPayment() {
         let moneyGiven = parseFloat(document.getElementById('input-cash-amount').value) || 0;
         if (moneyGiven < total) { 
             customAlert(`El dinero ingresado debe cubrir al menos el total de la orden (₡${total.toLocaleString()})`, "<i class='fas fa-coins' style='color:#ff9900;'></i> Vuelto Exacto"); 
@@ -476,7 +510,7 @@
         }
         cashPaidAmount = moneyGiven;
         changeNeeded = cashPaidAmount - total;
-        sendWhatsApp('EFECTIVO');
+        sendWhatsApp('EFECTIVO (Requiere Vuelto)');
     }
 
     function showSinpe() { document.getElementById('payModal').style.display = "none"; document.getElementById('sinpeModal').style.display = "flex"; }
@@ -499,8 +533,9 @@
         document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
     }
 
+    // Cierre global de modales comunes
+    function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => { if(m.id !== 'customAlertModal') m.style.display = "none"; }); }
     function zoomImg(src) { document.getElementById('imgZoomed').src = src; document.getElementById('zoomModal').style.display = "flex"; }
-    function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = "none"); }
 
     function showTicket() {
         let listHtml = ""; let hasItems = false;
@@ -523,9 +558,7 @@
         document.getElementById('payModal').style.display = "flex"; 
     }
 
-    document.getElementById('input-login-pin').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') { verifyAdminPin(); }
-    });
+    document.getElementById('input-login-pin').addEventListener('keypress', function(e) { if (e.key === 'Enter') verifyAdminPin(); });
 
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim();
@@ -539,9 +572,16 @@
             }
         }
         msg += `%0A*Subtotal Orden: ₡${total.toLocaleString()}*%0A*Método de Pago:* ${method}`;
-        if (method === 'EFECTIVO' && cashPaidAmount > 0) {
-            msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`;
+        
+        // Estructuración inteligente del desglose de efectivo para el repartidor
+        if (method.includes('EFECTIVO')) {
+            if (changeNeeded > 0) {
+                msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`;
+            } else {
+                msg += `%0A*Paga con:* Monto Exacto (No requiere vuelto)`;
+            }
         }
+
         if (deliveryMode === "ENVÍO EXPRESS") {
             if (gpsLink !== "") msg += `%0A📍 *Ubicación GPS:* ${gpsLink}`;
             let manualDir = document.getElementById('delivery-address').value.trim();
@@ -554,4 +594,4 @@
 </script>
 </body>
 </html>
-
+https://www.facebook.com/share/18rGXUEBvQ/
