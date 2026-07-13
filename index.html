@@ -112,7 +112,7 @@
 <div class="container">
     <header>
         <h1 class="header-title" id="main-title">Conectando con Google...</h1>
-        <p class="version-tag">Versión 9.5 (Cloud Edition)</p>
+        <p class="version-tag">Versión 9.7 (Cloud Edition)</p>
     </header>
 
     <div class="nota-uso">
@@ -233,24 +233,54 @@
     </div>
 </div>
 
+<div id="loginModal" class="modal-overlay" onclick="closeModals()">
+    <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #0026ff; max-width: 320px;">
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-lock"></i> Acceso Admin</h3>
+        <p style="font-size:0.85rem; color:#aaa; margin-bottom:15px; text-align:center;">Ingresa el PIN de seguridad para abrir el panel.</p>
+        <input type="password" id="input-login-pin" class="name-input" placeholder="••••" inputmode="numeric" pattern="[0-9]*" style="text-align: center; font-size: 1.6rem; letter-spacing: 6px; background: #222; border-color: #444; color: white; padding: 10px 0;">
+        <div class="admin-actions" style="margin-top: 20px;">
+            <button class="btn-admin-save" onclick="verifyAdminPin()">Entrar</button>
+            <button class="btn-admin-close" onclick="closeModals()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="customAlertModal" class="modal-overlay" onclick="closeCustomAlert()" style="z-index: 9999;">
+    <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #0026ff; max-width: 320px; text-align: center; padding: 25px; border-radius: 12px;">
+        <h3 id="customAlertTitle" style="margin-top:0; color: #0026ff; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <i class="fas fa-info-circle"></i> Aviso
+        </h3>
+        <p id="customAlertMessage" style="font-size: 0.95rem; color: #ccc; margin: 15px 0 20px 0; line-height: 1.4; text-align: center;"></p>
+        <button class="btn-admin-save" onclick="closeCustomAlert()" style="width: 100%; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Aceptar</button>
+    </div>
+</div>
+
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.5)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.7)</h3>
+        
+        <div class="admin-section-title">Seguridad del Sistema</div>
+        <div class="admin-field"><label>Cambiar PIN de Acceso Administrador</label><input type="text" id="input-admin-pin" class="admin-input" placeholder="Ej: 1234" maxlength="10"></div>
+
         <div class="admin-section-title">Identidad del Negocio</div>
         <div class="admin-field"><label>Nombre del Local</label><input type="text" id="input-page-title" class="admin-input"></div>
         <div class="admin-field"><label>WhatsApp receptor de Pedidos</label><input type="text" id="input-whatsapp" class="admin-input"></div>
         <div class="admin-field"><label>URL Imagen de Fondo</label><input type="text" id="input-bg-url" class="admin-input"></div>
         <div class="admin-field"><label>Descripción / Historia (Footer)</label><textarea id="input-description" class="admin-input" style="height:60px; font-family:sans-serif;"></textarea></div>
+        
         <div class="admin-section-title">Finanzas & SINPE</div>
         <div class="admin-field"><label>Número de Teléfono SINPE</label><input type="text" id="input-sinpe-num" class="admin-input"></div>
         <div class="admin-field"><label>Nombre del Titular de Cuenta</label><input type="text" id="input-sinpe-name" class="admin-input"></div>
+        
         <div class="admin-section-title">Geolocalización & Mapas</div>
         <div class="admin-field"><label>Enlace Google Maps del Local</label><input type="text" id="input-maps-url" class="admin-input"></div>
         <div class="admin-field"><label>Dirección Manual / Señas Locales</label><input type="text" id="input-señas-local" class="admin-input"></div>
+        
         <div class="admin-section-title">Redes Sociales</div>
         <div class="admin-field"><label>Enlace de Facebook</label><input type="text" id="input-fb" class="admin-input"></div>
         <div class="admin-field"><label>Enlace de Instagram</label><input type="text" id="input-ig" class="admin-input"></div>
         <div class="admin-field"><label>Enlace de TikTok</label><input type="text" id="input-tk" class="admin-input"></div>
+        
         <div class="admin-actions">
             <button class="btn-admin-save" onclick="applyAdminChanges()">Guardar en la Nube</button>
             <button class="btn-admin-close" onclick="closeModals()">Cancelar</button>
@@ -259,7 +289,7 @@
 </div>
 
 <script>
-    // CREDENCIALES REALES ENLAZADAS DIRECTO CON GOOGLE FIREBASE
+    // CREDENCIALES ENLAZADAS CON GOOGLE FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyDzNsBj-W-9yEVqrFQejWr_IQVn8IcWVeA",
         authDomain: "cooking-pollos.firebaseapp.com",
@@ -269,7 +299,6 @@
         appId: "1:25242186743:web:ba235270917ffd51b1f4f2"
     };
 
-    // Inicialización del motor Firestore
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -279,8 +308,19 @@
     
     let currentGlobalWhatsApp = "85135269";
     let currentGlobalTitle = "Web Pedidos";
+    let currentGlobalPin = "1234";
 
-    // SINCRONIZACIÓN EN TIEMPO REAL DESDE LA NUBE DE FIREBASE
+    // MOTOR EXCLUSIVO DE ALERTAS CUSTOMIZADAS DEL SISTEMA
+    function customAlert(message, title = "Aviso del Sistema") {
+        document.getElementById('customAlertTitle').innerHTML = title;
+        document.getElementById('customAlertMessage').innerText = message;
+        document.getElementById('customAlertModal').style.display = "flex";
+    }
+    function closeCustomAlert() {
+        document.getElementById('customAlertModal').style.display = "none";
+    }
+
+    // SINCRONIZACIÓN EN TIEMPO REAL DESDE LA NUBE
     document.addEventListener('DOMContentLoaded', () => {
         db.collection("configuraciones").doc("cooking-pollos").onSnapshot((doc) => {
             if (doc.exists) {
@@ -288,6 +328,7 @@
                 
                 currentGlobalTitle = data.page_title || "Web Pedidos";
                 currentGlobalWhatsApp = data.whatsapp || "85135269";
+                currentGlobalPin = data.admin_pin || "1234";
 
                 document.getElementById('main-title').innerText = currentGlobalTitle;
                 document.getElementById('ticket-title').innerText = currentGlobalTitle;
@@ -313,7 +354,7 @@
                 toggleSocialIcon('link-ig', data.ig);
                 toggleSocialIcon('link-tk', data.tk);
 
-                // Rellenar automáticamente el panel al abrirlo con la data real de Google
+                document.getElementById('input-admin-pin').value = currentGlobalPin;
                 document.getElementById('input-bg-url').value = data.bg_url || "";
                 document.getElementById('input-page-title').value = currentGlobalTitle;
                 document.getElementById('input-whatsapp').value = currentGlobalWhatsApp;
@@ -349,16 +390,30 @@
         clearTimeout(adminTimeout);
         if (adminClicks >= 7) {
             adminClicks = 0;
-            let accessPass = prompt("Ingresa la clave de administrador:");
-            if (accessPass === "1234") {
-                document.getElementById('adminModal').style.display = "flex";
-            } else if (accessPass !== null) { alert("Contraseña inválida."); }
+            document.getElementById('input-login-pin').value = "";
+            document.getElementById('loginModal').style.display = "flex";
+            document.getElementById('input-login-pin').focus();
         } else { adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500); }
     }
 
-    // ESCRITURA REAL EN TIEMPO REAL HACIA FIRESTORE
+    function verifyAdminPin() {
+        let enteredPin = document.getElementById('input-login-pin').value.trim();
+        if (enteredPin === currentGlobalPin) {
+            document.getElementById('loginModal').style.display = "none";
+            document.getElementById('adminModal').style.display = "flex";
+        } else {
+            customAlert("PIN incorrecto. Acceso denegado.", "<i class='fas fa-shield-alt' style='color:#ea4335;'></i> Seguridad");
+            document.getElementById('input-login-pin').value = "";
+        }
+    }
+
+    // ESCRITURA EN FIRESTORE CLOUD
     function applyAdminChanges() {
+        let newPin = document.getElementById('input-admin-pin').value.trim();
+        if (newPin === "") { customAlert("El PIN de acceso no puede quedar vacío.", "<i class='fas fa-exclamation-triangle' style='color:#ff9900;'></i> Error"); return; }
+
         db.collection("configuraciones").doc("cooking-pollos").set({
+            admin_pin: newPin,
             bg_url: document.getElementById('input-bg-url').value.trim(),
             page_title: document.getElementById('input-page-title').value.trim(),
             whatsapp: document.getElementById('input-whatsapp').value.trim(),
@@ -372,12 +427,12 @@
             tk: document.getElementById('input-tk').value.trim()
         })
         .then(() => {
-            alert("¡Cambios guardados en la Nube de Google con éxito! Se actualizará automáticamente en todas las pantallas.");
+            customAlert("¡Cambios guardados en la Nube de Google con éxito! Se actualizará automáticamente en todos los celulares.", "<i class='fas fa-cloud-upload-alt' style='color:#25D366;'></i> Éxito Cloud");
             closeModals();
         })
         .catch((error) => {
             console.error("Error al guardar: ", error);
-            alert("Error de guardado. Asegúrate de activar 'Cloud Firestore' en modo de prueba en tu consola.");
+            customAlert("Hubo un error al sincronizar con la nube.", "<i class='fas fa-times-circle' style='color:#ea4335;'></i> Error");
         });
     }
 
@@ -391,9 +446,12 @@
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     gpsLink = `http://googleusercontent.com/maps.google.com/${position.coords.latitude},${position.coords.longitude}`;
-                    alert("📍 Ubicación GPS vinculada con éxito al pedido.");
+                    customAlert("Ubicación GPS vinculada con éxito al pedido.", "<i class='fas fa-map-marker-alt' style='color:#0026ff;'></i> GPS Activado");
                 },
-                (error) => { gpsLink = ""; alert("📍 GPS inactivo. Por favor escribe tu dirección manual."); }
+                (error) => { 
+                    gpsLink = ""; 
+                    customAlert("El GPS está desactivado o denegado. Por favor escribe tu dirección de entrega de forma manual.", "<i class='fas fa-map-signs' style='color:#ff9900;'></i> GPS Inactivo"); 
+                }
             );
         }
     }
@@ -412,7 +470,10 @@
 
     function processCashPayment() {
         let moneyGiven = parseFloat(document.getElementById('input-cash-amount').value) || 0;
-        if (moneyGiven < total) { alert("El monto no cubre el total de la orden."); return; }
+        if (moneyGiven < total) { 
+            customAlert(`El dinero ingresado debe cubrir al menos el total de la orden (₡${total.toLocaleString()})`, "<i class='fas fa-coins' style='color:#ff9900;'></i> Vuelto Exacto"); 
+            return; 
+        }
         cashPaidAmount = moneyGiven;
         changeNeeded = cashPaidAmount - total;
         sendWhatsApp('EFECTIVO');
@@ -450,21 +511,25 @@
                 hasItems = true;
             }
         }
-        if (!hasItems) { alert("Agrega productos."); return; }
+        if (!hasItems) { customAlert("Por favor agrega productos al carrito primero.", "<i class='fas fa-shopping-cart' style='color:#ff9900;'></i> Carrito Vacío"); return; }
         document.getElementById('ticket-list').innerHTML = listHtml;
         document.getElementById('t-total').innerText = total.toLocaleString('en-US');
         document.getElementById('ticketModal').style.display = "flex";
     }
 
     function openPayModal() { 
-        if (total <= 0) { alert("Agrega productos al carrito primero."); return; }
-        if (!isSelected) { alert("Por favor selecciona si necesitas Express o pasarás a Retirar."); return; }
+        if (total <= 0) { customAlert("Agrega productos al carrito primero.", "<i class='fas fa-shopping-cart' style='color:#ff9900;'></i> Carrito Vacío"); return; }
+        if (!isSelected) { customAlert("Por favor selecciona si necesitas Express o pasarás a Retirar.", "<i class='fas fa-motorcycle' style='color:#0026ff;'></i> Tipo de Entrega"); return; }
         document.getElementById('payModal').style.display = "flex"; 
     }
 
+    document.getElementById('input-login-pin').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { verifyAdminPin(); }
+    });
+
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim();
-        if (userName === "") { alert("Por favor escribe tu nombre."); return; }
+        if (userName === "") { customAlert("Por favor escribe tu nombre para procesar el pedido.", "<i class='fas fa-user-edit' style='color:#ff9900;'></i> Falta Tu Nombre"); return; }
 
         let msg = `¡Hola, mi pedido para *${currentGlobalTitle}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
         for (let item in cart) {
