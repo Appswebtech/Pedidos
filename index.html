@@ -13,7 +13,7 @@
 
     <style>
         /* PROTECCIÓN ADICIONAL CSS */
-        img { 
+        img, video { 
             -webkit-user-drag: none; 
             -khtml-user-drag: none; 
             -moz-user-drag: none; 
@@ -92,7 +92,7 @@
         .ticket-header { border-bottom: 1px dashed #000; margin-bottom: 15px; padding-bottom: 15px; }
 
         #zoomModal { background-color: rgba(0, 0, 0, 0.95); cursor: zoom-out; }
-        #zoomModal img { max-width: 95%; max-height: 85%; border-radius: 10px; }
+        #zoomModal img, #zoomModal video { max-width: 95%; max-height: 85%; border-radius: 10px; }
 
         /* SECCIÓN INFORMATIVA DEL FOOTER */
         .business-info-section { margin-top: 40px; padding: 20px; background: rgba(20,20,20,0.85); border-radius: 15px; border: 1px solid #333; text-align: center; }
@@ -188,7 +188,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 9.17 (Smart Routing Link Edition)</p>
+    <p class="version-tag">Versión 9.18 (Cloudinary Multimedia Edition)</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -202,7 +202,7 @@
     </div>
 </div>
 
-<div id="zoomModal" class="modal-overlay" onclick="this.style.display='none'"><img id="imgZoomed" src=""></div>
+<div id="zoomModal" class="modal-overlay" onclick="this.style.display='none'"></div>
 <div id="ticketModal" class="modal-overlay" onclick="closeModals()">
     <div class="ticket-style" onclick="event.stopPropagation()">
         <div class="ticket-header"><h3 id="ticket-title" style="margin: 0; font-family: sans-serif;">Cargando...</h3></div>
@@ -273,7 +273,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.17)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.18)</h3>
         
         <div class="admin-section-title"><i class="fas fa-utensils"></i> Menú del Establecimiento</div>
         <button class="pay-option-btn" onclick="toggleAdminMenuSection()" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
@@ -339,6 +339,10 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+
+    // LLAVES COMPORTAMIENTO CLOUDINARY
+    const CLOUDINARY_CLOUD_NAME = "easkxjiw";
+    const CLOUDINARY_UPLOAD_PRESET = "cooking_pollos_preset";
 
     let cart = {}; let total = 0; let deliveryMode = ""; let isSelected = false;
     let adminClicks = 0; let adminTimeout;
@@ -498,10 +502,21 @@
             `;
             (cat.products || []).forEach(prod => {
                 let safeQty = cart[prod.name] ? cart[prod.name].qty : 0;
+                
+                // DETECTOR DINÁMICO DE MULTIMEDIA (FOTO O VIDEO/GIF)
+                let mediaHtml = "";
+                let isVideo = prod.img && (prod.img.toLowerCase().includes('.mp4') || prod.img.toLowerCase().includes('.webm') || prod.img.toLowerCase().includes('.mov'));
+                
+                if (isVideo) {
+                    mediaHtml = `<video src="${prod.img}" class="item-img" autoplay loop muted playsinline onclick="zoomImg(this.src, true)"></video>`;
+                } else {
+                    mediaHtml = `<img src="${prod.img || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=200&auto=format&fit=crop'}" class="item-img" onclick="zoomImg(this.src, false)" onmousedown="return false;">`;
+                }
+
                 html += `
                     <div class="menu-item">
                         <div class="item-main">
-                            <img src="${prod.img || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=200&auto=format&fit=crop'}" class="item-img" onclick="zoomImg(this.src)" onmousedown="return false;">
+                            ${mediaHtml}
                             <div class="item-info">
                                 <span class="item-title">${prod.name}</span>
                                 <span class="item-price">₡${prod.price.toLocaleString('en-US')}</span>
@@ -553,6 +568,17 @@
             `;
 
             (cat.products || []).forEach((prod, prodIdx) => {
+                // MINIATURA DINÁMICA CMS PARA EL PANEL DE CONTROL
+                let thumbHtml = "";
+                if (prod.img) {
+                    let isVideo = prod.img.toLowerCase().includes('.mp4') || prod.img.toLowerCase().includes('.webm') || prod.img.toLowerCase().includes('.mov');
+                    if (isVideo) {
+                        thumbHtml = `<video src="${prod.img}" autoplay loop muted playsinline style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #555;"></video>`;
+                    } else {
+                        thumbHtml = `<img src="${prod.img}" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #555;">`;
+                    }
+                }
+
                 html += `
                     <div class="admin-prod-card">
                         <div class="admin-field" style="margin-bottom:6px;">
@@ -569,10 +595,10 @@
                         </div>
                         
                         <div class="admin-field" style="margin-bottom:10px;">
-                            <label>Subir Foto del Producto</label>
+                            <label>Subir Foto o Video Corto</label>
                             <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-                                <input type="file" accept="image/*" onchange="convertAndSaveImage(this, ${catIdx}, ${prodIdx})" style="font-size:0.75rem; color:#aaa; flex:1;">
-                                ${prod.img ? `<img src="${prod.img}" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : ''}
+                                <input type="file" accept="image/*,video/*" onchange="convertAndSaveImage(this, ${catIdx}, ${prodIdx})" style="font-size:0.75rem; color:#aaa; flex:1;">
+                                ${thumbHtml}
                             </div>
                         </div>
 
@@ -631,10 +657,43 @@
         window.localMenuArray[catIdx].products[prodIdx][field] = val;
     }
 
-    function convertAndSaveImage(input, catIdx, prodIdx) {
+    // 🚀 CIRUGÍA COMPLETA: FUNCIÓN DE SUBIDA ASÍNCRONA AUTOMÁTICA A CLOUDINARY
+    async function convertAndSaveImage(input, catIdx, prodIdx) {
         let file = input.files[0];
         if(!file) return;
-        console.log("Archivo interceptado de forma segura:", file.name);
+
+        // Inyectamos feedback visual temporal en la alerta nativa
+        customAlert("Subiendo archivo multimedia a Cloudinary... Por favor, espera un momento sin cerrar esta ventana.", "Subiendo Multimedia");
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error("La nube rechazó la petición. Revisa la configuración del Preset.");
+            }
+
+            const data = await response.json();
+            const urlMultimedia = data.secure_url; // Este es el enlace seguro HTTPS (.jpg o .mp4) generado
+
+            // Inyectamos el link de forma inmediata en tu array local
+            window.localMenuArray[catIdx].products[prodIdx].img = urlMultimedia;
+            
+            // Forzamos el refresco visual de los cambios en el administrador
+            renderAdminMenuUI();
+            
+            customAlert("¡Archivo subido con éxito! Recuerda tocar el botón de 'Guardar en la Nube' abajo para guardar de forma permanente.", "¡Carga Exitosa!");
+
+        } catch (error) {
+            console.error("Error crítico en Cloudinary:", error);
+            customAlert("Error al procesar la subida. Verifica que tu Upload Preset esté guardado en modo 'Unsigned' (No firmado).", "Fallo de Conexión");
+        }
     }
 
     function ejecutarEvaluadorCalendarioCR() {
@@ -753,6 +812,7 @@
         .then(() => {
             customAlert("Menú y configuraciones sincronizadas de forma limpia.", "<i class='fas fa-cloud-upload-alt' style='color:#25D366;'></i> Nube Actualizada");
             closeModals();
+            renderUserDynamicMenu(); // Forzamos actualización visual del cliente principal
         })
         .catch((error) => { customAlert("Hubo un error al guardar.", "<i class='fas fa-times-circle' style='color:#ea4335;'></i> Error"); });
     }
@@ -815,7 +875,17 @@
     }
 
     function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => { if(m.id !== 'customAlertModal') m.style.display = "none"; }); }
-    function zoomImg(src) { document.getElementById('imgZoomed').src = src; document.getElementById('zoomModal').style.display = "flex"; }
+    
+    // 🚀 ZOOM MODAL INTELIGENTE MULTIMEDIA ACTUALIZADO
+    function zoomImg(src, isVideo = false) { 
+        let modal = document.getElementById('zoomModal');
+        if (isVideo) {
+            modal.innerHTML = `<video src="${src}" autoplay loop muted playsinline style="max-width: 95%; max-height: 85%; border-radius: 10px;"></video>`;
+        } else {
+            modal.innerHTML = `<img src="${src}" style="max-width: 95%; max-height: 85%; border-radius: 10px;">`;
+        }
+        modal.style.display = "flex"; 
+    }
 
     function showTicket() {
         let listHtml = ""; let hasItems = false;
@@ -840,7 +910,7 @@
         document.getElementById('payModal').style.display = "flex"; 
     }
 
-    // 🚀 FUNCIÓN DE WHATSAPP ACTUALIZADA CON ENLACE DE ENTRADA DIRECTA PARA MAPAS/WAZE
+    // FUNCIÓN DE WHATSAPP CON ENLACE DE ENTRADA DIRECTA PARA MAPAS/WAZE
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim();
         if (userName === "") { customAlert("Por favor escribe tu nombre para procesar el pedido.", "<i class='fas fa-user-edit' style='color:#ff9900;'></i> Falta Tu Nombre"); return; }
@@ -861,7 +931,6 @@
         }
         
         if (deliveryMode === "ENVÍO EXPRESS") {
-            // Se inyecta la URL de enrutamiento inteligente que WhatsApp resalta en azul
             if (gpsCoords !== "") msg += `%0A📍 *Ruta de Entrega:* https://maps.google.com/?q=${gpsCoords}`;
             let manualDir = document.getElementById('delivery-address').value.trim(); if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
             msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
