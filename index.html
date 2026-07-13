@@ -210,7 +210,7 @@
     </div>
 </div>
 
-<div id="zoomModal" class="modal-overlay" onclick="this.style.display='none'"></div>
+<div id="zoomModal" class="modal-overlay" onclick="closeZoomModal()"></div>
 
 <div id="ticketModal" class="modal-overlay" onclick="closeModals()">
     <div class="ticket-style" onclick="event.stopPropagation()">
@@ -316,12 +316,14 @@
         <div class="admin-field">
             <label>Agregar Imagen de Fondo del Local</label>
             <input type="file" accept="image/*" onchange="uploadBgImage(this)" style="font-size:0.75rem; color:#aaa; margin-top:4px; display:block;">
+            <button class="btn-admin-delete" id="btn-delete-bg" onclick="clearBgImage()" style="width:100%; height:30px; font-size:0.8rem; margin-top:5px; background:#ea4335; display:none;"><i class="fas fa-trash-alt"></i> Eliminar Fondo Actual</button>
             <input type="hidden" id="input-bg-url">
         </div>
 
         <div class="admin-field">
             <label>Agregar Foto de Perfil (Logo del Negocio)</label>
             <input type="file" accept="image/*" onchange="uploadProfileImage(this)" style="font-size:0.75rem; color:#aaa; margin-top:4px; display:block;">
+            <button class="btn-admin-delete" id="btn-delete-profile" onclick="clearProfileImage()" style="width:100%; height:30px; font-size:0.8rem; margin-top:5px; background:#ea4335; display:none;"><i class="fas fa-trash-alt"></i> Eliminar Logo Actual</button>
             <input type="hidden" id="input-profile-url">
         </div>
 
@@ -381,7 +383,7 @@
     window.localMenuArray = []; 
     window.adminExpandedCats = {}; 
 
-    // CONTROL INTELIGENTE DE FONDO INMÓVIL
+    // CONTROL INTELIGENTE DE FONDO INMÓVIL TOTALMENTE BLINDADO
     function checkModalLock() {
         let openModals = false;
         document.querySelectorAll('.modal-overlay').forEach(m => {
@@ -476,7 +478,6 @@
 
                 renderUserDynamicMenu();
 
-                // EVALUACIÓN CONDICIONAL DEL NOMBRE DEL NEGOCIO (WEB PRINCIPAL)
                 if (currentGlobalTitle.trim() !== "") {
                     document.getElementById('main-title').innerText = currentGlobalTitle;
                     document.getElementById('main-title').style.display = "block";
@@ -484,18 +485,27 @@
                     document.getElementById('main-title').style.display = "none";
                 }
                 
-                // CARGAR LOGO PERFIL EN VIVO COMPLETO
+                // CARGAR LOGO PERFIL EN VIVO COMPLETO CON CONTROL DE CONTROL DE DETECCIÓN DE BOTÓN ELIMINAR
                 if (data.profile_url && data.profile_url.trim() !== "") {
                     document.getElementById('main-profile-img').src = data.profile_url;
                     document.getElementById('main-profile-img').style.display = "block";
                     document.getElementById('input-profile-url').value = data.profile_url;
+                    document.getElementById('btn-delete-profile').style.display = "inline-flex";
                 } else {
                     document.getElementById('main-profile-img').style.display = "none";
                     document.getElementById('input-profile-url').value = "";
+                    document.getElementById('btn-delete-profile').style.display = "none";
                 }
 
-                if (data.bg_url && data.bg_url.trim() !== "") document.body.style.backgroundImage = `url('${data.bg_url}')`;
-                else document.body.style.backgroundImage = "none";
+                if (data.bg_url && data.bg_url.trim() !== "") {
+                    document.body.style.backgroundImage = `url('${data.bg_url}')`;
+                    document.getElementById('input-bg-url').value = data.bg_url;
+                    document.getElementById('btn-delete-bg').style.display = "inline-flex";
+                } else {
+                    document.body.style.backgroundImage = "none";
+                    document.getElementById('input-bg-url').value = "";
+                    document.getElementById('btn-delete-bg').style.display = "none";
+                }
 
                 document.getElementById('display-sinpe-num').innerText = formatSinpeSpacing(data.sinpe_num || "85135269");
                 document.getElementById('display-sinpe-name').innerText = data.sinpe_name || "Jesús Antonio Madrigal Barrientos";
@@ -740,6 +750,7 @@
             if (!response.ok) throw new Error("Fallo");
             const data = await response.json();
             document.getElementById('input-bg-url').value = data.secure_url;
+            document.getElementById('btn-delete-bg').style.display = "inline-flex";
             customAlert("¡Fondo cargado con éxito! Toca 'Guardar en la Nube' para aplicar en vivo.", "¡Éxito!");
         } catch (error) {
             customAlert("Error al subir la imagen de fondo.", "Fallo");
@@ -758,10 +769,24 @@
             if (!response.ok) throw new Error("Fallo");
             const data = await response.json();
             document.getElementById('input-profile-url').value = data.secure_url;
+            document.getElementById('btn-delete-profile').style.display = "inline-flex";
             customAlert("¡Foto de perfil cargada con éxito! Toca 'Guardar en la Nube' para ver el cambio.", "¡Éxito!");
         } catch (error) {
             customAlert("Error al subir la foto de perfil.", "Fallo");
         }
+    }
+
+    // NUEVAS FUNCIONES COMPLEMENTARIAS PARA DESVINCULAR IMÁGENES DE FIREBASE SIN EXPONER CREDS DE BORRADO REST
+    function clearBgImage() {
+        document.getElementById('input-bg-url').value = "";
+        document.getElementById('btn-delete-bg').style.display = "none";
+        customAlert("Imagen de fondo removida del panel. Presiona el botón azul de 'Guardar en la Nube' abajo para aplicar el cambio.", "Fondo Removido");
+    }
+
+    function clearProfileImage() {
+        document.getElementById('input-profile-url').value = "";
+        document.getElementById('btn-delete-profile').style.display = "none";
+        customAlert("Logo de perfil removido del panel. Presiona el botón azul de 'Guardar en la Nube' abajo para aplicar el cambio.", "Logo Removido");
     }
 
     function ejecutarEvaluadorCalendarioCR() {
@@ -968,7 +993,14 @@
         checkModalLock();
     }
 
-    // GESTIÓN COMPLETA DEL TIQUETE DIGITAL CON INTEGRACIÓN CONDICIONAL
+    // NUEVA FUNCIÓN DE CIERRE DE MULTIMEDIA QUE LIBERA EL SCROLL DE INMEDIATO
+    function closeZoomModal() {
+        let modal = document.getElementById('zoomModal');
+        modal.style.display = "none";
+        modal.innerHTML = "";
+        checkModalLock();
+    }
+
     function showTicket() {
         let listHtml = ""; let hasItems = false;
         window.localMenuArray.forEach(cat => {
@@ -982,7 +1014,6 @@
         });
         if (!hasItems) { customAlert("Por favor agrega productos al carrito primero.", "<i class='fas fa-shopping-cart' style='color:#ff9900;'></i> Carrito Vacío"); return; }
         
-        // 1. INYECCIÓN DEL LOGO COMPLETO EN EL TIQUETE
         let ticketLogo = document.getElementById('ticket-logo');
         let profileUrl = document.getElementById('input-profile-url').value;
         if (profileUrl && profileUrl.trim() !== "") {
@@ -992,7 +1023,6 @@
             ticketLogo.style.display = "none";
         }
 
-        // 2. INYECCIÓN CONDICIONAL DEL NOMBRE EN EL TIQUETE
         let ticketTitle = document.getElementById('ticket-title');
         if (currentGlobalTitle.trim() !== "") {
             ticketTitle.innerText = currentGlobalTitle;
