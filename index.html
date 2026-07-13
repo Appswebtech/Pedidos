@@ -23,6 +23,13 @@
             -webkit-touch-callout: none;
         }
 
+        /* CONFIGURACIÓN CRÍTICA DE BLOQUEO DE FONDO INMÓVIL */
+        body.modal-lock {
+            overflow: hidden !important;
+            height: 100vh !important;
+            touch-action: none;
+        }
+
         body { 
             background-color: #0b0b0b; 
             color: #ffffff; 
@@ -107,7 +114,7 @@
         .social-row-btn i { font-size: 1.3rem; }
         .social-row-btn:hover { background: rgba(255,255,255,0.08); border-color: #0026ff; }
         
-        /* VERSIÓN AL FINAL ABSOLUTO */
+        /* VERSIÓN AL FINAL ABSOLUTO LIMPIA */
         .version-tag { color: #555; font-weight: bold; margin: 40px auto 10px; font-size: 0.8rem; text-align: center; letter-spacing: 1px; }
         
         /* GESTIÓN DE CONTROL Y CRUD DE MENÚS */
@@ -142,7 +149,7 @@
     </div>
 
     <header>
-        <img id="main-profile-img" src="" style="display:none; width: 95px; height: 95px; border-radius: 50%; object-fit: cover; margin: 0 auto 15px; border: 2px solid #0026ff; box-shadow: 0 4px 10px rgba(0,0,0,0.6);">
+        <img id="main-profile-img" src="" style="display:none; max-width: 220px; max-height: 160px; object-fit: contain; margin: 0 auto 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.6); border-radius: 0; border: none;">
         <h1 class="header-title" id="main-title">Conectando con Google...</h1>
     </header>
 
@@ -189,7 +196,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 9.19 (Cloudinary Premium Theme Edition)</p>
+    <p class="version-tag">Versión 10.0</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -204,8 +211,10 @@
 </div>
 
 <div id="zoomModal" class="modal-overlay" onclick="this.style.display='none'"></div>
+
 <div id="ticketModal" class="modal-overlay" onclick="closeModals()">
     <div class="ticket-style" onclick="event.stopPropagation()">
+        <img id="ticket-logo" src="" style="display:none; max-width: 120px; max-height: 80px; object-fit: contain; margin: 0 auto 12px; border-radius:0; border:none;">
         <div class="ticket-header"><h3 id="ticket-title" style="margin: 0; font-family: sans-serif;">Cargando...</h3></div>
         <div id="ticket-list" style="text-align: left; font-size: 0.85rem; color: black;"></div>
         <div style="border-top:1px dashed #000; margin-top:15px; padding-top:10px; font-weight:bold; display:flex; justify-content:space-between; font-size:1.1rem; color: black;">
@@ -214,6 +223,7 @@
         <button style="margin-top:20px; width:100%; padding:12px; background:#0026ff; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="closeModals()">CERRAR</button>
     </div>
 </div>
+
 <div id="payModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3 style="margin-top:0;">💳 Método de Pago</h3>
@@ -274,7 +284,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.19)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v10.0)</h3>
         
         <div class="admin-section-title"><i class="fas fa-utensils"></i> Menú del Establecimiento</div>
         <button class="pay-option-btn" onclick="toggleAdminMenuSection()" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
@@ -300,7 +310,7 @@
         <div id="admin-schedule-container"></div>
 
         <div class="admin-section-title">Identidad del Negocio</div>
-        <div class="admin-field"><label>Nombre del Local</label><input type="text" id="input-page-title" class="admin-input"></div>
+        <div class="admin-field"><label>Nombre del Local (Déjalo en blanco para ver solo el logo)</label><input type="text" id="input-page-title" class="admin-input"></div>
         <div class="admin-field"><label>WhatsApp receptor de Pedidos</label><input type="text" id="input-whatsapp" class="admin-input"></div>
         
         <div class="admin-field">
@@ -353,7 +363,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // LLAVES COMPORTAMIENTO CLOUDINARY
     const CLOUDINARY_CLOUD_NAME = "easkxjiw";
     const CLOUDINARY_UPLOAD_PRESET = "cooking_pollos_preset";
 
@@ -372,12 +381,29 @@
     window.localMenuArray = []; 
     window.adminExpandedCats = {}; 
 
+    // CONTROL INTELIGENTE DE FONDO INMÓVIL
+    function checkModalLock() {
+        let openModals = false;
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            if (m.style.display === "flex") openModals = true;
+        });
+        if (openModals) {
+            document.body.classList.add('modal-lock');
+        } else {
+            document.body.classList.remove('modal-lock');
+        }
+    }
+
     function customAlert(message, title = "Aviso del Sistema") {
         document.getElementById('customAlertTitle').innerHTML = title;
         document.getElementById('customAlertMessage').innerHTML = message;
         document.getElementById('customAlertModal').style.display = "flex";
+        checkModalLock();
     }
-    function closeCustomAlert() { document.getElementById('customAlertModal').style.display = "none"; }
+    function closeCustomAlert() { 
+        document.getElementById('customAlertModal').style.display = "none"; 
+        checkModalLock();
+    }
 
     function convertTimeToMinutes(timeStr) {
         if (!timeStr) return 0;
@@ -417,7 +443,7 @@
             if (doc.exists) {
                 let data = doc.data();
                 
-                currentGlobalTitle = data.page_title || "Web Pedidos";
+                currentGlobalTitle = data.page_title || "";
                 currentGlobalWhatsApp = data.whatsapp || "85135269";
                 currentGlobalPin = data.admin_pin || "1234";
 
@@ -450,10 +476,15 @@
 
                 renderUserDynamicMenu();
 
-                document.getElementById('main-title').innerText = currentGlobalTitle;
-                document.getElementById('ticket-title').innerText = currentGlobalTitle;
+                // EVALUACIÓN CONDICIONAL DEL NOMBRE DEL NEGOCIO (WEB PRINCIPAL)
+                if (currentGlobalTitle.trim() !== "") {
+                    document.getElementById('main-title').innerText = currentGlobalTitle;
+                    document.getElementById('main-title').style.display = "block";
+                } else {
+                    document.getElementById('main-title').style.display = "none";
+                }
                 
-                // CARGAR LOGO PERFIL EN VIVO
+                // CARGAR LOGO PERFIL EN VIVO COMPLETO
                 if (data.profile_url && data.profile_url.trim() !== "") {
                     document.getElementById('main-profile-img').src = data.profile_url;
                     document.getElementById('main-profile-img').style.display = "block";
@@ -678,7 +709,6 @@
         window.localMenuArray[catIdx].products[prodIdx][field] = val;
     }
 
-    // CARGA ASÍNCRONA A CLOUDINARY - PRODUCTOS
     async function convertAndSaveImage(input, catIdx, prodIdx) {
         let file = input.files[0];
         if(!file) return;
@@ -698,7 +728,6 @@
         }
     }
 
-    // NUEVA FUNCIÓN: CARGAR IMAGEN DE FONDO DIRECTA A CLOUDINARY
     async function uploadBgImage(input) {
         let file = input.files[0];
         if(!file) return;
@@ -717,7 +746,6 @@
         }
     }
 
-    // NUEVA FUNCIÓN: CARGAR FOTO DE PERFIL DIRECTA A CLOUDINARY
     async function uploadProfileImage(input) {
         let file = input.files[0];
         if(!file) return;
@@ -801,7 +829,9 @@
         adminClicks++; clearTimeout(adminTimeout);
         if (adminClicks >= 7) {
             adminClicks = 0; document.getElementById('input-login-pin').value = "";
-            document.getElementById('loginModal').style.display = "flex"; document.getElementById('input-login-pin').focus();
+            document.getElementById('loginModal').style.display = "flex"; 
+            document.getElementById('input-login-pin').focus();
+            checkModalLock();
         } else { adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500); }
     }
 
@@ -812,6 +842,7 @@
             document.getElementById('loginModal').style.display = "none";
             document.getElementById('adminModal').style.display = "flex";
             document.getElementById('input-login-pin').value = "";
+            checkModalLock();
         } else {
             customAlert("PIN incorrecto. Acceso denegado.", "<i class='fas fa-shield-alt' style='color:#ea4335;'></i> Seguridad");
             document.getElementById('input-login-pin').value = "";
@@ -827,7 +858,7 @@
             admin_pin: pinToSave,
             menu: window.localMenuArray, 
             bg_url: document.getElementById('input-bg-url').value.trim(),
-            profile_url: document.getElementById('input-profile-url').value.trim(), // REGISTRO DE FOTO EN BASE DE DATOS
+            profile_url: document.getElementById('input-profile-url').value.trim(),
             page_title: document.getElementById('input-page-title').value.trim(),
             whatsapp: document.getElementById('input-whatsapp').value.trim(),
             sinpe_num: document.getElementById('input-sinpe-num').value.trim(),
@@ -886,6 +917,7 @@
         document.getElementById('cash-exact-total').innerText = total.toLocaleString('en-US');
         document.getElementById('input-cash-amount').value = "";
         document.getElementById('cashModal').style.display = "flex";
+        checkModalLock();
     }
 
     function payExactCash() { cashPaidAmount = total; changeNeeded = 0; sendWhatsApp('EFECTIVO (Monto Exacto)'); }
@@ -899,7 +931,12 @@
         sendWhatsApp('EFECTIVO (Requiere Vuelto)');
     }
 
-    function showSinpe() { document.getElementById('payModal').style.display = "none"; document.getElementById('sinpeModal').style.display = "flex"; }
+    function showSinpe() { 
+        document.getElementById('payModal').style.display = "none"; 
+        document.getElementById('sinpeModal').style.display = "flex"; 
+        checkModalLock();
+    }
+    
     function toggle(id) { let el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; }
     
     function changeQty(name, val, price) {
@@ -915,7 +952,10 @@
         document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
     }
 
-    function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => { if(m.id !== 'customAlertModal') m.style.display = "none"; }); }
+    function closeModals() { 
+        document.querySelectorAll('.modal-overlay').forEach(m => { if(m.id !== 'customAlertModal') m.style.display = "none"; }); 
+        checkModalLock();
+    }
     
     function zoomImg(src, isVideo = false) { 
         let modal = document.getElementById('zoomModal');
@@ -925,8 +965,10 @@
             modal.innerHTML = `<img src="${src}" style="max-width: 95%; max-height: 85%; border-radius: 10px;">`;
         }
         modal.style.display = "flex"; 
+        checkModalLock();
     }
 
+    // GESTIÓN COMPLETA DEL TIQUETE DIGITAL CON INTEGRACIÓN CONDICIONAL
     function showTicket() {
         let listHtml = ""; let hasItems = false;
         window.localMenuArray.forEach(cat => {
@@ -939,22 +981,44 @@
             });
         });
         if (!hasItems) { customAlert("Por favor agrega productos al carrito primero.", "<i class='fas fa-shopping-cart' style='color:#ff9900;'></i> Carrito Vacío"); return; }
+        
+        // 1. INYECCIÓN DEL LOGO COMPLETO EN EL TIQUETE
+        let ticketLogo = document.getElementById('ticket-logo');
+        let profileUrl = document.getElementById('input-profile-url').value;
+        if (profileUrl && profileUrl.trim() !== "") {
+            ticketLogo.src = profileUrl;
+            ticketLogo.style.display = "block";
+        } else {
+            ticketLogo.style.display = "none";
+        }
+
+        // 2. INYECCIÓN CONDICIONAL DEL NOMBRE EN EL TIQUETE
+        let ticketTitle = document.getElementById('ticket-title');
+        if (currentGlobalTitle.trim() !== "") {
+            ticketTitle.innerText = currentGlobalTitle;
+            ticketTitle.style.display = "block";
+        } else {
+            ticketTitle.style.display = "none";
+        }
+
         document.getElementById('ticket-list').innerHTML = listHtml;
         document.getElementById('t-total').innerText = total.toLocaleString('en-US');
         document.getElementById('ticketModal').style.display = "flex";
+        checkModalLock();
     }
 
     function openPayModal() { 
         if (total <= 0) { customAlert("Agrega productos al carrito primero.", "<i class='fas fa-shopping-cart' style='color:#ff9900;'></i> Carrito Vacío"); return; }
         if (!isSelected) { customAlert("Por favor selecciona si necesitas Express o pasarás a Retirar.", "<i class='fas fa-motorcycle' style='color:#0026ff;'></i> Tipo de Entrega"); return; }
         document.getElementById('payModal').style.display = "flex"; 
+        checkModalLock();
     }
 
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim();
         if (userName === "") { customAlert("Por favor escribe tu nombre para procesar el pedido.", "<i class='fas fa-user-edit' style='color:#ff9900;'></i> Falta Tu Nombre"); return; }
 
-        let msg = `¡Hola, mi pedido para *${currentGlobalTitle}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
+        let msg = `¡Hola, mi pedido para *${currentGlobalTitle || 'Cooking Pollos'}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
         window.localMenuArray.forEach(cat => {
             (cat.products || []).forEach(prod => {
                 if (cart[prod.name] && cart[prod.name].qty > 0) {
