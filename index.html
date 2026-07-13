@@ -39,7 +39,6 @@
         
         header { padding: 30px 0; }
         .header-title { letter-spacing: 2px; font-size: 2.2rem; margin: 0; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        .version-tag { color: #0026ff; font-weight: bold; margin: 5px 0 0 0; font-size: 0.9rem; }
 
         .nota-uso { background-color: rgba(17, 17, 17, 0.9); border: 2px dashed #0026ff; padding: 15px; margin: 20px auto; border-radius: 10px; text-align: left; }
         .nota-uso strong { color: #0026ff; display: block; margin-bottom: 5px; }
@@ -92,15 +91,21 @@
 
         /* SECCIÓN INFORMATIVA DEL FOOTER */
         .business-info-section { margin-top: 40px; padding: 20px; background: rgba(20,20,20,0.85); border-radius: 15px; border: 1px solid #333; text-align: center; }
-        .business-desc { font-size: 0.9rem; color: #ccc; font-style: italic; line-height: 1.4; display: none; }
+        .business-desc { font-size: 0.9rem; color: #ccc; font-style: italic; line-height: 1.4; display: none; margin-bottom: 15px; }
         .maps-btn-container { margin: 15px 0; display: none; }
         .btn-maps-link { background: #ea4335; color: white; padding: 10px 18px; border-radius: 30px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .señas-text { font-size: 0.85rem; color: #aaa; margin: 8px 0 0 0; font-weight: 500; }
-        .social-container { display: flex; justify-content: center; gap: 25px; margin-top: 15px; font-size: 1.6rem; }
-        .social-container a { transition: 0.3s; display: none; }
-        .social-container a:hover { transform: scale(1.1); }
-
-        /* ESTILOS DEL PANEL ADMINISTRATIVO */
+        
+        /* DISEÑO PREMIUM DE BOTONES DE REDES SOCIALES HASTA ABAJO */
+        .social-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; width: 100%; }
+        .social-row-btn { display: none; align-items: center; gap: 12px; text-decoration: none; color: white; font-size: 0.95rem; font-weight: 600; background: rgba(255,255,255,0.04); padding: 10px 16px; border-radius: 30px; border: 1px solid #222; width: 85%; max-width: 280px; box-sizing: border-box; transition: 0.3s; }
+        .social-row-btn i { font-size: 1.3rem; }
+        .social-row-btn:hover { background: rgba(255,255,255,0.08); border-color: #0026ff; }
+        
+        /* VERSIÓN AL FINAL ABSOLUTO */
+        .version-tag { color: #555; font-weight: bold; margin: 40px auto 10px; font-size: 0.8rem; text-align: center; letter-spacing: 1px; }
+        
+        /* ESTILOS PANEL ADMINISTRATIVO */
         #adminModal .modal-box { max-width: 420px; text-align: left; background: #141414; color: white; border: 2px solid #0026ff; max-height: 80vh; overflow-y: auto; padding: 20px; }
         .admin-section-title { font-size: 1rem; color: #0026ff; border-bottom: 1px solid #333; padding-bottom: 5px; margin: 15px 0 10px 0; font-weight: bold; }
         .admin-field { margin-bottom: 12px; }
@@ -114,7 +119,6 @@
 <div class="container">
     <header>
         <h1 class="header-title" id="main-title">Conectando con Google...</h1>
-        <p class="version-tag">Versión 9.9 (UX Refined Edition)</p>
     </header>
 
     <div class="nota-uso">
@@ -180,12 +184,15 @@
             </a>
             <p id="display-señas-local" class="señas-text"></p>
         </div>
+        
         <div class="social-container">
-            <a id="link-fb" href="#" target="_blank" style="color: #1877f2;"><i class="fab fa-facebook"></i></a>
-            <a id="link-ig" href="#" target="_blank" style="color: #c13584;"><i class="fab fa-instagram"></i></a>
-            <a id="link-tk" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i></a>
+            <a id="link-fb" class="social-row-btn" href="#" target="_blank" style="color: #1877f2;"><i class="fab fa-facebook"></i> <span id="text-fb" style="color:white;">Facebook</span></a>
+            <a id="link-ig" class="social-row-btn" href="#" target="_blank" style="color: #c13584;"><i class="fab fa-instagram"></i> <span id="text-ig" style="color:white;">Instagram</span></a>
+            <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
         </div>
     </div>
+
+    <p class="version-tag">Versión 9.10 (Cloud & Security Edition)</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -270,7 +277,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.9)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.10)</h3>
         
         <div class="admin-section-title">Seguridad Criptográfica</div>
         <div class="admin-field">
@@ -292,10 +299,15 @@
         <div class="admin-field"><label>Enlace Google Maps del Local</label><input type="text" id="input-maps-url" class="admin-input"></div>
         <div class="admin-field"><label>Dirección Manual / Señas Locales</label><input type="text" id="input-señas-local" class="admin-input"></div>
         
-        <div class="admin-section-title">Redes Sociales</div>
+        <div class="admin-section-title">Redes Sociales (Enlaces y Nombres)</div>
         <div class="admin-field"><label>Enlace de Facebook</label><input type="text" id="input-fb" class="admin-input"></div>
+        <div class="admin-field"><label>Nombre de Usuario Facebook</label><input type="text" id="input-fb-name" class="admin-input" placeholder="Ej: Cooking Pollos"></div>
+        
         <div class="admin-field"><label>Enlace de Instagram</label><input type="text" id="input-ig" class="admin-input"></div>
+        <div class="admin-field"><label>Nombre de Usuario Instagram</label><input type="text" id="input-ig-name" class="admin-input" placeholder="Ej: @cookingpollos"></div>
+        
         <div class="admin-field"><label>Enlace de TikTok</label><input type="text" id="input-tk" class="admin-input"></div>
+        <div class="admin-field"><label>Nombre de Usuario TikTok</label><input type="text" id="input-tk-name" class="admin-input" placeholder="Ej: @cookingpollos_cr"></div>
         
         <div class="admin-actions">
             <button class="btn-admin-save" onclick="applyAdminChanges()">Guardar en la Nube</button>
@@ -305,7 +317,6 @@
 </div>
 
 <script>
-    // CREDENCIALES ENLAZADAS CON GOOGLE FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyDzNsBj-W-9yEVqrFQejWr_IQVn8IcWVeA",
         authDomain: "cooking-pollos.firebaseapp.com",
@@ -320,13 +331,12 @@
 
     let cart = {}; let total = 0; let deliveryMode = ""; let isSelected = false;
     let adminClicks = 0; let adminTimeout;
-    let gpsLink = ""; let cashPaidAmount = 0; let changeNeeded = 0;
+    let gpsCoords = ""; let cashPaidAmount = 0; let changeNeeded = 0;
     
     let currentGlobalWhatsApp = "85135269";
     let currentGlobalTitle = "Web Pedidos";
     let currentGlobalPin = "1234";
 
-    // NOTIFICACIONES CUSTOM DE LA APLICACIÓN
     function customAlert(message, title = "Aviso del Sistema") {
         document.getElementById('customAlertTitle').innerHTML = title;
         document.getElementById('customAlertMessage').innerText = message;
@@ -334,7 +344,7 @@
     }
     function closeCustomAlert() { document.getElementById('customAlertModal').style.display = "none"; }
 
-    // ESCUCHA ACTIVA DESDE FIREBASE
+    // SNAPSHOT EN TIEMPO REAL
     document.addEventListener('DOMContentLoaded', () => {
         db.collection("configuraciones").doc("cooking-pollos").onSnapshot((doc) => {
             if (doc.exists) {
@@ -364,9 +374,10 @@
                     document.getElementById('display-maps-container').style.display = "block";
                 } else { document.getElementById('display-maps-container').style.display = "none"; }
 
-                toggleSocialIcon('link-fb', data.fb);
-                toggleSocialIcon('link-ig', data.ig);
-                toggleSocialIcon('link-tk', data.tk);
+                // Activación Dinámica de Filas de Redes Sociales con sus Textos handle
+                toggleSocialRow('link-fb', 'text-fb', data.fb, data.fb_name, "Facebook");
+                toggleSocialRow('link-ig', 'text-ig', data.ig, data.ig_name, "Instagram");
+                toggleSocialRow('link-tk', 'text-tk', data.tk, data.tk_name, "TikTok");
 
                 document.getElementById('input-admin-pin').value = "";
                 document.getElementById('input-admin-pin').placeholder = "🔒 PIN Protegido (Escribe uno nuevo para cambiar)";
@@ -379,52 +390,27 @@
                 document.getElementById('input-maps-url').value = data.maps_url || "";
                 document.getElementById('input-señas-local').value = data.señas_local || "";
                 document.getElementById('input-description').value = data.description || "";
+                
                 document.getElementById('input-fb').value = data.fb || "";
+                document.getElementById('input-fb-name').value = data.fb_name || "";
                 document.getElementById('input-ig').value = data.ig || "";
+                document.getElementById('input-ig-name').value = data.ig_name || "";
                 document.getElementById('input-tk').value = data.tk || "";
+                document.getElementById('input-tk-name').value = data.tk_name || "";
             } else {
                 document.getElementById('main-title').innerText = "Cooking Pollos (Sin Configurar)";
             }
         });
     });
 
-    function toggleSocialIcon(id, value) {
-        let el = document.getElementById(id);
-        if(value && value.trim() !== "") {
-            el.href = value; el.style.display = "inline-block";
-        } else { el.style.display = "none"; }
-    }
-
-    // LÓGICA REFINADA PARA EL BOTÓN EXPRESS (SILENCIOSO EN ÉXITO, ALERTA PREMIUM EN ERROR)
-    function setExpress() {
-        deliveryMode = "ENVÍO EXPRESS"; isSelected = true;
-        document.getElementById('btn-location').classList.add('active');
-        document.getElementById('btn-pickup').classList.remove('active');
-        document.getElementById('address-block').style.display = "block";
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    // ÉXITO SILENCIOSO: Captura las coordenadas sin molestar al usuario con alertas
-                    gpsLink = `http://googleusercontent.com/maps.google.com/${position.coords.latitude},${position.coords.longitude}`;
-                },
-                (error) => { 
-                    // ERROR ACTIVO: Avisa de manera elegante al usuario si la ubicación está apagada
-                    gpsLink = ""; 
-                    customAlert("Por favor, activa tu ubicación para calcular tus coordenadas GPS.", "<i class='fas fa-map-marker-alt' style='color:#ea4335;'></i> GPS Requerido"); 
-                }
-            );
-        } else {
-            gpsLink = "";
-            customAlert("Tu dispositivo o navegador no soporta geolocalización.", "<i class='fas fa-exclamation-triangle' style='color:#ff9900;'></i> Error");
-        }
-    }
-
-    function setPickup() {
-        deliveryMode = "RETIRO EN LOCAL"; isSelected = true; gpsLink = "";
-        document.getElementById('btn-pickup').classList.add('active');
-        document.getElementById('btn-location').classList.remove('active');
-        document.getElementById('address-block').style.display = "none";
+    function toggleSocialRow(linkId, textId, urlValue, nameValue, defaultText) {
+        let btn = document.getElementById(linkId);
+        let span = document.getElementById(textId);
+        if(urlValue && urlValue.trim() !== "") {
+            btn.href = urlValue;
+            span.innerText = (nameValue && nameValue.trim() !== "") ? nameValue : defaultText;
+            btn.style.display = "flex";
+        } else { btn.style.display = "none"; }
     }
 
     function formatSinpeSpacing(num) {
@@ -457,13 +443,12 @@
         }
     }
 
+    // ESCRITURA INCLUYENDO LOS NUEVOS ATRIBUTOS DE REDES SOCIALES
     function applyAdminChanges() {
         let newPinInput = document.getElementById('input-admin-pin').value.trim();
         let pinToSave = currentGlobalPin;
         
-        if (newPinInput !== "") {
-            pinToSave = CryptoJS.SHA256(newPinInput).toString();
-        }
+        if (newPinInput !== "") { pinToSave = CryptoJS.SHA256(newPinInput).toString(); }
 
         db.collection("configuraciones").doc("cooking-pollos").set({
             admin_pin: pinToSave,
@@ -476,17 +461,51 @@
             señas_local: document.getElementById('input-señas-local').value.trim(),
             description: document.getElementById('input-description').value.trim(),
             fb: document.getElementById('input-fb').value.trim(),
+            fb_name: document.getElementById('input-fb-name').value.trim(),
             ig: document.getElementById('input-ig').value.trim(),
-            tk: document.getElementById('input-tk').value.trim()
+            ig_name: document.getElementById('input-ig-name').value.trim(),
+            tk: document.getElementById('input-tk').value.trim(),
+            tk_name: document.getElementById('input-tk-name').value.trim()
         })
         .then(() => {
-            customAlert("¡Cambios guardados con hacheo criptográfico SHA-256 de forma exitosa!", "<i class='fas fa-lock' style='color:#25D366;'></i> Nube Protegida");
+            customAlert("¡Cambios guardados con éxito!", "<i class='fas fa-lock' style='color:#25D366;'></i> Nube Protegida");
             closeModals();
         })
         .catch((error) => {
-            console.error("Error al guardar: ", error);
             customAlert("Hubo un error al sincronizar con la nube.", "<i class='fas fa-times-circle' style='color:#ea4335;'></i> Error");
         });
+    }
+
+    // GEOLOCALIZACIÓN REESTRUCTURADA: CON ALERTA PREMIUM DE ÉXITO O ERROR
+    function setExpress() {
+        deliveryMode = "ENVÍO EXPRESS"; isSelected = true;
+        document.getElementById('btn-location').classList.add('active');
+        document.getElementById('btn-pickup').classList.remove('active');
+        document.getElementById('address-block').style.display = "block";
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Guarda estrictamente solo las coordenadas puras numericas lat,lng
+                    gpsCoords = `${position.coords.latitude},${position.coords.longitude}`;
+                    customAlert("Tus coordenadas han sido guardadas con éxito.", "<i class='fas fa-check-circle' style='color:#25D366;'></i> GPS Exitoso");
+                },
+                (error) => { 
+                    gpsCoords = ""; 
+                    customAlert("Por favor, activa tu ubicación para calcular tus coordenadas GPS.", "<i class='fas fa-map-marker-alt' style='color:#ea4335;'></i> GPS Requerido"); 
+                }
+            );
+        } else {
+            gpsCoords = "";
+            customAlert("Tu dispositivo no soporta geolocalización.", "<i class='fas fa-exclamation-triangle' style='color:#ff9900;'></i> Error");
+        }
+    }
+
+    function setPickup() {
+        deliveryMode = "RETIRO EN LOCAL"; isSelected = true; gpsCoords = "";
+        document.getElementById('btn-pickup').classList.add('active');
+        document.getElementById('btn-location').classList.remove('active');
+        document.getElementById('address-block').style.display = "none";
     }
 
     function askCashAmount() {
@@ -496,11 +515,7 @@
         document.getElementById('cashModal').style.display = "flex";
     }
 
-    function payExactCash() {
-        cashPaidAmount = total;
-        changeNeeded = 0;
-        sendWhatsApp('EFECTIVO (Monto Exacto)');
-    }
+    function payExactCash() { cashPaidAmount = total; changeNeeded = 0; sendWhatsApp('EFECTIVO (Monto Exacto)'); }
 
     function processCustomCashPayment() {
         let moneyGiven = parseFloat(document.getElementById('input-cash-amount').value) || 0;
@@ -508,8 +523,7 @@
             customAlert(`El dinero ingresado debe cubrir al menos el total de la orden (₡${total.toLocaleString()})`, "<i class='fas fa-coins' style='color:#ff9900;'></i> Vuelto Exacto"); 
             return; 
         }
-        cashPaidAmount = moneyGiven;
-        changeNeeded = cashPaidAmount - total;
+        cashPaidAmount = moneyGiven; changeNeeded = cashPaidAmount - total;
         sendWhatsApp('EFECTIVO (Requiere Vuelto)');
     }
 
@@ -519,8 +533,7 @@
     function changeQty(name, val, price) {
         if (!cart[name]) cart[name] = { qty: 0, price: price };
         let newQty = cart[name].qty + val;
-        if (newQty < 0) newQty = 0;
-        manualQty(name, newQty, price);
+        if (newQty < 0) newQty = 0; manualQty(name, newQty, price);
     }
 
     function manualQty(name, value, price) {
@@ -575,13 +588,12 @@
         if (method.includes('EFECTIVO')) {
             if (changeNeeded > 0) {
                 msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`;
-            } else {
-                msg += `%0A*Paga con:* Monto Exacto (No requiere vuelto)`;
-            }
+            } else { msg += `%0A*Paga con:* Monto Exacto (No requiere vuelto)`; }
         }
 
         if (deliveryMode === "ENVÍO EXPRESS") {
-            if (gpsLink !== "") msg += `%0A📍 *Ubicación GPS:* ${gpsLink}`;
+            // FORMATO REQUERIDO: Envía única y estrictamente los números de las coordenadas puras lat,lng
+            if (gpsCoords !== "") msg += `%0A📍 *Coordenadas GPS:* ${gpsCoords}`;
             let manualDir = document.getElementById('delivery-address').value.trim();
             if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
             msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
