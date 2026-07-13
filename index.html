@@ -114,7 +114,7 @@
 <div class="container">
     <header>
         <h1 class="header-title" id="main-title">Conectando con Google...</h1>
-        <p class="version-tag">Versión 9.8 (Cloud & Security Edition)</p>
+        <p class="version-tag">Versión 9.9 (UX Refined Edition)</p>
     </header>
 
     <div class="nota-uso">
@@ -270,12 +270,12 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.8)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.9)</h3>
         
         <div class="admin-section-title">Seguridad Criptográfica</div>
         <div class="admin-field">
             <label>Cambiar PIN de Acceso Administrador</label>
-            <input type="text" id="input-admin-pin" class="admin-input" placeholder="Escribe un nuevo PIN numérico para cambiarlo">
+            <input type="text" id="input-admin-pin" class="admin-input" placeholder="🔒 PIN Protegido (Escribe uno nuevo para cambiar)">
         </div>
 
         <div class="admin-section-title">Identidad del Negocio</div>
@@ -324,7 +324,7 @@
     
     let currentGlobalWhatsApp = "85135269";
     let currentGlobalTitle = "Web Pedidos";
-    let currentGlobalPin = "1234"; // Fallback por defecto
+    let currentGlobalPin = "1234";
 
     // NOTIFICACIONES CUSTOM DE LA APLICACIÓN
     function customAlert(message, title = "Aviso del Sistema") {
@@ -342,7 +342,7 @@
                 
                 currentGlobalTitle = data.page_title || "Web Pedidos";
                 currentGlobalWhatsApp = data.whatsapp || "85135269";
-                currentGlobalPin = data.admin_pin || "1234"; // Jala el hash desde la nube
+                currentGlobalPin = data.admin_pin || "1234";
 
                 document.getElementById('main-title').innerText = currentGlobalTitle;
                 document.getElementById('ticket-title').innerText = currentGlobalTitle;
@@ -368,7 +368,6 @@
                 toggleSocialIcon('link-ig', data.ig);
                 toggleSocialIcon('link-tk', data.tk);
 
-                // Mapear el panel administrativo sin revelar el Hash por seguridad visual
                 document.getElementById('input-admin-pin').value = "";
                 document.getElementById('input-admin-pin').placeholder = "🔒 PIN Protegido (Escribe uno nuevo para cambiar)";
                 
@@ -396,6 +395,38 @@
         } else { el.style.display = "none"; }
     }
 
+    // LÓGICA REFINADA PARA EL BOTÓN EXPRESS (SILENCIOSO EN ÉXITO, ALERTA PREMIUM EN ERROR)
+    function setExpress() {
+        deliveryMode = "ENVÍO EXPRESS"; isSelected = true;
+        document.getElementById('btn-location').classList.add('active');
+        document.getElementById('btn-pickup').classList.remove('active');
+        document.getElementById('address-block').style.display = "block";
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // ÉXITO SILENCIOSO: Captura las coordenadas sin molestar al usuario con alertas
+                    gpsLink = `http://googleusercontent.com/maps.google.com/${position.coords.latitude},${position.coords.longitude}`;
+                },
+                (error) => { 
+                    // ERROR ACTIVO: Avisa de manera elegante al usuario si la ubicación está apagada
+                    gpsLink = ""; 
+                    customAlert("Por favor, activa tu ubicación para calcular tus coordenadas GPS.", "<i class='fas fa-map-marker-alt' style='color:#ea4335;'></i> GPS Requerido"); 
+                }
+            );
+        } else {
+            gpsLink = "";
+            customAlert("Tu dispositivo o navegador no soporta geolocalización.", "<i class='fas fa-exclamation-triangle' style='color:#ff9900;'></i> Error");
+        }
+    }
+
+    function setPickup() {
+        deliveryMode = "RETIRO EN LOCAL"; isSelected = true; gpsLink = "";
+        document.getElementById('btn-pickup').classList.add('active');
+        document.getElementById('btn-location').classList.remove('active');
+        document.getElementById('address-block').style.display = "none";
+    }
+
     function formatSinpeSpacing(num) {
         if(num.length === 8) return num.substring(0,4) + "-" + num.substring(4);
         return num;
@@ -412,12 +443,10 @@
         } else { adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500); }
     }
 
-    // VERIFICACIÓN INTELIGENTE DE SEGURIDAD (COMPARA HASH VS HASH)
     function verifyAdminPin() {
         let enteredPin = document.getElementById('input-login-pin').value.trim();
-        let hashedEntered = CryptoJS.SHA256(enteredPin).toString(); // Encriptamos el intento
+        let hashedEntered = CryptoJS.SHA256(enteredPin).toString();
         
-        // Permite entrar si coincide con el texto plano viejo (1234) o con el nuevo hash guardado
         if (enteredPin === currentGlobalPin || hashedEntered === currentGlobalPin) {
             document.getElementById('loginModal').style.display = "none";
             document.getElementById('adminModal').style.display = "flex";
@@ -428,12 +457,10 @@
         }
     }
 
-    // GUARDADO CON ENCRIPTACIÓN HASH REFORZADO
     function applyAdminChanges() {
         let newPinInput = document.getElementById('input-admin-pin').value.trim();
-        let pinToSave = currentGlobalPin; // Por defecto mantiene el PIN existente
+        let pinToSave = currentGlobalPin;
         
-        // Si el usuario escribió un nuevo PIN, lo hacheamos antes de enviarlo a la nube de Google
         if (newPinInput !== "") {
             pinToSave = CryptoJS.SHA256(newPinInput).toString();
         }
@@ -462,46 +489,19 @@
         });
     }
 
-    function setExpress() {
-        deliveryMode = "ENVÍO EXPRESS"; isSelected = true;
-        document.getElementById('btn-location').classList.add('active');
-        document.getElementById('btn-pickup').classList.remove('active');
-        document.getElementById('address-block').style.display = "block";
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    gpsLink = `http://googleusercontent.com/maps.google.com/${position.coords.latitude},${position.coords.longitude}`;
-                    customAlert("Ubicación GPS vinculada con éxito al pedido.", "<i class='fas fa-map-marker-alt' style='color:#0026ff;'></i> GPS Activado");
-                },
-                (error) => { gpsLink = ""; customAlert("GPS inactivo o denegado. Por favor escribe tu dirección manual.", "<i class='fas fa-map-signs' style='color:#ff9900;'></i> GPS Manual"); }
-            );
-        }
-    }
-
-    function setPickup() {
-        deliveryMode = "RETIRO EN LOCAL"; isSelected = true; gpsLink = "";
-        document.getElementById('btn-pickup').classList.add('active');
-        document.getElementById('btn-location').classList.remove('active');
-        document.getElementById('address-block').style.display = "none";
-    }
-
-    // DISPARADOR DE CONFIGURACIÓN DEL MODAL DE CAJA DE EFECTIVO
     function askCashAmount() {
         document.getElementById('payModal').style.display = "none";
         document.getElementById('cash-exact-total').innerText = total.toLocaleString('en-US');
-        document.getElementById('input-cash-amount').value = ""; // Limpiar residuo
+        document.getElementById('input-cash-amount').value = "";
         document.getElementById('cashModal').style.display = "flex";
     }
 
-    // LOGICA 1: PAGO COMPLETO (EXACTO)
     function payExactCash() {
         cashPaidAmount = total;
         changeNeeded = 0;
         sendWhatsApp('EFECTIVO (Monto Exacto)');
     }
 
-    // LOGICA 2: PAGO CON DETERMINACIÓN DE CAMBIO
     function processCustomCashPayment() {
         let moneyGiven = parseFloat(document.getElementById('input-cash-amount').value) || 0;
         if (moneyGiven < total) { 
@@ -533,7 +533,6 @@
         document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
     }
 
-    // Cierre global de modales comunes
     function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => { if(m.id !== 'customAlertModal') m.style.display = "none"; }); }
     function zoomImg(src) { document.getElementById('imgZoomed').src = src; document.getElementById('zoomModal').style.display = "flex"; }
 
@@ -573,7 +572,6 @@
         }
         msg += `%0A*Subtotal Orden: ₡${total.toLocaleString()}*%0A*Método de Pago:* ${method}`;
         
-        // Estructuración inteligente del desglose de efectivo para el repartidor
         if (method.includes('EFECTIVO')) {
             if (changeNeeded > 0) {
                 msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`;
