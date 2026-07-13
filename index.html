@@ -129,7 +129,6 @@
         .btn-admin-delete { background: #ea4335; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; height: 38px; display: inline-flex; align-items: center; justify-content: center; }
         .btn-admin-delete:hover { background: #ff5c4d; }
         
-        /* BOTÓN DE ACORDEÓN COMPACTO EN EL PANEL */
         .btn-admin-toggle-cat { background: transparent; border: none; color: #0026ff; font-size: 1.1rem; cursor: pointer; padding: 0 8px; height: 38px; display: inline-flex; align-items: center; justify-content: center; }
 
         .admin-actions { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 0; background: #141414; padding-top: 10px; }
@@ -189,7 +188,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 9.16 (Compact CMS & Clean Cloud Edition)</p>
+    <p class="version-tag">Versión 9.17 (Smart Routing Link Edition)</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -274,7 +273,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.16)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.17)</h3>
         
         <div class="admin-section-title"><i class="fas fa-utensils"></i> Menú del Establecimiento</div>
         <button class="pay-option-btn" onclick="toggleAdminMenuSection()" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
@@ -285,8 +284,7 @@
             <button class="btn-pickup" style="background:#0026ff; border:none; width:100%; margin-bottom:12px; padding:10px;" onclick="addAdminCategory()">
                 <i class="fas fa-plus"></i> Agregar Categoría
             </button>
-            <div id="admin-categories-list">
-                </div>
+            <div id="admin-categories-list"></div>
         </div>
 
         <div class="admin-section-title">Seguridad Criptográfica</div>
@@ -355,7 +353,7 @@
     
     window.currentScheduleData = {};
     window.localMenuArray = []; 
-    window.adminExpandedCats = {}; // Guarda los estados abiertos/cerrados de cada categoría del panel
+    window.adminExpandedCats = {}; 
 
     function customAlert(message, title = "Aviso del Sistema") {
         document.getElementById('customAlertTitle').innerHTML = title;
@@ -531,7 +529,6 @@
         } else { block.style.display = "none"; }
     }
 
-    // 🌟 INTERFAZ CMS ADMINISTRATIVA CON ACORDEÓN COMPACTO
     function renderAdminMenuUI() {
         let container = document.getElementById('admin-categories-list');
         let html = "";
@@ -544,7 +541,7 @@
             html += `
                 <div class="admin-cat-block">
                     <div style="display:flex; gap:6px; align-items:center;">
-                        <button class="btn-admin-toggle-cat" onclick="toggleAdminCat(${catIdx})" title="Desplegar/Encoger">${arrow}</button>
+                        <button class="btn-admin-toggle-cat" onclick="toggleAdminCat(${catIdx})">${arrow}</button>
                         <input type="text" class="admin-input" value="${cat.name}" onchange="updateLocalCatName(${catIdx}, this.value)" placeholder="Nombre de Categoría..." style="flex:1; margin-bottom:0;">
                         <button class="btn-admin-delete" onclick="deleteLocalCategory(${catIdx})" title="Eliminar Categoría"><i class="fas fa-trash-alt"></i></button>
                     </div>
@@ -592,7 +589,6 @@
         container.innerHTML = html;
     }
 
-    // CONTROLADORES DE APERTURA DEL ACORDEÓN CMS
     function toggleAdminCat(catIdx) {
         window.adminExpandedCats[catIdx] = !window.adminExpandedCats[catIdx];
         renderAdminMenuUI();
@@ -600,11 +596,8 @@
 
     function addAdminCategory() {
         window.localMenuArray.unshift({ name: "Nueva Categoría", products: [] });
-        // Desplazar estados de apertura hacia adelante
         let newExpanded = { 0: true };
-        for(let key in window.adminExpandedCats) {
-            newExpanded[parseInt(key) + 1] = window.adminExpandedCats[key];
-        }
+        for(let key in window.adminExpandedCats) { newExpanded[parseInt(key) + 1] = window.adminExpandedCats[key]; }
         window.adminExpandedCats = newExpanded;
         renderAdminMenuUI();
     }
@@ -638,13 +631,10 @@
         window.localMenuArray[catIdx].products[prodIdx][field] = val;
     }
 
-    // ❌ CORREGIDO: SE QUITÓ LA CONVERSIÓN BINARIA BASE64 PARA EVITAR SATURAR LA MEMORIA
     function convertAndSaveImage(input, catIdx, prodIdx) {
         let file = input.files[0];
         if(!file) return;
-        
-        // Mantiene la referencia del archivo en logs listo para conectarse con Fire Storage posteriormente
-        console.log("Archivo interceptado de forma segura:", file.name, "— Tamaño:", file.size, "bytes.");
+        console.log("Archivo interceptado de forma segura:", file.name);
     }
 
     function ejecutarEvaluadorCalendarioCR() {
@@ -706,7 +696,6 @@
     }
 
     document.getElementById('input-login-pin').addEventListener('keypress', function(e) { if (e.key === 'Enter') verifyAdminPin(); });
-
     function formatSinpeSpacing(num) { if(num.length === 8) return num.substring(0,4) + "-" + num.substring(4); return num; }
 
     function processAdminClick() {
@@ -851,6 +840,7 @@
         document.getElementById('payModal').style.display = "flex"; 
     }
 
+    // 🚀 FUNCIÓN DE WHATSAPP ACTUALIZADA CON ENLACE DE ENTRADA DIRECTA PARA MAPAS/WAZE
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim();
         if (userName === "") { customAlert("Por favor escribe tu nombre para procesar el pedido.", "<i class='fas fa-user-edit' style='color:#ff9900;'></i> Falta Tu Nombre"); return; }
@@ -869,8 +859,10 @@
             if (changeNeeded > 0) { msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`; }
             else { msg += `%0A*Paga con:* Monto Exacto (No requiere vuelto)`; }
         }
+        
         if (deliveryMode === "ENVÍO EXPRESS") {
-            if (gpsCoords !== "") msg += `%0A📍 *Coordenadas GPS:* ${gpsCoords}`;
+            // Se inyecta la URL de enrutamiento inteligente que WhatsApp resalta en azul
+            if (gpsCoords !== "") msg += `%0A📍 *Ruta de Entrega:* https://maps.google.com/?q=${gpsCoords}`;
             let manualDir = document.getElementById('delivery-address').value.trim(); if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
             msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
         }
