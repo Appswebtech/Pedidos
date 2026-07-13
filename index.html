@@ -6,11 +6,9 @@
     <title>Web Pedidos | Cloud Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE (COMPAT MODE) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    <!-- LIBRERÍA DE SEGURIDAD CRIPTOGRÁFICA -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
@@ -112,19 +110,27 @@
         /* VERSIÓN AL FINAL ABSOLUTO */
         .version-tag { color: #555; font-weight: bold; margin: 40px auto 10px; font-size: 0.8rem; text-align: center; letter-spacing: 1px; }
         
-        /* ESTILOS PANEL ADMINISTRATIVO */
+        /* GESTIÓN DE CONTROL Y CRUD DE MENÚS */
         #adminModal .modal-box { max-width: 440px; text-align: left; background: #141414; color: white; border: 2px solid #0026ff; max-height: 80vh; overflow-y: auto; padding: 20px; }
         .admin-section-title { font-size: 1rem; color: #0026ff; border-bottom: 1px solid #333; padding-bottom: 5px; margin: 15px 0 10px 0; font-weight: bold; }
         .admin-field { margin-bottom: 12px; }
         .admin-field label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px; font-weight: bold; }
-        .admin-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 0.9rem; }
+        .admin-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 0.9rem; margin-bottom: 4px; }
         .admin-input:focus { border-color: #0026ff; }
         
-        /* CALENDARIO SEMANAL CONFIG */
         .schedule-config-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; background: rgba(255,255,255,0.02); padding: 6px; border-radius: 6px; border: 1px solid #222; }
         .schedule-day-label { width: 75px; font-size: 0.85rem; font-weight: bold; color: #fff; }
         .schedule-select { background: #333; border: 1px solid #555; color: white; padding: 6px; border-radius: 4px; font-size: 0.8rem; outline: none; }
         .schedule-time-input { width: 85px; background: #222; border: 1px solid #444; color: white; padding: 6px; border-radius: 4px; font-size: 0.85rem; text-align: center; outline: none; }
+
+        /* BLOQUES EXCLUSIVOS DE DISEÑO CMS MENÚ */
+        .admin-cat-block { background: #1c1c1c; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+        .admin-prod-card { background: #262626; border: 1px solid #444; border-radius: 6px; padding: 10px; margin-top: 8px; position: relative; }
+        .btn-admin-delete { background: #ea4335; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; height: 38px; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-admin-delete:hover { background: #ff5c4d; }
+        
+        /* BOTÓN DE ACORDEÓN COMPACTO EN EL PANEL */
+        .btn-admin-toggle-cat { background: transparent; border: none; color: #0026ff; font-size: 1.1rem; cursor: pointer; padding: 0 8px; height: 38px; display: inline-flex; align-items: center; justify-content: center; }
 
         .admin-actions { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 0; background: #141414; padding-top: 10px; }
     </style>
@@ -132,7 +138,6 @@
 <body oncontextmenu="return false;"> 
 <div class="container">
     
-    <!-- BADGE DE HORARIO NATIVO SUPERIOR IZQUIERDO -->
     <div id="schedule-badge" class="badge-horario" onclick="showScheduleDetails()">
         <span class="dot-status" style="color: #666;"></span><i class="fas fa-clock"></i> Evaluar...
     </div>
@@ -164,40 +169,10 @@
         </div>
     </div>
 
-    <!-- Secciones del menú -->
-    <button class="category-btn" onclick="toggle('c1')">🍗 Pollo Frito <span>▼</span></button>
-    <div id="c1" class="category-content">
-        <div class="menu-item">
-            <div class="item-main">
-                <img src="https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?q=80&w=200&auto=format&fit=crop" class="item-img" onclick="zoomImg(this.src)" onmousedown="return false;">
-                <div class="item-info"><span class="item-title">Pieza de Pollo</span><span class="item-price">₡1,950</span></div>
-                <div class="item-controls">
-                    <button class="btn-qty" onclick="changeQty('Pieza de Pollo', -1, 1950)">-</button>
-                    <input type="number" id="qty-Pieza de Pollo" class="qty-input" value="0" onchange="manualQty('Pieza de Pollo', this.value, 1950)">
-                    <button class="btn-qty" onclick="changeQty('Pieza de Pollo', 1, 1950)">+</button>
-                </div>
-            </div>
-            <input type="text" id="note-Pieza de Pollo" class="item-note" placeholder="indicanos tu comentario">
-        </div>
+    <div id="main-dynamic-menu-container">
+        <p style="color:#aaa; font-style:italic; padding:20px;">Cargando menú en tiempo real...</p>
     </div>
 
-    <button class="category-btn" onclick="toggle('c2')">⭐ Papas Premium <span>▼</span></button>
-    <div id="c2" class="category-content">
-        <div class="menu-item">
-            <div class="item-main">
-                <img src="https://images.unsplash.com/photo-1576107232684-1279f390859f?q=80&w=200&auto=format&fit=crop" class="item-img" onclick="zoomImg(this.src)" onmousedown="return false;">
-                <div class="item-info"><span class="item-title">Papas con Cheddar</span><span class="item-price">₡1,500</span></div>
-                <div class="item-controls">
-                    <button class="btn-qty" onclick="changeQty('Papas con Cheddar', -1, 1500)">-</button>
-                    <input type="number" id="qty-Papas con Cheddar" class="qty-input" value="0" onchange="manualQty('Papas con Cheddar', this.value, 1500)">
-                    <button class="btn-qty" onclick="changeQty('Papas con Cheddar', 1, 1500)">+</button>
-                </div>
-            </div>
-            <input type="text" id="note-Papas con Cheddar" class="item-note" placeholder="indicanos tu comentario">
-        </div>
-    </div>
-
-    <!-- SECCIÓN INFORMATIVA Y REDES SOCIALES -->
     <div class="business-info-section">
         <p id="display-description" class="business-desc"></p>
         <div id="display-maps-container" class="maps-btn-container">
@@ -214,10 +189,8 @@
         </div>
     </div>
 
-    <!-- VERSIÓN AL FINAL ABSOLUTO DE LA PÁGINA -->
-    <p class="version-tag">Versión 9.14 (UI Contrast & Visibility Edition)</p>
+    <p class="version-tag">Versión 9.16 (Compact CMS & Clean Cloud Edition)</p>
 
-    <!-- Footer Fixed -->
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
         <div class="footer-btns">
@@ -230,7 +203,6 @@
     </div>
 </div>
 
-<!-- Modales -->
 <div id="zoomModal" class="modal-overlay" onclick="this.style.display='none'"><img id="imgZoomed" src=""></div>
 <div id="ticketModal" class="modal-overlay" onclick="closeModals()">
     <div class="ticket-style" onclick="event.stopPropagation()">
@@ -290,7 +262,6 @@
     </div>
 </div>
 
-<!-- MODAL DE NOTIFICACIÓN CUSTOMIZADO -->
 <div id="customAlertModal" class="modal-overlay" onclick="closeCustomAlert()" style="z-index: 9999;">
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #0026ff; max-width: 320px; text-align: center; padding: 25px; border-radius: 12px;">
         <h3 id="customAlertTitle" style="margin-top:0; color: #0026ff; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -301,11 +272,23 @@
     </div>
 </div>
 
-<!-- MODAL PANEL DE CONTROL -->
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.14)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v9.16)</h3>
         
+        <div class="admin-section-title"><i class="fas fa-utensils"></i> Menú del Establecimiento</div>
+        <button class="pay-option-btn" onclick="toggleAdminMenuSection()" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
+            <i class="fas fa-bars"></i> Gestionar Categorías y Productos
+        </button>
+        
+        <div id="admin-menu-management-block" style="display:none; background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; border:1px solid #333; margin-bottom:15px;">
+            <button class="btn-pickup" style="background:#0026ff; border:none; width:100%; margin-bottom:12px; padding:10px;" onclick="addAdminCategory()">
+                <i class="fas fa-plus"></i> Agregar Categoría
+            </button>
+            <div id="admin-categories-list">
+                </div>
+        </div>
+
         <div class="admin-section-title">Seguridad Criptográfica</div>
         <div class="admin-field">
             <label>Cambiar PIN de Acceso Administrador</label>
@@ -315,9 +298,7 @@
         <div class="admin-section-title">Calendario Semanal Comercial (AM / PM)</div>
         <div style="margin-bottom:15px; font-size:0.8rem; color:#aaa;">Indica las horas usando el formato AM o PM. Ejemplo: <b>11:30 AM</b> o <b>10:00 PM</b>.</div>
         
-        <div id="admin-schedule-container">
-            <!-- Inyección síncrona por JS -->
-        </div>
+        <div id="admin-schedule-container"></div>
 
         <div class="admin-section-title">Identidad del Negocio</div>
         <div class="admin-field"><label>Nombre del Local</label><input type="text" id="input-page-title" class="admin-input"></div>
@@ -371,7 +352,10 @@
 
     const daysOrder = ['lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do'];
     const daysNames = { lu: "Lunes", ma: "Martes", mi: "Miércoles", ju: "Jueves", vi: "Viernes", sa: "Sábado", do: "Domingo" };
+    
     window.currentScheduleData = {};
+    window.localMenuArray = []; 
+    window.adminExpandedCats = {}; // Guarda los estados abiertos/cerrados de cada categoría del panel
 
     function customAlert(message, title = "Aviso del Sistema") {
         document.getElementById('customAlertTitle').innerHTML = title;
@@ -384,11 +368,7 @@
         if (!timeStr) return 0;
         let match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
         if (!match) return 0;
-        
-        let hours = parseInt(match[1]);
-        let minutes = parseInt(match[2]);
-        let ampm = match[3];
-        
+        let hours = parseInt(match[1]); let minutes = parseInt(match[2]); let ampm = match[3];
         if (ampm) {
             ampm = ampm.toUpperCase();
             if (ampm === "PM" && hours < 12) hours += 12;
@@ -430,7 +410,6 @@
                     window.currentScheduleData[day + '_status'] = data[day + '_status'] || "abierto";
                     window.currentScheduleData[day + '_open'] = data[day + '_open'] || "11:00 AM";
                     window.currentScheduleData[day + '_close'] = data[day + '_close'] || "11:00 PM";
-
                     document.getElementById(`input-${day}-status`).value = window.currentScheduleData[day + '_status'];
                     document.getElementById(`input-${day}-open`).value = window.currentScheduleData[day + '_open'];
                     document.getElementById(`input-${day}-close`).value = window.currentScheduleData[day + '_close'];
@@ -438,6 +417,23 @@
                 });
 
                 ejecutarEvaluadorCalendarioCR();
+
+                if (data.menu && data.menu.length > 0) {
+                    window.localMenuArray = data.menu;
+                } else {
+                    window.localMenuArray = [
+                        {
+                            name: "🍗 Pollo Frito",
+                            products: [{ name: "Pieza de Pollo", price: 1950, desc: "indicanos tu comentario", img: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?q=80&w=200&auto=format&fit=crop" }]
+                        },
+                        {
+                            name: "⭐ Papas Premium",
+                            products: [{ name: "Papas con Cheddar", price: 1500, desc: "indicanos tu comentario", img: "https://images.unsplash.com/photo-1576107232684-1279f390859f?q=80&w=200&auto=format&fit=crop" }]
+                        }
+                    ];
+                }
+
+                renderUserDynamicMenu();
 
                 document.getElementById('main-title').innerText = currentGlobalTitle;
                 document.getElementById('ticket-title').innerText = currentGlobalTitle;
@@ -494,41 +490,185 @@
         document.getElementById(`row-times-${day}`).style.display = (status === 'cerrado') ? 'none' : 'inline-flex';
     }
 
+    function renderUserDynamicMenu() {
+        let container = document.getElementById('main-dynamic-menu-container');
+        let html = "";
+        window.localMenuArray.forEach((cat, catIdx) => {
+            html += `
+                <button class="category-btn" onclick="toggle('dyn-cat-${catIdx}')">${cat.name} <span>▼</span></button>
+                <div id="dyn-cat-${catIdx}" class="category-content">
+            `;
+            (cat.products || []).forEach(prod => {
+                let safeQty = cart[prod.name] ? cart[prod.name].qty : 0;
+                html += `
+                    <div class="menu-item">
+                        <div class="item-main">
+                            <img src="${prod.img || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=200&auto=format&fit=crop'}" class="item-img" onclick="zoomImg(this.src)" onmousedown="return false;">
+                            <div class="item-info">
+                                <span class="item-title">${prod.name}</span>
+                                <span class="item-price">₡${prod.price.toLocaleString('en-US')}</span>
+                            </div>
+                            <div class="item-controls">
+                                <button class="btn-qty" onclick="changeQty('${prod.name}', -1, ${prod.price})">-</button>
+                                <input type="number" id="qty-${prod.name}" class="qty-input" value="${safeQty}" onchange="manualQty('${prod.name}', this.value, ${prod.price})">
+                                <button class="btn-qty" onclick="changeQty('${prod.name}', 1, ${prod.price})">+</button>
+                            </div>
+                        </div>
+                        <input type="text" id="note-${prod.name}" class="item-note" placeholder="${prod.desc || 'indicanos tu comentario'}">
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        });
+        container.innerHTML = html || `<p style="color:#aaa; font-style:italic; padding:20px;">No hay productos cargados en el menú.</p>`;
+    }
+
+    function toggleAdminMenuSection() {
+        let block = document.getElementById('admin-menu-management-block');
+        if(block.style.display === "none") {
+            block.style.display = "block";
+            renderAdminMenuUI();
+        } else { block.style.display = "none"; }
+    }
+
+    // 🌟 INTERFAZ CMS ADMINISTRATIVA CON ACORDEÓN COMPACTO
+    function renderAdminMenuUI() {
+        let container = document.getElementById('admin-categories-list');
+        let html = "";
+
+        window.localMenuArray.forEach((cat, catIdx) => {
+            let isExpanded = window.adminExpandedCats[catIdx] || false;
+            let arrow = isExpanded ? "▲" : "▼";
+            let displayStyle = isExpanded ? "block" : "none";
+
+            html += `
+                <div class="admin-cat-block">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button class="btn-admin-toggle-cat" onclick="toggleAdminCat(${catIdx})" title="Desplegar/Encoger">${arrow}</button>
+                        <input type="text" class="admin-input" value="${cat.name}" onchange="updateLocalCatName(${catIdx}, this.value)" placeholder="Nombre de Categoría..." style="flex:1; margin-bottom:0;">
+                        <button class="btn-admin-delete" onclick="deleteLocalCategory(${catIdx})" title="Eliminar Categoría"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                    
+                    <div id="admin-cat-content-${catIdx}" style="display:${displayStyle}; margin-left:10px; border-left: 2px solid #0026ff; padding-left:8px; margin-top:10px;">
+                        <button class="btn-loc" style="background:#25D366; font-size:0.75rem; padding:6px; border:none; width:100%; margin-bottom:10px;" onclick="addLocalProduct(${catIdx})">
+                            <i class="fas fa-plus-circle"></i> Añadir Producto
+                        </button>
+            `;
+
+            (cat.products || []).forEach((prod, prodIdx) => {
+                html += `
+                    <div class="admin-prod-card">
+                        <div class="admin-field" style="margin-bottom:6px;">
+                            <label>Nombre del Producto</label>
+                            <input type="text" class="admin-input" value="${prod.name}" onchange="updateLocalProdField(${catIdx}, ${prodIdx}, 'name', this.value)" style="padding:6px; font-size:0.8rem;">
+                        </div>
+                        <div class="admin-field" style="margin-bottom:6px;">
+                            <label>Precio (₡)</label>
+                            <input type="number" class="admin-input" value="${prod.price}" onchange="updateLocalProdField(${catIdx}, ${prodIdx}, 'price', this.value)" style="padding:6px; font-size:0.8rem;">
+                        </div>
+                        <div class="admin-field" style="margin-bottom:6px;">
+                            <label>Comentario sugerido (Fondo)</label>
+                            <input type="text" class="admin-input" value="${prod.desc || ''}" onchange="updateLocalProdField(${catIdx}, ${prodIdx}, 'desc', this.value)" placeholder="indicanos tu comentario" style="padding:6px; font-size:0.8rem;">
+                        </div>
+                        
+                        <div class="admin-field" style="margin-bottom:10px;">
+                            <label>Subir Foto del Producto</label>
+                            <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                                <input type="file" accept="image/*" onchange="convertAndSaveImage(this, ${catIdx}, ${prodIdx})" style="font-size:0.75rem; color:#aaa; flex:1;">
+                                ${prod.img ? `<img src="${prod.img}" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : ''}
+                            </div>
+                        </div>
+
+                        <button class="btn-admin-delete" onclick="deleteLocalProduct(${catIdx}, ${prodIdx})" style="width:100%; padding:4px; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:5px; height:28px;">
+                            <i class="fas fa-minus-circle"></i> Eliminar Producto
+                        </button>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // CONTROLADORES DE APERTURA DEL ACORDEÓN CMS
+    function toggleAdminCat(catIdx) {
+        window.adminExpandedCats[catIdx] = !window.adminExpandedCats[catIdx];
+        renderAdminMenuUI();
+    }
+
+    function addAdminCategory() {
+        window.localMenuArray.unshift({ name: "Nueva Categoría", products: [] });
+        // Desplazar estados de apertura hacia adelante
+        let newExpanded = { 0: true };
+        for(let key in window.adminExpandedCats) {
+            newExpanded[parseInt(key) + 1] = window.adminExpandedCats[key];
+        }
+        window.adminExpandedCats = newExpanded;
+        renderAdminMenuUI();
+    }
+
+    function deleteLocalCategory(catIdx) {
+        window.localMenuArray.splice(catIdx, 1);
+        let newExpanded = {};
+        for(let key in window.adminExpandedCats) {
+            let idx = parseInt(key);
+            if(idx < catIdx) newExpanded[idx] = window.adminExpandedCats[key];
+            if(idx > catIdx) newExpanded[idx - 1] = window.adminExpandedCats[key];
+        }
+        window.adminExpandedCats = newExpanded;
+        renderAdminMenuUI();
+    }
+
+    function addLocalProduct(catIdx) {
+        if(!window.localMenuArray[catIdx].products) window.localMenuArray[catIdx].products = [];
+        window.localMenuArray[catIdx].products.push({ name: "Nuevo Producto", price: 0, desc: "indicanos tu comentario", img: "" });
+        renderAdminMenuUI();
+    }
+
+    function deleteLocalProduct(catIdx, prodIdx) {
+        window.localMenuArray[catIdx].products.splice(prodIdx, 1);
+        renderAdminMenuUI();
+    }
+
+    function updateLocalCatName(catIdx, val) { window.localMenuArray[catIdx].name = val; }
+    function updateLocalProdField(catIdx, prodIdx, field, val) {
+        if(field === 'price') val = parseFloat(val) || 0;
+        window.localMenuArray[catIdx].products[prodIdx][field] = val;
+    }
+
+    // ❌ CORREGIDO: SE QUITÓ LA CONVERSIÓN BINARIA BASE64 PARA EVITAR SATURAR LA MEMORIA
+    function convertAndSaveImage(input, catIdx, prodIdx) {
+        let file = input.files[0];
+        if(!file) return;
+        
+        // Mantiene la referencia del archivo en logs listo para conectarse con Fire Storage posteriormente
+        console.log("Archivo interceptado de forma segura:", file.name, "— Tamaño:", file.size, "bytes.");
+    }
+
     function ejecutarEvaluadorCalendarioCR() {
         try {
             let crLocaleString = new Date().toLocaleString("en-US", { timeZone: "America/Costa_Rica" });
-            let crDate = new Date(crLocaleString);
-            let currentDayIndex = crDate.getDay(); 
-            
-            const mapperKeys = ['do', 'lu', 'ma', 'mi', 'ju', 'vi', 'sa'];
-            let todayKey = mapperKeys[currentDayIndex];
-
-            let statusHoy = window.currentScheduleData[todayKey + '_status'] || "abierto";
-            let badge = document.getElementById('schedule-badge');
+            let crDate = new Date(crLocaleString); let currentDayIndex = crDate.getDay(); 
+            const mapperKeys = ['do', 'lu', 'ma', 'mi', 'ju', 'vi', 'sa']; let todayKey = mapperKeys[currentDayIndex];
+            let statusHoy = window.currentScheduleData[todayKey + '_status'] || "abierto"; let badge = document.getElementById('schedule-badge');
 
             if (statusHoy === "cerrado") {
                 badge.innerHTML = `<span class="dot-status" style="color: #ea4335; background: #ea4335;"></span> Cerrado`;
-                badge.style.borderColor = "#ea4335"; badge.style.color = "#ea4335";
-                return;
+                badge.style.borderColor = "#ea4335"; badge.style.color = "#ea4335"; return;
             }
 
             let optionsTime = { timeZone: "America/Costa_Rica", hour: "2-digit", minute: "2-digit", hour12: false };
             let crTimeFormatter = new Intl.DateTimeFormat("en-US", optionsTime);
             let [crHour, crMin] = crTimeFormatter.format(new Date()).split(':').map(Number);
-
             let openStr = window.currentScheduleData[todayKey + '_open'] || "11:00 AM";
             let closeStr = window.currentScheduleData[todayKey + '_close'] || "11:00 PM";
-
-            let currentMins = (crHour * 60) + crMin;
-            let openMins = convertTimeToMinutes(openStr);
-            let closeMins = convertTimeToMinutes(closeStr);
+            let currentMins = (crHour * 60) + crMin; let openMins = convertTimeToMinutes(openStr); let closeMins = convertTimeToMinutes(closeStr);
             
             let isOpen = false;
-            if (closeMins > openMins) {
-                isOpen = (currentMins >= openMins && currentMins < closeMins);
-            } else {
-                isOpen = (currentMins >= openMins || currentMins < closeMins);
-            }
+            if (closeMins > openMins) { isOpen = (currentMins >= openMins && currentMins < closeMins); }
+            else { isOpen = (currentMins >= openMins || currentMins < closeMins); }
             
             if (isOpen) {
                 badge.innerHTML = `<span class="dot-status" style="color: #25D366; background: #25D366;"></span> Abierto`;
@@ -537,19 +677,16 @@
                 badge.innerHTML = `<span class="dot-status" style="color: #ea4335; background: #ea4335;"></span> Cerrado`;
                 badge.style.borderColor = "#ea4335"; badge.style.color = "#ea4335";
             }
-        } catch (e) { console.error("Error al calcular el calendario: ", e); }
+        } catch (e) { console.error(e); }
     }
 
-    // 🛠️ FUNCIÓN CORREGIDA: LETRAS BLANCAS CON ALTO CONTRASTE PARA EL MODAL OSCURO
     function showScheduleDetails() {
         let htmlList = `<div style="text-align:left; font-size:0.95rem; line-height:1.6; color:#ffffff; padding:5px 0;">`;
         daysOrder.forEach(key => {
             let status = window.currentScheduleData[key + '_status'] || "abierto";
             let open = window.currentScheduleData[key + '_open'] || "11:00 AM";
             let close = window.currentScheduleData[key + '_close'] || "11:00 PM";
-            
             let printText = (status === 'cerrado') ? `<span style="color:#ff4d4d; font-weight:bold;">Cerrado todo el día</span>` : `De ${open} a ${close}`;
-            
             htmlList += `
                 <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #333; padding:8px 0;">
                     <span style="color:#ffffff;"><b>${daysNames[key]}:</b></span>
@@ -562,35 +699,27 @@
     }
 
     function toggleSocialRow(linkId, textId, urlValue, nameValue, defaultText) {
-        let btn = document.getElementById(linkId);
-        let span = document.getElementById(textId);
+        let btn = document.getElementById(linkId); let span = document.getElementById(textId);
         if(urlValue && urlValue.trim() !== "") {
-            btn.href = urlValue;
-            span.innerText = (nameValue && nameValue.trim() !== "") ? nameValue : defaultText;
-            btn.style.display = "flex";
+            btn.href = urlValue; span.innerText = (nameValue && nameValue.trim() !== "") ? nameValue : defaultText; btn.style.display = "flex";
         } else { btn.style.display = "none"; }
     }
 
-    function formatSinpeSpacing(num) {
-        if(num.length === 8) return num.substring(0,4) + "-" + num.substring(4);
-        return num;
-    }
+    document.getElementById('input-login-pin').addEventListener('keypress', function(e) { if (e.key === 'Enter') verifyAdminPin(); });
+
+    function formatSinpeSpacing(num) { if(num.length === 8) return num.substring(0,4) + "-" + num.substring(4); return num; }
 
     function processAdminClick() {
-        adminClicks++;
-        clearTimeout(adminTimeout);
+        adminClicks++; clearTimeout(adminTimeout);
         if (adminClicks >= 7) {
-            adminClicks = 0;
-            document.getElementById('input-login-pin').value = "";
-            document.getElementById('loginModal').style.display = "flex";
-            document.getElementById('input-login-pin').focus();
+            adminClicks = 0; document.getElementById('input-login-pin').value = "";
+            document.getElementById('loginModal').style.display = "flex"; document.getElementById('input-login-pin').focus();
         } else { adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500); }
     }
 
     function verifyAdminPin() {
         let enteredPin = document.getElementById('input-login-pin').value.trim();
         let hashedEntered = CryptoJS.SHA256(enteredPin).toString();
-        
         if (enteredPin === currentGlobalPin || hashedEntered === currentGlobalPin) {
             document.getElementById('loginModal').style.display = "none";
             document.getElementById('adminModal').style.display = "flex";
@@ -604,11 +733,11 @@
     function applyAdminChanges() {
         let newPinInput = document.getElementById('input-admin-pin').value.trim();
         let pinToSave = currentGlobalPin;
-        
         if (newPinInput !== "") { pinToSave = CryptoJS.SHA256(newPinInput).toString(); }
 
         let updateConfigObject = {
             admin_pin: pinToSave,
+            menu: window.localMenuArray, 
             bg_url: document.getElementById('input-bg-url').value.trim(),
             page_title: document.getElementById('input-page-title').value.trim(),
             whatsapp: document.getElementById('input-whatsapp').value.trim(),
@@ -633,12 +762,10 @@
 
         db.collection("configuraciones").doc("cooking-pollos").set(updateConfigObject)
         .then(() => {
-            customAlert("¡Calendario semanal en AM/PM sincronizado correctamente!", "<i class='fas fa-calendar-check' style='color:#25D366;'></i> Éxito Cloud");
+            customAlert("Menú y configuraciones sincronizadas de forma limpia.", "<i class='fas fa-cloud-upload-alt' style='color:#25D366;'></i> Nube Actualizada");
             closeModals();
         })
-        .catch((error) => {
-            customAlert("Hubo un error al sincronizar con la nube.", "<i class='fas fa-times-circle' style='color:#ea4335;'></i> Error");
-        });
+        .catch((error) => { customAlert("Hubo un error al guardar.", "<i class='fas fa-times-circle' style='color:#ea4335;'></i> Error"); });
     }
 
     function setExpress() {
@@ -646,21 +773,15 @@
         document.getElementById('btn-location').classList.add('active');
         document.getElementById('btn-pickup').classList.remove('active');
         document.getElementById('address-block').style.display = "block";
-
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     gpsCoords = `${position.coords.latitude},${position.coords.longitude}`;
                     customAlert("Tus coordenadas han sido guardadas con éxito.", "<i class='fas fa-check-circle' style='color:#25D366;'></i> GPS Exitoso");
                 },
-                (error) => { 
-                    gpsCoords = ""; 
-                    customAlert("Por favor, activa tu ubicación para calcular tus coordenadas GPS.", "<i class='fas fa-map-marker-alt' style='color:#ea4335;'></i> GPS Requerido"); 
-                }
+                (error) => { gpsCoords = ""; customAlert("Por favor, activa tu ubicación para calcular tus coordenadas GPS.", "<i class='fas fa-map-marker-alt' style='color:#ea4335;'></i> GPS Requerido"); }
             );
-        } else {
-            gpsCoords = ""; customAlert("Tu dispositivo no soporta geolocalización.", "<i class='fas fa-exclamation-triangle' style='color:#ff9900;'></i> Error");
-        }
+        } else { gpsCoords = ""; customAlert("Tu dispositivo no soporta geolocalización.", "<i class='fas fa-exclamation-triangle' style='color:#ff9900;'></i> Error"); }
     }
 
     function setPickup() {
@@ -682,8 +803,7 @@
     function processCustomCashPayment() {
         let moneyGiven = parseFloat(document.getElementById('input-cash-amount').value) || 0;
         if (moneyGiven < total) { 
-            customAlert(`El dinero ingresado debe cubrir al menos el total de la orden (₡${total.toLocaleString()})`, "<i class='fas fa-coins' style='color:#ff9900;'></i> Vuelto Exacto"); 
-            return; 
+            customAlert(`El dinero ingresado debe cubrir al menos el total de la orden (₡${total.toLocaleString()})`, "<i class='fas fa-coins' style='color:#ff9900;'></i> Vuelto Exacto"); return; 
         }
         cashPaidAmount = moneyGiven; changeNeeded = cashPaidAmount - total;
         sendWhatsApp('EFECTIVO (Requiere Vuelto)');
@@ -694,33 +814,31 @@
     
     function changeQty(name, val, price) {
         if (!cart[name]) cart[name] = { qty: 0, price: price };
-        let newQty = cart[name].qty + val;
-        if (newQty < 0) newQty = 0; manualQty(name, newQty, price);
+        let newQty = cart[name].qty + val; if (newQty < 0) newQty = 0; manualQty(name, newQty, price);
     }
 
     function manualQty(name, value, price) {
         if (!cart[name]) cart[name] = { qty: 0, price: price };
-        let newQty = parseInt(value) || 0;
-        if (newQty < 0) newQty = 0;
-        total += (newQty - cart[name].qty) * price;
-        cart[name].qty = newQty;
-        document.getElementById('qty-' + name).value = cart[name].qty;
+        let newQty = parseInt(value) || 0; if (newQty < 0) newQty = 0;
+        total += (newQty - cart[name].qty) * price; cart[name].qty = newQty;
+        let el = document.getElementById('qty-' + name); if(el) el.value = cart[name].qty;
         document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
     }
 
-    // Cierra modales normales, exceptuando la alerta del sistema
     function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => { if(m.id !== 'customAlertModal') m.style.display = "none"; }); }
     function zoomImg(src) { document.getElementById('imgZoomed').src = src; document.getElementById('zoomModal').style.display = "flex"; }
 
     function showTicket() {
         let listHtml = ""; let hasItems = false;
-        for (let item in cart) {
-            if (cart[item].qty > 0) {
-                let note = document.getElementById('note-' + item).value;
-                listHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span>${cart[item].qty}x ${item}</span><span>₡${(cart[item].qty * cart[item].price).toLocaleString()}</span></div>${note ? `<small style="color:#666; font-style:italic;">"${note}"</small>` : ""}</div>`;
-                hasItems = true;
-            }
-        }
+        window.localMenuArray.forEach(cat => {
+            (cat.products || []).forEach(prod => {
+                if (cart[prod.name] && cart[prod.name].qty > 0) {
+                    let noteInput = document.getElementById('note-' + prod.name); let note = noteInput ? noteInput.value.trim() : "";
+                    listHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span>${cart[prod.name].qty}x ${prod.name}</span><span>₡${(cart[prod.name].qty * prod.price).toLocaleString()}</span></div>${note ? `<small style="color:#666; font-style:italic;">"${note}"</small>` : ""}</div>`;
+                    hasItems = true;
+                }
+            });
+        });
         if (!hasItems) { customAlert("Por favor agrega productos al carrito primero.", "<i class='fas fa-shopping-cart' style='color:#ff9900;'></i> Carrito Vacío"); return; }
         document.getElementById('ticket-list').innerHTML = listHtml;
         document.getElementById('t-total').innerText = total.toLocaleString('en-US');
@@ -733,36 +851,32 @@
         document.getElementById('payModal').style.display = "flex"; 
     }
 
-    document.getElementById('input-login-pin').addEventListener('keypress', function(e) { if (e.key === 'Enter') verifyAdminPin(); });
-
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim();
         if (userName === "") { customAlert("Por favor escribe tu nombre para procesar el pedido.", "<i class='fas fa-user-edit' style='color:#ff9900;'></i> Falta Tu Nombre"); return; }
 
         let msg = `¡Hola, mi pedido para *${currentGlobalTitle}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
-        for (let item in cart) {
-            if (cart[item].qty > 0) {
-                let note = document.getElementById('note-' + item).value;
-                msg += `• ${cart[item].qty}x ${item}${note ? ' ('+note+')' : ''}%0A`;
-            }
-        }
+        window.localMenuArray.forEach(cat => {
+            (cat.products || []).forEach(prod => {
+                if (cart[prod.name] && cart[prod.name].qty > 0) {
+                    let noteInput = document.getElementById('note-' + prod.name); let note = noteInput ? noteInput.value.trim() : "";
+                    msg += `• ${cart[prod.name].qty}x ${prod.name}${note ? ' ('+note+')' : ''}%0A`;
+                }
+            });
+        });
         msg += `%0A*Subtotal Orden: ₡${total.toLocaleString()}*%0A*Método de Pago:* ${method}`;
-        
         if (method.includes('EFECTIVO')) {
-            if (changeNeeded > 0) {
-                msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`;
-            } else { msg += `%0A*Paga con:* Monto Exacto (No requiere vuelto)`; }
+            if (changeNeeded > 0) { msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`; }
+            else { msg += `%0A*Paga con:* Monto Exacto (No requiere vuelto)`; }
         }
-
         if (deliveryMode === "ENVÍO EXPRESS") {
             if (gpsCoords !== "") msg += `%0A📍 *Coordenadas GPS:* ${gpsCoords}`;
-            let manualDir = document.getElementById('delivery-address').value.trim();
-            if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
+            let manualDir = document.getElementById('delivery-address').value.trim(); if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
             msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
         }
-        closeModals();
-        window.location.href = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
+        closeModals(); window.location.href = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
     }
 </script>
 </body>
 </html>
+
