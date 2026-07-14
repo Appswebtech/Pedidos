@@ -178,7 +178,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 10.1</p>
+    <p class="version-tag">Versión 10.2</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -194,7 +194,7 @@
 
 <div id="zoomModal" class="modal-overlay" onclick="closeZoomModal()"></div>
 
-<div id="ticketModal" class="modal-overlay" onclick="closeModals()">
+<div id="ticketModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="ticket-style" onclick="event.stopPropagation()">
         <img id="ticket-logo" src="" style="display:none; max-width: 120px; max-height: 80px; object-fit: contain; margin: 0 auto 12px; border-radius:0; border:none;">
         <div class="ticket-header"><h3 id="ticket-title" style="margin: 0; font-family: sans-serif;">Cargando...</h3></div>
@@ -202,11 +202,11 @@
         <div style="border-top:1px dashed #000; margin-top:15px; padding-top:10px; font-weight:bold; display:flex; justify-content:space-between; font-size:1.1rem; color: black;">
             <span>TOTAL:</span><span>₡<span id="t-total">0</span></span>
         </div>
-        <button style="margin-top:20px; width:100%; padding:12px; background:#0026ff; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="closeModals()">CERRAR</button>
+        <button style="margin-top:20px; width:100%; padding:12px; background:#0026ff; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">CERRAR</button>
     </div>
 </div>
 
-<div id="payModal" class="modal-overlay" onclick="closeModals()">
+<div id="payModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3 style="margin-top:0;">💳 Método de Pago</h3>
         <button class="pay-option-btn" onclick="showSinpe()"><i class="fas fa-mobile-alt" style="color:#0026ff"></i> SINPE MÓVIL</button>
@@ -214,7 +214,7 @@
     </div>
 </div>
 
-<div id="sinpeModal" class="modal-overlay" onclick="closeModals()">
+<div id="sinpeModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3>📲 Datos SINPE</h3>
         <div style="background:#f0f4ff; border:2px solid #0026ff; padding:15px; border-radius:8px;">
@@ -225,7 +225,7 @@
     </div>
 </div>
 
-<div id="cashModal" class="modal-overlay" onclick="closeModals()">
+<div id="cashModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3 style="margin-top:0; color:#25D366;"><i class="fas fa-money-bill-wave"></i> Pago en Efectivo</h3>
         <p style="font-size:0.85rem; color:#444; margin-bottom:15px;">Selecciona cómo vas a cancelar tu orden en la entrega:</p>
@@ -243,7 +243,7 @@
     </div>
 </div>
 
-<div id="finalDataModal" class="modal-overlay" onclick="closeModals()">
+<div id="finalDataModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="modal-box" onclick="event.stopPropagation()" style="text-align: left; max-width: 350px; background: white; color: black;">
         <h3 style="margin-top:0; color:#0026ff; text-align:center;"><i class="fas fa-user-edit"></i> Datos de Entrega</h3>
         <p style="font-size:0.85rem; color:#555; margin-bottom:15px; text-align:center;">Para finalizar tu pedido, por favor rellena estos datos obligatorios:</p>
@@ -272,14 +272,14 @@
     </div>
 </div>
 
-<div id="loginModal" class="modal-overlay" onclick="closeModals()">
+<div id="loginModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #0026ff; max-width: 320px;">
         <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-lock"></i> Acceso Admin</h3>
         <p style="font-size:0.85rem; color:#aaa; margin-bottom:15px; text-align:center;">Ingresa el PIN de seguridad para abrir el panel.</p>
         <input type="password" id="input-login-pin" class="name-input" placeholder="••••" inputmode="numeric" pattern="[0-9]*" style="text-align: center; font-size: 1.6rem; letter-spacing: 6px; background: #222; border-color: #444; color: white; padding: 10px 0;">
         <div class="admin-actions" style="margin-top: 20px;">
             <button class="btn-admin-save" onclick="verifyAdminPin()">Entrar</button>
-            <button class="btn-admin-close" onclick="closeModals()">Cancelar</button>
+            <button class="btn-admin-close" onclick="closeModalTop()">Cancelar</button>
         </div>
     </div>
 </div>
@@ -296,7 +296,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v10.1)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v10.2)</h3>
         
         <div class="admin-section-title"><i class="fas fa-utensils"></i> Menú del Establecimiento</div>
         <button class="pay-option-btn" onclick="toggleAdminMenuSection()" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
@@ -383,7 +383,7 @@
     let cart = {}; let total = 0; let deliveryMode = ""; let isSelected = false;
     let adminClicks = 0; let adminTimeout;
     let gpsCoords = ""; let cashPaidAmount = 0; let changeNeeded = 0;
-    let currentPaymentMethod = ""; // VARIABLE DE TRÁNSITO PARA MÉTODOS DE PAGO
+    let currentPaymentMethod = ""; 
     
     let currentGlobalWhatsApp = "85135269";
     let currentGlobalTitle = "Web Pedidos";
@@ -396,28 +396,126 @@
     window.localMenuArray = []; 
     window.adminExpandedCats = {}; 
 
+    // PILA DE HISTORIAL EXCLUSIVO DE VENTANAS ABIERTAS
+    let modalStack = [];
+    let programmaticBackCount = 0;
+
     // CONTROL INTELIGENTE DE FONDO INMÓVIL TOTALMENTE BLINDADO
     function checkModalLock() {
-        let openModals = false;
-        document.querySelectorAll('.modal-overlay').forEach(m => {
-            if (m.style.display === "flex") openModals = true;
-        });
-        if (openModals) {
+        if (modalStack.length > 0) {
             document.body.classList.add('modal-lock');
         } else {
             document.body.classList.remove('modal-lock');
         }
     }
 
+    // ABRIR VENTANA GUARDANDO HISTORIAL EN EL NAVEGADOR
+    function openModal(id) {
+        if (modalStack.length > 0) {
+            let topId = modalStack[modalStack.length - 1];
+            document.getElementById(topId).style.display = "none";
+        }
+        
+        modalStack.push(id);
+        document.getElementById(id).style.display = "flex";
+        checkModalLock();
+        
+        // Push del estado para que funcione el botón atrás
+        history.pushState({ depth: modalStack.length }, "");
+    }
+
+    // PROGRAMAR EL CIERRE DE LA ÚLTIMA VENTANA DEL HISTORIAL
+    function closeModalTop() {
+        if (modalStack.length > 0) {
+            let closedId = modalStack.pop();
+            document.getElementById(closedId).style.display = "none";
+            
+            if (modalStack.length > 0) {
+                let prevId = modalStack[modalStack.length - 1];
+                document.getElementById(prevId).style.display = "flex";
+            }
+            checkModalLock();
+            
+            // Avisar al popstate que este back fue programado por código
+            programmaticBackCount++;
+            history.back();
+        }
+    }
+
+    // LIMPIAR TODAS LAS VENTANAS DE GOLPE SIN ALTERAR EL HISTORIAL DEL NAVEGADOR
+    function closeModals() {
+        let count = modalStack.length;
+        if (count > 0) {
+            modalStack.forEach(id => {
+                let m = document.getElementById(id);
+                if (m) m.style.display = "none";
+            });
+            modalStack = [];
+            checkModalLock();
+            
+            programmaticBackCount += count;
+            history.go(-count);
+        }
+    }
+
+    // DETECTOR DE BOTÓN DE RETROCESO (ATRÁS) DEL CELULAR O NAVEGADOR
+    window.addEventListener('popstate', function(event) {
+        if (programmaticBackCount > 0) {
+            programmaticBackCount--;
+            return;
+        }
+        
+        if (modalStack.length > 0) {
+            let closedId = modalStack.pop();
+            document.getElementById(closedId).style.display = "none";
+            
+            if (modalStack.length > 0) {
+                let prevId = modalStack[modalStack.length - 1];
+                document.getElementById(prevId).style.display = "flex";
+            }
+            checkModalLock();
+        }
+    });
+
+    // LIMPIEZA ABSOLUTA DE PRODUCTOS, COORDENADAS E INPUTS DE PEDIDO ENVIADO
+    function resetCartAndInputs() {
+        cart = {};
+        total = 0;
+        deliveryMode = "";
+        isSelected = false;
+        gpsCoords = "";
+        cashPaidAmount = 0;
+        changeNeeded = 0;
+        currentPaymentMethod = "";
+        
+        // Limpiar textos
+        let nameInput = document.getElementById('user-name');
+        if (nameInput) nameInput.value = "";
+        let addrInput = document.getElementById('delivery-address');
+        if (addrInput) addrInput.value = "";
+        let cashInput = document.getElementById('input-cash-amount');
+        if (cashInput) cashInput.value = "";
+        
+        // Limpiar selección botones
+        let btnLoc = document.getElementById('btn-location');
+        if (btnLoc) btnLoc.classList.remove('active');
+        let btnPickup = document.getElementById('btn-pickup');
+        if (btnPickup) btnPickup.classList.remove('active');
+        
+        let addrBlock = document.getElementById('address-block');
+        if (addrBlock) addrBlock.style.display = "none";
+        
+        renderUserDynamicMenu();
+        document.getElementById('grand-total').innerText = "0";
+    }
+
     function customAlert(message, title = "Aviso del Sistema") {
         document.getElementById('customAlertTitle').innerHTML = title;
         document.getElementById('customAlertMessage').innerHTML = message;
-        document.getElementById('customAlertModal').style.display = "flex";
-        checkModalLock();
+        openModal('customAlertModal');
     }
     function closeCustomAlert() { 
-        document.getElementById('customAlertModal').style.display = "none"; 
-        checkModalLock();
+        closeModalTop();
     }
 
     function convertTimeToMinutes(timeStr) {
@@ -498,7 +596,6 @@
                     document.getElementById('main-title').style.display = "none";
                 }
                 
-                // CARGAR LOGO PERFIL EN VIVO COMPLETO
                 if (data.profile_url && data.profile_url.trim() !== "") {
                     document.getElementById('main-profile-img').src = data.profile_url;
                     document.getElementById('main-profile-img').style.display = "block";
@@ -866,9 +963,8 @@
         adminClicks++; clearTimeout(adminTimeout);
         if (adminClicks >= 7) {
             adminClicks = 0; document.getElementById('input-login-pin').value = "";
-            document.getElementById('loginModal').style.display = "flex"; 
+            openModal('loginModal'); 
             document.getElementById('input-login-pin').focus();
-            checkModalLock();
         } else { adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500); }
     }
 
@@ -876,10 +972,9 @@
         let enteredPin = document.getElementById('input-login-pin').value.trim();
         let hashedEntered = CryptoJS.SHA256(enteredPin).toString();
         if (enteredPin === currentGlobalPin || hashedEntered === currentGlobalPin) {
-            document.getElementById('loginModal').style.display = "none";
-            document.getElementById('adminModal').style.display = "flex";
+            closeModalTop(); // Cierra el loginModal limpiamente de la pila
+            openModal('adminModal'); // Abre el adminModal
             document.getElementById('input-login-pin').value = "";
-            checkModalLock();
         } else {
             customAlert("PIN incorrecto. Acceso denegado.", "<i class='fas fa-shield-alt' style='color:#ea4335;'></i> Seguridad");
             document.getElementById('input-login-pin').value = "";
@@ -926,7 +1021,6 @@
         .catch((error) => { customAlert("Hubo un error al guardar.", "<i class='fas fa-times-circle' style='color:#ea4335;'></i> Error"); });
     }
 
-    // LAS FUNCIONES DE LOS BOTONES GUARDAN LOS DATOS DIRECTAMENTE EN EL MODAL DE CIERRE
     function setExpress() {
         deliveryMode = "ENVÍO EXPRESS"; isSelected = true;
         document.getElementById('btn-location').classList.add('active');
@@ -951,19 +1045,14 @@
     }
 
     function askCashAmount() {
-        document.getElementById('payModal').style.display = "none";
         document.getElementById('cash-exact-total').innerText = total.toLocaleString('en-US');
         document.getElementById('input-cash-amount').value = "";
-        document.getElementById('cashModal').style.display = "flex";
-        checkModalLock();
+        openModal('cashModal');
     }
 
-    // LAS FUNCIONES INTERMEDIAS GUARDAN EL MÉTODO DE PAGO Y ABREN EL MODAL DE DATOS FINALES
     function confirmPaymentAndGetDetails(method) {
         currentPaymentMethod = method;
-        closeModals();
-        document.getElementById('finalDataModal').style.display = "flex";
-        checkModalLock();
+        openModal('finalDataModal'); // Abre encima para permitir retroceder con el botón de atrás
     }
 
     function payExactCash() { 
@@ -982,9 +1071,7 @@
     }
 
     function showSinpe() { 
-        document.getElementById('payModal').style.display = "none"; 
-        document.getElementById('sinpeModal').style.display = "flex"; 
-        checkModalLock();
+        openModal('sinpeModal');
     }
     
     function toggle(id) { let el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; }
@@ -1001,11 +1088,6 @@
         let el = document.getElementById('qty-' + name); if(el) el.value = cart[name].qty;
         document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
     }
-
-    function closeModals() { 
-        document.querySelectorAll('.modal-overlay').forEach(m => { if(m.id !== 'customAlertModal') m.style.display = "none"; }); 
-        checkModalLock();
-    }
     
     function zoomImg(src, isVideo = false) { 
         let modal = document.getElementById('zoomModal');
@@ -1014,15 +1096,13 @@
         } else {
             modal.innerHTML = `<img src="${src}" style="max-width: 95%; max-height: 85%; border-radius: 10px;">`;
         }
-        modal.style.display = "flex"; 
-        checkModalLock();
+        openModal('zoomModal');
     }
 
     function closeZoomModal() {
         let modal = document.getElementById('zoomModal');
-        modal.style.display = "none";
         modal.innerHTML = "";
-        checkModalLock();
+        closeModalTop();
     }
 
     function showTicket() {
@@ -1057,18 +1137,14 @@
 
         document.getElementById('ticket-list').innerHTML = listHtml;
         document.getElementById('t-total').innerText = total.toLocaleString('en-US');
-        document.getElementById('ticketModal').style.display = "flex";
-        checkModalLock();
+        openModal('ticketModal');
     }
 
-    // ABRIR PAGO DIRECTAMENTE SIN DETENERSE POR LOS DATOS DE DIRECCIÓN (ESTO SUCEDE AL FINAL)
     function openPayModal() { 
         if (total <= 0) { customAlert("Agrega productos al carrito primero.", "<i class='fas fa-shopping-cart' style='color:#ff9900;'></i> Carrito Vacío"); return; }
-        document.getElementById('payModal').style.display = "flex"; 
-        checkModalLock();
+        openModal('payModal');
     }
 
-    // NUEVA FUNCIÓN DE VALIDACIÓN PREVIA AL ENVÍO DIRECTO A WHATSAPP
     function validateAndSendOrder() {
         let userName = document.getElementById('user-name').value.trim();
         
@@ -1112,7 +1188,12 @@
             let manualDir = document.getElementById('delivery-address').value.trim(); if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
             msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
         }
-        closeModals(); window.location.href = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
+        
+        // Cierra los cuadros y vacía de inmediato antes de que el navegador cambie de foco
+        closeModals(); 
+        let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
+        resetCartAndInputs();
+        window.location.href = waUrl;
     }
 </script>
 </body>
