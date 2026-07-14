@@ -55,16 +55,6 @@
         .nota-uso { background-color: rgba(17, 17, 17, 0.9); border: 2px dashed #0026ff; padding: 15px; margin: 20px auto; border-radius: 10px; text-align: left; }
         .nota-uso strong { color: #0026ff; display: block; margin-bottom: 5px; }
 
-        .location-box { background: rgba(26, 26, 26, 0.9); border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: left; }
-        .delivery-btns { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-        .btn-loc, .btn-pickup { flex: 1; min-width: 140px; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
-        
-        .btn-loc { background: #333; border: 1px solid #444; } 
-        .btn-pickup { background: #333; border: 1px solid #444; }
-        
-        .btn-loc.active { background: #0026ff; border: none; } 
-        .btn-pickup.active { background: #ff9900; border: none; } 
-
         .name-input { width: 100%; background: #0f0f0f; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-top: 15px; box-sizing: border-box; outline: none; font-size: 1rem; }
         .name-input:focus { border-color: #0026ff; }
 
@@ -100,6 +90,16 @@
 
         #zoomModal { background-color: rgba(0, 0, 0, 0.95); cursor: zoom-out; }
         #zoomModal img, #zoomModal video { max-width: 95%; max-height: 85%; border-radius: 10px; }
+
+        /* BOTONES DE EXPRESS Y RECOGER DENTRO DEL MODAL */
+        .delivery-btns { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-loc, .btn-pickup { flex: 1; min-width: 130px; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
+        
+        .btn-loc { background: #333; border: 1px solid #444; } 
+        .btn-pickup { background: #333; border: 1px solid #444; }
+        
+        .btn-loc.active { background: #0026ff; border: none; color: white; } 
+        .btn-pickup.active { background: #ff9900; border: none; color: white; }
 
         /* SECCIÓN INFORMATIVA DEL FOOTER */
         .business-info-section { margin-top: 40px; padding: 20px; background: rgba(20,20,20,0.85); border-radius: 15px; border: 1px solid #333; text-align: center; }
@@ -158,24 +158,6 @@
         <span>• <b>Si estás en casa:</b> Seleccioná tus productos y envianos tu pedido por WhatsApp.<br>• <b>Si estás en el local:</b> Consultá el menú aquí. Haz tu pedido en la caja por favor.</span>
     </div>
 
-    <div class="location-box">
-        <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 5px;">¿Cómo recibirás tu pedido?</p>
-        <div class="delivery-btns">
-            <button class="btn-loc" id="btn-location" onclick="setExpress()">
-                <i class="fas fa-motorcycle"></i> EXPRESS
-            </button>
-            <button class="btn-pickup" id="btn-pickup" onclick="setPickup()">
-                <i class="fas fa-store"></i> PASO A RETIRAR
-            </button>
-        </div>
-        <input type="text" id="user-name" class="name-input" placeholder="Tu nombre por favor...">
-        
-        <div id="address-block" style="display: none; margin-top: 15px;">
-            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 5px;">Dirección de Entrega / Señas:</p>
-            <input type="text" id="delivery-address" class="name-input" placeholder="Ej: Frente a Goyo, casa de portón verde..." style="margin-top:0;">
-        </div>
-    </div>
-
     <div id="main-dynamic-menu-container">
         <p style="color:#aaa; font-style:italic; padding:20px;">Cargando menú en tiempo real...</p>
     </div>
@@ -196,7 +178,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 10.0</p>
+    <p class="version-tag">Versión 10.1</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -231,6 +213,7 @@
         <button class="pay-option-btn" onclick="askCashAmount()"><i class="fas fa-money-bill-wave" style="color:#25D366"></i> EFECTIVO</button>
     </div>
 </div>
+
 <div id="sinpeModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3>📲 Datos SINPE</h3>
@@ -238,7 +221,7 @@
             <span id="display-sinpe-num" style="font-size:1.4rem; font-weight:bold; color:#0026ff;">--------</span><br>
             <span id="display-sinpe-name" style="font-size:0.85rem; font-weight:600;">Cargando titular...</span>
         </div>
-        <button class="btn-send" style="width:100%; margin-top:15px;" onclick="sendWhatsApp('SINPE')">CONFIRMAR Y ENVIAR</button>
+        <button class="btn-send" style="width:100%; margin-top:15px;" onclick="confirmPaymentAndGetDetails('SINPE')">CONFIRMAR Y PROSEGUIR</button>
     </div>
 </div>
 
@@ -255,7 +238,36 @@
         
         <input type="number" id="input-cash-amount" class="name-input" placeholder="Ej: 5000 o 10000" inputmode="numeric" style="color: black; background: #f5f5f5; border: 1px solid #ccc; text-align:center; font-size: 1.2rem; font-weight: bold;">
         <button class="btn-send" style="width:100%; margin-top:15px;" onclick="processCustomCashPayment()">
-            <i class="fas fa-calculator"></i> CALCULAR VUELTO Y ENVIAR
+            <i class="fas fa-calculator"></i> CALCULAR VUELTO Y PROSEGUIR
+        </button>
+    </div>
+</div>
+
+<div id="finalDataModal" class="modal-overlay" onclick="closeModals()">
+    <div class="modal-box" onclick="event.stopPropagation()" style="text-align: left; max-width: 350px; background: white; color: black;">
+        <h3 style="margin-top:0; color:#0026ff; text-align:center;"><i class="fas fa-user-edit"></i> Datos de Entrega</h3>
+        <p style="font-size:0.85rem; color:#555; margin-bottom:15px; text-align:center;">Para finalizar tu pedido, por favor rellena estos datos obligatorios:</p>
+        
+        <p style="font-size: 0.85rem; color: #444; margin-bottom: 5px; font-weight: bold;">¿Cómo recibirás tu pedido?</p>
+        <div class="delivery-btns" style="margin-bottom: 15px; display: flex; gap: 10px;">
+            <button class="btn-loc" id="btn-location" onclick="setExpress()">
+                <i class="fas fa-motorcycle"></i> EXPRESS
+            </button>
+            <button class="btn-pickup" id="btn-pickup" onclick="setPickup()">
+                <i class="fas fa-store"></i> RECOGER
+            </button>
+        </div>
+        
+        <label style="font-size: 0.85rem; color: #444; font-weight: bold;">Tu nombre por favor:</label>
+        <input type="text" id="user-name" class="name-input" placeholder="Escribe tu nombre..." style="margin-top:5px; margin-bottom:15px; color: black; background: #f5f5f5; border: 1px solid #ccc;">
+        
+        <div id="address-block" style="display: none; margin-bottom: 15px;">
+            <label style="font-size: 0.85rem; color: #444; font-weight: bold;">Dirección de Entrega / Señas:</label>
+            <input type="text" id="delivery-address" class="name-input" placeholder="Ej: Frente a Goyo, casa de portón verde..." style="margin-top:5px; color: black; background: #f5f5f5; border: 1px solid #ccc;">
+        </div>
+        
+        <button class="btn-send" style="width:100%; margin-top:15px;" onclick="validateAndSendOrder()">
+            <i class="fab fa-whatsapp"></i> ENVIAR PEDIDO POR WHATSAPP
         </button>
     </div>
 </div>
@@ -284,7 +296,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v10.0)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v10.1)</h3>
         
         <div class="admin-section-title"><i class="fas fa-utensils"></i> Menú del Establecimiento</div>
         <button class="pay-option-btn" onclick="toggleAdminMenuSection()" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
@@ -371,6 +383,7 @@
     let cart = {}; let total = 0; let deliveryMode = ""; let isSelected = false;
     let adminClicks = 0; let adminTimeout;
     let gpsCoords = ""; let cashPaidAmount = 0; let changeNeeded = 0;
+    let currentPaymentMethod = ""; // VARIABLE DE TRÁNSITO PARA MÉTODOS DE PAGO
     
     let currentGlobalWhatsApp = "85135269";
     let currentGlobalTitle = "Web Pedidos";
@@ -485,7 +498,7 @@
                     document.getElementById('main-title').style.display = "none";
                 }
                 
-                // CARGAR LOGO PERFIL EN VIVO COMPLETO CON CONTROL DE CONTROL DE DETECCIÓN DE BOTÓN ELIMINAR
+                // CARGAR LOGO PERFIL EN VIVO COMPLETO
                 if (data.profile_url && data.profile_url.trim() !== "") {
                     document.getElementById('main-profile-img').src = data.profile_url;
                     document.getElementById('main-profile-img').style.display = "block";
@@ -776,7 +789,6 @@
         }
     }
 
-    // NUEVAS FUNCIONES COMPLEMENTARIAS PARA DESVINCULAR IMÁGENES DE FIREBASE SIN EXPONER CREDS DE BORRADO REST
     function clearBgImage() {
         document.getElementById('input-bg-url').value = "";
         document.getElementById('btn-delete-bg').style.display = "none";
@@ -914,6 +926,7 @@
         .catch((error) => { customAlert("Hubo un error al guardar.", "<i class='fas fa-times-circle' style='color:#ea4335;'></i> Error"); });
     }
 
+    // LAS FUNCIONES DE LOS BOTONES GUARDAN LOS DATOS DIRECTAMENTE EN EL MODAL DE CIERRE
     function setExpress() {
         deliveryMode = "ENVÍO EXPRESS"; isSelected = true;
         document.getElementById('btn-location').classList.add('active');
@@ -945,7 +958,19 @@
         checkModalLock();
     }
 
-    function payExactCash() { cashPaidAmount = total; changeNeeded = 0; sendWhatsApp('EFECTIVO (Monto Exacto)'); }
+    // LAS FUNCIONES INTERMEDIAS GUARDAN EL MÉTODO DE PAGO Y ABREN EL MODAL DE DATOS FINALES
+    function confirmPaymentAndGetDetails(method) {
+        currentPaymentMethod = method;
+        closeModals();
+        document.getElementById('finalDataModal').style.display = "flex";
+        checkModalLock();
+    }
+
+    function payExactCash() { 
+        cashPaidAmount = total; 
+        changeNeeded = 0; 
+        confirmPaymentAndGetDetails('EFECTIVO (Monto Exacto)'); 
+    }
 
     function processCustomCashPayment() {
         let moneyGiven = parseFloat(document.getElementById('input-cash-amount').value) || 0;
@@ -953,7 +978,7 @@
             customAlert(`El dinero ingresado debe cubrir al menos el total de la orden (₡${total.toLocaleString()})`, "<i class='fas fa-coins' style='color:#ff9900;'></i> Vuelto Exacto"); return; 
         }
         cashPaidAmount = moneyGiven; changeNeeded = cashPaidAmount - total;
-        sendWhatsApp('EFECTIVO (Requiere Vuelto)');
+        confirmPaymentAndGetDetails('EFECTIVO (Requiere Vuelto)');
     }
 
     function showSinpe() { 
@@ -993,7 +1018,6 @@
         checkModalLock();
     }
 
-    // NUEVA FUNCIÓN DE CIERRE DE MULTIMEDIA QUE LIBERA EL SCROLL DE INMEDIATO
     function closeZoomModal() {
         let modal = document.getElementById('zoomModal');
         modal.style.display = "none";
@@ -1037,17 +1061,37 @@
         checkModalLock();
     }
 
+    // ABRIR PAGO DIRECTAMENTE SIN DETENERSE POR LOS DATOS DE DIRECCIÓN (ESTO SUCEDE AL FINAL)
     function openPayModal() { 
         if (total <= 0) { customAlert("Agrega productos al carrito primero.", "<i class='fas fa-shopping-cart' style='color:#ff9900;'></i> Carrito Vacío"); return; }
-        if (!isSelected) { customAlert("Por favor selecciona si necesitas Express o pasarás a Retirar.", "<i class='fas fa-motorcycle' style='color:#0026ff;'></i> Tipo de Entrega"); return; }
         document.getElementById('payModal').style.display = "flex"; 
         checkModalLock();
     }
 
+    // NUEVA FUNCIÓN DE VALIDACIÓN PREVIA AL ENVÍO DIRECTO A WHATSAPP
+    function validateAndSendOrder() {
+        let userName = document.getElementById('user-name').value.trim();
+        
+        if (!isSelected) { 
+            customAlert("Por favor selecciona si necesitas Express o pasarás a Recoger.", "<i class='fas fa-motorcycle' style='color:#0026ff;'></i> Tipo de Entrega"); 
+            return; 
+        }
+        if (userName === "") { 
+            customAlert("Por favor escribe tu nombre para procesar el pedido.", "<i class='fas fa-user-edit' style='color:#ff9900;'></i> Falta Tu Nombre"); 
+            return; 
+        }
+        if (deliveryMode === "ENVÍO EXPRESS") {
+            let manualDir = document.getElementById('delivery-address').value.trim();
+            if (manualDir === "") {
+                customAlert("Por favor escribe tu dirección o señas para poder realizar el envío Express.", "<i class='fas fa-home' style='color:#0026ff;'></i> Dirección Requerida");
+                return;
+            }
+        }
+        sendWhatsApp(currentPaymentMethod);
+    }
+
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim();
-        if (userName === "") { customAlert("Por favor escribe tu nombre para procesar el pedido.", "<i class='fas fa-user-edit' style='color:#ff9900;'></i> Falta Tu Nombre"); return; }
-
         let msg = `¡Hola, mi pedido para *${currentGlobalTitle || 'Cooking Pollos'}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
         window.localMenuArray.forEach(cat => {
             (cat.products || []).forEach(prod => {
