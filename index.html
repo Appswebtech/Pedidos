@@ -46,7 +46,7 @@
         header { padding: 40px 0 30px; }
         .header-title { letter-spacing: 2px; font-size: 2.2rem; margin: 0; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
-        /* INDICADOR DE HORARIO PREMIUM DINÁMICO */
+        /* INDICADOR DE HORARIO PREMIUM DINÁMICO (v10.8) */
         .badge-horario { position: absolute; top: 20px; left: 20px; background: rgba(17,17,17,0.85); border: 1px solid #333; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 8px; cursor: pointer; z-index: 10; backdrop-filter: blur(5px); transition: 0.3s; }
         .badge-horario:hover { background: rgba(30,30,30,0.95); transform: scale(1.03); }
         .dot-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
@@ -147,7 +147,7 @@
         .admin-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 0.9rem; margin-bottom: 4px; }
         .admin-input:focus { border-color: #0026ff; }
 
-        /* RE-ESTILIZACIÓN ELEGANTE DE DROPDOWNS PARA EVITAR EL DISEÑO NATIVO DE ANDROID (v10.7) */
+        /* RE-ESTILIZACIÓN DE SELECTORES ELEGANTES NO NATIVOS (v10.8) */
         select.admin-input, select.schedule-select {
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -160,10 +160,12 @@
             font-size: 0.9rem;
             outline: none;
             cursor: pointer;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230026ff'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 18px;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
         select.schedule-select {
             padding: 6px 25px 6px 8px !important;
@@ -173,6 +175,52 @@
         }
         select.admin-input:focus, select.schedule-select:focus {
             border-color: #0026ff;
+            box-shadow: 0 0 8px rgba(0, 38, 255, 0.4);
+        }
+
+        /* DISEÑO DE INTERRUPTOR / TOGGLE SWITCH ELEGANTE (v10.8) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333;
+            transition: .3s;
+            border: 1px solid #444;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+        }
+        input:checked + .slider {
+            background-color: #0026ff;
+            border-color: #0026ff;
+            box-shadow: 0 0 8px rgba(0, 38, 255, 0.5);
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+        .slider.round {
+            border-radius: 34px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
         }
         
         .schedule-config-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; background: rgba(255,255,255,0.02); padding: 6px; border-radius: 6px; border: 1px solid #222; }
@@ -249,7 +297,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 10.7</p>
+    <p class="version-tag">Versión 10.8</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -367,19 +415,23 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v10.7)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v10.8)</h3>
         
         <div class="admin-section-title"><i class="fas fa-star"></i> Banner Promocional Destacado</div>
-        <div class="admin-field">
-            <label>¿Activar Banner Promocional?</label>
-            <select id="input-promo-active" class="admin-input">
-                <option value="no">Desactivado (Ocultar Banner)</option>
-                <option value="si">Activado (Mostrar en la Página Principal)</option>
-            </select>
+        
+        <div class="admin-field" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px;">
+            <label style="margin-bottom: 0; font-weight: bold; color: #aaa; font-size: 0.9rem;">
+                <i class="fas fa-toggle-on" style="color: #0026ff; margin-right: 6px;"></i> ¿Activar Banner Promocional?
+            </label>
+            <label class="switch">
+                <input type="checkbox" id="input-promo-active">
+                <span class="slider round"></span>
+            </label>
         </div>
+
         <div class="admin-field">
             <label>⚡ Cargar rápido desde un Producto existente del Menú:</label>
-            <select id="select-admin-promo-picker" class="admin-input" onchange="autoFillPromoFromMenu()">
+            <select id="select-admin-promo-picker" class="admin-input" onchange="autoFillPromoFromMenu()" style="width: 100%;">
                 <option value="">-- Selecciona un producto para autorellenar --</option>
             </select>
         </div>
@@ -783,7 +835,9 @@
                 document.getElementById('input-tk').value = data.tk || "";
                 document.getElementById('input-tk-name').value = data.tk_name || "";
 
-                document.getElementById('input-promo-active').value = data.promo_active ? 'si' : 'no';
+                // CONFIGURACIÓN CLOUD: LEER VALOR DEL SWITCH DE ACTIVACIÓN DE BANNER (v10.8)
+                document.getElementById('input-promo-active').checked = data.promo_active || false;
+
                 document.getElementById('input-promo-title').value = data.promo_title || "";
                 document.getElementById('input-promo-price').value = data.promo_price || "";
                 document.getElementById('input-promo-desc').value = data.promo_desc || "";
@@ -1139,6 +1193,7 @@
         customAlert("Logo de perfil removido del panel. Presiona 'Guardar en la Nube' para aplicar.", "Logo Removido");
     }
 
+    // EVALUADOR CON INDICADOR CLARO DE ACCESO DE HORARIO (v10.8)
     function ejecutarEvaluadorCalendarioCR() {
         try {
             let crLocaleString = new Date().toLocaleString("en-US", { timeZone: "America/Costa_Rica" });
@@ -1147,7 +1202,7 @@
             let statusHoy = window.currentScheduleData[todayKey + '_status'] || "abierto"; let badge = document.getElementById('schedule-badge');
 
             if (statusHoy === "cerrado") {
-                badge.innerHTML = `<span class="dot-status" style="color: #ea4335; background: #ea4335;"></span> Cerrado`;
+                badge.innerHTML = `<span class="dot-status" style="color: #ea4335; background: #ea4335;"></span> Cerrado - Horario`;
                 badge.style.borderColor = "#ea4335"; badge.style.color = "#ea4335"; return;
             }
 
@@ -1163,10 +1218,10 @@
             else { isOpen = (currentMins >= openMins || currentMins < closeMins); }
             
             if (isOpen) {
-                badge.innerHTML = `<span class="dot-status" style="color: #25D366; background: #25D366;"></span> Abierto`;
+                badge.innerHTML = `<span class="dot-status" style="color: #25D366; background: #25D366;"></span> Abierto - Horario`;
                 badge.style.borderColor = "#25D366"; badge.style.color = "#25D366";
             } else {
-                badge.innerHTML = `<span class="dot-status" style="color: #ea4335; background: #ea4335;"></span> Cerrado`;
+                badge.innerHTML = `<span class="dot-status" style="color: #ea4335; background: #ea4335;"></span> Cerrado - Horario`;
                 badge.style.borderColor = "#ea4335"; badge.style.color = "#ea4335";
             }
         } catch (e) { console.error(e); }
@@ -1246,7 +1301,9 @@
             tk: document.getElementById('input-tk').value.trim(),
             tk_name: document.getElementById('input-tk-name').value.trim(),
             
-            promo_active: document.getElementById('input-promo-active').value === 'si',
+            // LECTURA ELEGANTE DEL TOGGLE SWITCH (v10.8)
+            promo_active: document.getElementById('input-promo-active').checked,
+            
             promo_title: document.getElementById('input-promo-title').value.trim(),
             promo_price: parseFloat(document.getElementById('input-promo-price').value) || 0,
             promo_desc: document.getElementById('input-promo-desc').value.trim(),
@@ -1432,7 +1489,6 @@
         openModal('payModal');
     }
 
-    /* ACTUALIZACIÓN EXCLUSIVA v10.7: EL CAMPO DE DIRECCIÓN MANUAL YA NO ES OBLIGATORIO */
     function validateAndSendOrder() {
         let userName = document.getElementById('user-name').value.trim();
         
