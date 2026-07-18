@@ -46,7 +46,7 @@
         header { padding: 40px 0 30px; }
         .header-title { letter-spacing: 2px; font-size: 2.2rem; margin: 0; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
-        /* INDICADOR DE HORARIO PREMIUM DINÁMICO (v10.8) */
+        /* INDICADOR DE HORARIO PREMIUM DINÁMICO (v10.9) */
         .badge-horario { position: absolute; top: 20px; left: 20px; background: rgba(17,17,17,0.85); border: 1px solid #333; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 8px; cursor: pointer; z-index: 10; backdrop-filter: blur(5px); transition: 0.3s; }
         .badge-horario:hover { background: rgba(30,30,30,0.95); transform: scale(1.03); }
         .dot-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
@@ -147,7 +147,7 @@
         .admin-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 0.9rem; margin-bottom: 4px; }
         .admin-input:focus { border-color: #0026ff; }
 
-        /* RE-ESTILIZACIÓN DE SELECTORES ELEGANTES NO NATIVOS (v10.8) */
+        /* RE-ESTILIZACIÓN DE SELECTORES ELEGANTES NO NATIVOS (v10.9) */
         select.admin-input, select.schedule-select {
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -178,7 +178,7 @@
             box-shadow: 0 0 8px rgba(0, 38, 255, 0.4);
         }
 
-        /* DISEÑO DE INTERRUPTOR / TOGGLE SWITCH ELEGANTE (v10.8) */
+        /* DISEÑO DE INTERRUPTOR / TOGGLE SWITCH ELEGANTE (v10.9) */
         .switch {
             position: relative;
             display: inline-block;
@@ -297,7 +297,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 10.8</p>
+    <p class="version-tag">Versión 10.9</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -415,7 +415,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v10.8)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v10.9)</h3>
         
         <div class="admin-section-title"><i class="fas fa-star"></i> Banner Promocional Destacado</div>
         
@@ -835,7 +835,7 @@
                 document.getElementById('input-tk').value = data.tk || "";
                 document.getElementById('input-tk-name').value = data.tk_name || "";
 
-                // CONFIGURACIÓN CLOUD: LEER VALOR DEL SWITCH DE ACTIVACIÓN DE BANNER (v10.8)
+                // CONFIGURACIÓN CLOUD: LEER VALOR DEL SWITCH DE ACTIVACIÓN DE BANNER (v10.9)
                 document.getElementById('input-promo-active').checked = data.promo_active || false;
 
                 document.getElementById('input-promo-title').value = data.promo_title || "";
@@ -1027,7 +1027,7 @@
         if (prod.img) {
             let isVideo = prod.img.toLowerCase().includes('.mp4') || prod.img.toLowerCase().includes('.webm') || prod.img.toLowerCase().includes('.mov');
             if (isVideo) {
-                thumb.innerHTML = `<video src="${prod.img}" autoplay loop muted playsinline style="width:50px; height:50px; object-fit:cover; border-radius:4px;"></video>`;
+                thumb.innerHTML = `<video src="${prod.img}" autoplay loop muted playsinline style="width:50px; height:50px; object-fit:cover; border-radius:4px></video>`;
             } else {
                 thumb.innerHTML = `<img src="${prod.img}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;">`;
             }
@@ -1193,7 +1193,7 @@
         customAlert("Logo de perfil removido del panel. Presiona 'Guardar en la Nube' para aplicar.", "Logo Removido");
     }
 
-    // EVALUADOR CON INDICADOR CLARO DE ACCESO DE HORARIO (v10.8)
+    // EVALUADOR CON INDICADOR CLARO DE ACCESO DE HORARIO (v10.9)
     function ejecutarEvaluadorCalendarioCR() {
         try {
             let crLocaleString = new Date().toLocaleString("en-US", { timeZone: "America/Costa_Rica" });
@@ -1301,7 +1301,7 @@
             tk: document.getElementById('input-tk').value.trim(),
             tk_name: document.getElementById('input-tk-name').value.trim(),
             
-            // LECTURA ELEGANTE DEL TOGGLE SWITCH (v10.8)
+            // LECTURA ELEGANTE DEL TOGGLE SWITCH (v10.9)
             promo_active: document.getElementById('input-promo-active').checked,
             
             promo_title: document.getElementById('input-promo-title').value.trim(),
@@ -1343,15 +1343,15 @@
                 (error) => { 
                     closeModalTop();
                     gpsCoords = ""; 
-                    let alertaMensaje = "No se pudo acceder al GPS. Por favor, asegúrate de tener la **Ubicación encendida** en tu celular.";
+                    let alertaMensaje = "No se pudo acceder al GPS. Recuerda que los navegadores modernos exigen obligatoriamente una conexión segura (HTTPS con certificado activo) para autorizar la ubicación.";
                     if (error.code === error.PERMISSION_DENIED) {
-                        alertaMensaje = "Permiso de ubicación denegado. Ve a los ajustes del navegador, dale permiso de Ubicación a esta página e intenta de nuevo.";
+                        alertaMensaje = "Permiso de ubicación denegado. Ve a los ajustes del navegador, asegúrate de tener una conexión segura (HTTPS) y otorga permisos de Ubicación.";
                     } else if (error.code === error.POSITION_UNAVAILABLE) {
-                        alertaMensaje = "La señal GPS no está disponible o tu ubicación móvil está totalmente apagada. Por favor, enciéndela en la barra de notificaciones.";
+                        alertaMensaje = "La señal GPS no está disponible o el navegador bloqueó la petición de geolocalización por falta de protocolo SSL/HTTPS seguro.";
                     } else if (error.code === error.TIMEOUT) {
-                        alertaMensaje = "Se agotó el tiempo buscando tu GPS. Por favor, enciende la ubicación de alta precisión en tu celular y vuelve a tocar el botón Express.";
+                        alertaMensaje = "Se agotó el tiempo de respuesta del GPS. Verifica que estés cargando el sitio bajo HTTPS seguro e intenta de nuevo.";
                     }
-                    customAlert(alertaMensaje, "<i class='fas fa-map-marker-alt' style='color:#ea4335;'></i> GPS Desactivado"); 
+                    customAlert(alertaMensaje, "<i class='fas fa-shield-alt' style='color:#ea4335;'></i> Alerta de Seguridad y GPS"); 
                 },
                 { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
             );
@@ -1511,8 +1511,12 @@
         window.localMenuArray.forEach(cat => {
             (cat.products || []).forEach(prod => {
                 if (cart[prod.name] && cart[prod.name].qty > 0) {
+                    let qty = cart[prod.name].qty;
+                    let priceUnit = prod.price;
+                    let subtotalItem = qty * priceUnit;
                     let noteInput = document.getElementById('note-' + prod.name); let note = noteInput ? noteInput.value.trim() : "";
-                    msg += `• ${cart[prod.name].qty}x ${prod.name}${note ? ' ('+note+')' : ''}%0A`;
+                    // DESGLOSE ESPECÍFICO DE PRECIOS EN LA FACTURA (v10.9)
+                    msg += `• ${qty}x ${prod.name}%0A  Precio Unitario: ₡${priceUnit.toLocaleString()}%0A  Subtotal: ₡${subtotalItem.toLocaleString()}${note ? '%0A  Nota: '+note : ''}%0A%0A`;
                 }
             });
         });
@@ -1522,17 +1526,21 @@
                 let checkRep = false;
                 window.localMenuArray.forEach(c => { (c.products || []).forEach(p => { if(p.name === key) checkRep = true; }); });
                 if (!checkRep) {
+                    let qty = cart[key].qty;
+                    let priceUnit = cart[key].price;
+                    let subtotalItem = qty * priceUnit;
                     let notePromoText = "";
                     if (key === globalActivePromoTitle) {
                         let notePromoInput = document.getElementById('note-promo-text');
                         if (notePromoInput) notePromoText = notePromoInput.value.trim();
                     }
-                    msg += `• ${cart[key].qty}x ${key} (Promoción Estrella)${notePromoText ? ' ('+notePromoText+')' : ''}%0A`;
+                    // DESGLOSE ESPECÍFICO PARA COMBOS/PROMO (v10.9)
+                    msg += `• ${qty}x ${key} (Promo Estrella)%0A  Precio Unitario: ₡${priceUnit.toLocaleString()}%0A  Subtotal: ₡${subtotalItem.toLocaleString()}${notePromoText ? '%0A  Nota: '+notePromoText : ''}%0A%0A`;
                 }
             }
         }
 
-        msg += `%0A*Subtotal Orden: ₡${total.toLocaleString()}*%0A*Método de Pago:* ${method}`;
+        msg += `*Total Neto a Pagar: ₡${total.toLocaleString()}*%0A*Método de Pago:* ${method}`;
         if (method.includes('EFECTIVO')) {
             if (changeNeeded > 0) { msg += `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}`; }
             else { msg += `%0A*Paga con:* Monto Exacto (No requiere vuelto)`; }
