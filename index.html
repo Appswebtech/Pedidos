@@ -113,12 +113,13 @@
             overflow: hidden;
         }
 
-        /* ARQUITECTURA DE MOTOR GRÁFICO AVANZADO v13.3 (CAPAS FLOTANTES DE ALTA PRECISIÓN) */
+        /* ARQUITECTURA DE MOTOR GRÁFICO AVANZADO v13.4 (CAPAS FLOTANTES DE ALTA PRECISIÓN HORIZONTAL) */
         .text-banner-content {
             width: 100%;
             text-align: center;
             font-weight: bold;
             word-wrap: break-word;
+            display: block;
         }
 
         /* CONTENEDOR MAESTRO DE CADA GLIFO INDEPENDIENTE */
@@ -126,7 +127,7 @@
             position: relative;
             display: inline-block;
             vertical-align: middle;
-            white-space: pre;
+            white-space: nowrap;
         }
 
         /* CAPA 1: TRAZO VECTORIAL TRADICIONAL (FONDO) */
@@ -134,11 +135,10 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
             color: transparent !important;
             pointer-events: none;
             z-index: 1;
+            white-space: nowrap;
         }
 
         /* CAPA 2: RELLENO SÓLIDO LIMPIO DE LA LETRA */
@@ -147,6 +147,7 @@
             display: inline-block;
             pointer-events: none;
             z-index: 2;
+            white-space: nowrap;
         }
 
         /* CAPA 3: CINTA LED VECTORIAL SÓLIDA SUPERPUESTA (FRENTE) */
@@ -154,11 +155,10 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
             color: transparent !important;
             pointer-events: none;
             z-index: 3;
+            white-space: nowrap;
         }
 
         /* ANIMACIÓN CRISP/SÓLIDA PARA LA CINTA LED CONTORNO */
@@ -381,7 +381,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 13.3</p>
+    <p class="version-tag">Versión 13.4</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -523,7 +523,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v13.3)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v13.4)</h3>
         
         <div class="admin-section-title"><i class="fas fa-images"></i> Campañas Especiales de Banners</div>
         <button class="pay-option-btn" onclick="toggleAdminSectionBlock('admin-banners-management-block', 'banners')" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
@@ -994,12 +994,21 @@
                     let animClass = t.ledStroke ? 'led-stroke-mov' : '';
                     
                     let bannerText = t.text || "";
-                    let innerCharsHtml = bannerText.split("").map(char => {
+                    let charsArray = Array.from(bannerText);
+                    
+                    let innerCharsHtml = charsArray.map(char => {
                         if (char === "\n") return "<br>";
                         if (char === " ") return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">&nbsp;</span>`;
                         
-                        let ledStrokeWidth = strokeSize > 0 ? "2px" : "1.5px";
+                        let isEmoji = false;
+                        try { isEmoji = /\p{Extended_Pictographic}/u.test(char) || /\p{Emoji_Presentation}/u.test(char); } 
+                        catch(e) { isEmoji = char.codePointAt(0) > 0xFFFF; }
                         
+                        if (isEmoji) {
+                            return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam}; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;">${char}</span>`;
+                        }
+                        
+                        let ledStrokeWidth = strokeSize > 0 ? "2px" : "1.5px";
                         return `
                             <span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">
                                 <span class="char-layer-stroke" style="-webkit-text-stroke: ${strokeParam} ${strokeColor}; display: ${strokeSize > 0 ? 'block' : 'none'};">${char}</span>
@@ -1354,12 +1363,21 @@
                 let animClass = t.ledStroke ? 'led-stroke-mov' : '';
                 
                 let bannerText = t.text || "";
-                let innerCharsHtml = bannerText.split("").map(char => {
+                let charsArray = Array.from(bannerText);
+                
+                let innerCharsHtml = charsArray.map(char => {
                     if (char === "\n") return "<br>";
                     if (char === " ") return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">&nbsp;</span>`;
                     
-                    let ledStrokeWidth = strokeSize > 0 ? "2px" : "1.5px";
+                    let isEmoji = false;
+                    try { isEmoji = /\p{Extended_Pictographic}/u.test(char) || /\p{Emoji_Presentation}/u.test(char); } 
+                    catch(e) { isEmoji = char.codePointAt(0) > 0xFFFF; }
                     
+                    if (isEmoji) {
+                        return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam}; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;">${char}</span>`;
+                    }
+                    
+                    let ledStrokeWidth = strokeSize > 0 ? "2px" : "1.5px";
                     return `
                         <span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">
                             <span class="char-layer-stroke" style="-webkit-text-stroke: ${strokeParam} ${strokeColor}; display: ${strokeSize > 0 ? 'block' : 'none'};">${char}</span>
@@ -1765,25 +1783,48 @@
     }
     function closeZoomModal() { document.getElementById('zoomModal').innerHTML = ""; closeModalTop(); }
 
-    function showTicket() {
-        let listHtml = ""; let hasItems = false;
+    function getConsolidatedCart() {
+        let consolidated = {};
+        
         window.localMenuArray.forEach(cat => {
             (cat.products || []).forEach(prod => {
                 if (cart[prod.name] && cart[prod.name].qty > 0) {
-                    let noteInput = document.getElementById('note-' + prod.name); let note = noteInput ? noteInput.value.trim() : "";
-                    listHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span>${cart[prod.name].qty}x ${prod.name}</span><span>₡${(cart[prod.name].qty * prod.price).toLocaleString()}</span></div>${note ? `<span style="color:#666; font-style:italic;">"${note}"</span>` : ""}</div>`;
-                    hasItems = true;
+                    let noteInput = document.getElementById('note-' + prod.name);
+                    let note = noteInput ? noteInput.value.trim() : "";
+                    if (!consolidated[prod.name]) {
+                        consolidated[prod.name] = { qty: 0, price: prod.price, notes: [] };
+                    }
+                    consolidated[prod.name].qty += cart[prod.name].qty;
+                    if (note) consolidated[prod.name].notes.push(note);
                 }
             });
         });
 
         window.localBannersArray.forEach((banner, idx) => {
             if (cart[banner.title] && cart[banner.title].qty > 0) {
-                let noteInput = document.getElementById(`note-banner-${idx}`); let noteText = noteInput ? noteInput.value.trim() : "";
-                listHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span>${cart[banner.title].qty}x ${banner.title}</span><span>₡${(cart[banner.title].qty * banner.price).toLocaleString()}</span></div>${noteText ? `<span style="color:#666; font-style:italic;">"${noteText}"</span>` : ""}</div>`;
-                hasItems = true;
+                let noteInput = document.getElementById(`note-banner-${idx}`);
+                let noteText = noteInput ? noteInput.value.trim() : "";
+                if (!consolidated[banner.title]) {
+                    consolidated[banner.title] = { qty: 0, price: parseFloat(banner.price || 0), notes: [] };
+                }
+                consolidated[banner.title].qty += cart[banner.title].qty;
+                if (noteText) consolidated[banner.title].notes.push(noteText);
             }
         });
+
+        return consolidated;
+    }
+
+    function showTicket() {
+        let consolidated = getConsolidatedCart();
+        let listHtml = ""; let hasItems = false;
+        
+        for (let name in consolidated) {
+            let item = consolidated[name];
+            let combinedNotes = item.notes.length > 0 ? item.notes.join(" | ") : "";
+            listHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span>${item.qty}x ${name}</span><span>₡${(item.qty * item.price).toLocaleString()}</span></div>${combinedNotes ? `<span style="color:#666; font-style:italic;">"${combinedNotes}"</span>` : ""}</div>`;
+            hasItems = true;
+        }
 
         if (!hasItems) { customAlert("Agrega productos al carrito primero.", "Carrito Vacío"); return; }
         
@@ -1808,23 +1849,13 @@
         let userName = document.getElementById('user-name').value.trim();
         let msg = `¡Hola, mi pedido para *${currentGlobalTitle || 'Cooking Pollos'}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
         
-        window.localMenuArray.forEach(cat => {
-            (cat.products || []).forEach(prod => {
-                if (cart[prod.name] && cart[prod.name].qty > 0) {
-                    let qty = cart[prod.name].qty;
-                    let noteInput = document.getElementById('note-' + prod.name); let note = noteInput ? noteInput.value.trim() : "";
-                    msg += `• ${qty}x ${prod.name}    *₡${(qty * prod.price).toLocaleString()}*${note ? ' ('+note+')' : ''}%0A`;
-                }
-            });
-        });
-
-        window.localBannersArray.forEach((banner, idx) => {
-            if (cart[banner.title] && cart[banner.title].qty > 0) {
-                let qty = cart[banner.title].qty;
-                let noteInput = document.getElementById(`note-banner-${idx}`); let noteText = noteInput ? noteInput.value.trim() : "";
-                msg += `• ${qty}x ${banner.title}    *₡${(qty * banner.price).toLocaleString()}*${noteText ? ' ('+noteText+')' : ''}%0A`;
-            }
-        });
+        let consolidated = getConsolidatedCart();
+        
+        for (let name in consolidated) {
+            let item = consolidated[name];
+            let combinedNotes = item.notes.length > 0 ? ` (${item.notes.join(" | ")})` : "";
+            msg += `• ${item.qty}x ${name}    *₡${(item.qty * item.price).toLocaleString()}*${combinedNotes}%0A`;
+        }
 
         msg += `%0A*Total Neto a Pagar: ₡${total.toLocaleString()}*%0A*Método de Pago:* ${method}`;
         if (method.includes('EFECTIVO')) {
