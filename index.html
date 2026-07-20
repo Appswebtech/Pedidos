@@ -113,33 +113,64 @@
             overflow: hidden;
         }
 
-        /* ARQUITECTURA DE MOTOR GRÁFICO AVANZADO v13.1 (FLUJO HORIZONTAL FLUIDO NATIVO) */
+        /* ARQUITECTURA DE MOTOR GRÁFICO AVANZADO v13.3 (CAPAS FLOTANTES DE ALTA PRECISIÓN) */
         .text-banner-content {
             width: 100%;
             text-align: center;
             font-weight: bold;
             word-wrap: break-word;
-            white-space: pre-wrap;
         }
 
-        /* CONTENEDOR INDEPENDIENTE DEL GLIFO CON PROTECCIÓN DE RENDERIZADO VECTORIAL */
-        .stroke-char {
-            display: inline; /* Garantiza el comportamiento nativo horizontal de izquierda a derecha */
-            paint-order: stroke fill; /* Renderiza el borde por debajo y el frente limpio por encima */
-            -webkit-text-stroke: var(--char-stroke-width, 0px) var(--char-stroke-color, #000000);
-            color: var(--char-text-color, #ffffff);
+        /* CONTENEDOR MAESTRO DE CADA GLIFO INDEPENDIENTE */
+        .char-master-wrapper {
+            position: relative;
+            display: inline-block;
+            vertical-align: middle;
+            white-space: pre;
         }
 
-        /* ANIMACIÓN DE CINTA LED EN CONTORNO DE LETRA EXTERNA */
-        @keyframes ledTextOutsideResplandor {
-            0%, 100% { text-shadow: 0 0 8px var(--char-stroke-color), 0 0 20px var(--char-stroke-color); }
-            25% { text-shadow: 0 0 8px #00ffcc, 0 0 20px #00ffcc; }
-            50% { text-shadow: 0 0 8px #ff00ff, 0 0 20px #ff00ff; }
-            75% { text-shadow: 0 0 8px #3300ff, 0 0 20px #3300ff; }
+        /* CAPA 1: TRAZO VECTORIAL TRADICIONAL (FONDO) */
+        .char-layer-stroke {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: transparent !important;
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .stroke-char.led-glow-active {
-            animation: ledTextOutsideResplandor 4s linear infinite;
+        /* CAPA 2: RELLENO SÓLIDO LIMPIO DE LA LETRA */
+        .char-layer-fill {
+            position: relative;
+            display: inline-block;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* CAPA 3: CINTA LED VECTORIAL SÓLIDA SUPERPUESTA (FRENTE) */
+        .char-layer-led {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: transparent !important;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* ANIMACIÓN CRISP/SÓLIDA PARA LA CINTA LED CONTORNO */
+        @keyframes ledSolidLineAnim {
+            0%, 100% { -webkit-text-stroke-color: #0026ff; }
+            25% { -webkit-text-stroke-color: #00ffcc; }
+            50% { -webkit-text-stroke-color: #ff00ff; }
+            75% { -webkit-text-stroke-color: #3300ff; }
+        }
+
+        .led-stroke-mov {
+            animation: ledSolidLineAnim 4s linear infinite !important;
         }
 
         /* CONTENEDOR MULTIMEDIA INFERIOR DIVIDIDO */
@@ -350,7 +381,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 13.1</p>
+    <p class="version-tag">Versión 13.3</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -492,7 +523,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v13.1)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v13.3)</h3>
         
         <div class="admin-section-title"><i class="fas fa-images"></i> Campañas Especiales de Banners</div>
         <button class="pay-option-btn" onclick="toggleAdminSectionBlock('admin-banners-management-block', 'banners')" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
@@ -640,6 +671,10 @@
     function openModal(id) {
         if (modalStack.length > 0) {
             let topId = modalStack[modalStack.length - 1];
+            if (topId === id) {
+                document.getElementById(id).style.display = "flex";
+                return;
+            }
             document.getElementById(topId).style.display = "none";
         }
         modalStack.push(id);
@@ -948,21 +983,30 @@
 
                 let textBlockHtml = "";
                 if (t.text && t.text.trim() !== "") {
-                    let strokeSize = t.strokeSize || 0;
+                    let strokeSize = parseInt(t.strokeSize) || 0;
                     let strokeColor = t.strokeColor || "#000000";
                     let textColor = t.textColor || "#ffffff";
                     let lineHeightValue = (t.lineHeight || 140) / 100;
                     let computedSize = calcFontPixelSize(t.fontSize || 24);
+                    let letterSpacingParam = (t.letterSpacing || 0) + "px";
                     
                     let strokeParam = strokeSize > 0 ? `${strokeSize}px` : '0px';
-                    let animClass = t.ledStroke ? 'led-glow-active' : '';
+                    let animClass = t.ledStroke ? 'led-stroke-mov' : '';
                     
-                    // FALLBACK DE PROTECCIÓN CONTRA CONGELAMIENTO + SEGMENTACIÓN PREMIUM v13.1
                     let bannerText = t.text || "";
                     let innerCharsHtml = bannerText.split("").map(char => {
                         if (char === "\n") return "<br>";
-                        if (char === " ") return " ";
-                        return `<span class="stroke-char ${animClass}" style="--char-text-color: ${textColor}; --char-stroke-color: ${strokeColor}; --char-stroke-width: ${strokeParam};">${char}</span>`;
+                        if (char === " ") return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">&nbsp;</span>`;
+                        
+                        let ledStrokeWidth = strokeSize > 0 ? "2px" : "1.5px";
+                        
+                        return `
+                            <span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">
+                                <span class="char-layer-stroke" style="-webkit-text-stroke: ${strokeParam} ${strokeColor}; display: ${strokeSize > 0 ? 'block' : 'none'};">${char}</span>
+                                <span class="char-layer-fill" style="color: ${textColor};">${char}</span>
+                                <span class="char-layer-led ${animClass}" style="-webkit-text-stroke: ${ledStrokeWidth} #0026ff; display: ${t.ledStroke ? 'block' : 'none'};">${char}</span>
+                            </span>
+                        `;
                     }).join("");
 
                     textBlockHtml = `<div class="text-banner-content" style="font-size: ${computedSize}px; line-height: ${lineHeightValue};">${innerCharsHtml}</div>`;
@@ -1155,6 +1199,7 @@
             let strokeVal = tBanner.strokeSize || 0;
             let sizeVal = tBanner.fontSize || 24;
             let lhVal = tBanner.lineHeight || 140;
+            let lsVal = tBanner.letterSpacing || 0;
 
             html += `
                 <div class="admin-prod-card" style="border-left:3px solid #ff9900;">
@@ -1208,6 +1253,14 @@
                             <span id="lbl-lh-${idx}" style="font-size:0.8rem; font-weight:bold; color:#ff00ff;">${lhVal}%</span>
                         </div>
                         <input type="range" min="50" max="250" value="${lhVal}" class="admin-slider" oninput="updateAdminTextBannerLive(${idx}, 'lineHeight', this.value)">
+                    </div>
+
+                    <div class="admin-field">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label style="margin:0;"><i class="fas fa-arrows-alt-h"></i> Separación entre Letras (Letter Spacing)</label>
+                            <span id="lbl-ls-${idx}" style="font-size:0.8rem; font-weight:bold; color:#00ffcc;">${lsVal}px</span>
+                        </div>
+                        <input type="range" min="-5" max="20" value="${lsVal}" class="admin-slider" oninput="updateAdminTextBannerLive(${idx}, 'letterSpacing', this.value)">
                     </div>
 
                     <div class="admin-field">
@@ -1272,6 +1325,7 @@
         if (field === 'fontSize') { document.getElementById(`lbl-size-${idx}`).innerText = val + "%"; }
         if (field === 'strokeSize') { document.getElementById(`lbl-stroke-${idx}`).innerText = val + "px"; }
         if (field === 'lineHeight') { document.getElementById(`lbl-lh-${idx}`).innerText = val + "%"; }
+        if (field === 'letterSpacing') { document.getElementById(`lbl-ls-${idx}`).innerText = val + "px"; }
         
         let previewDiv = document.getElementById(`tb-preview-${idx}`);
         if (previewDiv) {
@@ -1289,21 +1343,30 @@
             
             let textBlockHtml = "";
             if (t.text && t.text.trim() !== "") {
-                let strokeSize = t.strokeSize || 0;
+                let strokeSize = parseInt(t.strokeSize) || 0;
                 let strokeColor = t.strokeColor || "#000000";
                 let textColor = t.textColor || "#ffffff";
                 let lineHeightValue = (t.lineHeight || 140) / 100;
                 let computedSize = calcFontPixelSize(t.fontSize || 24);
+                let letterSpacingParam = (t.letterSpacing || 0) + "px";
                 
                 let strokeParam = strokeSize > 0 ? `${strokeSize}px` : '0px';
-                let animClass = t.ledStroke ? 'led-glow-active' : '';
+                let animClass = t.ledStroke ? 'led-stroke-mov' : '';
                 
-                // SIMULACIÓN NATIVA REAJUSTADA CARÁCTER POR CARÁCTER PARA EL PANEL ADMIN v13.1
                 let bannerText = t.text || "";
                 let innerCharsHtml = bannerText.split("").map(char => {
                     if (char === "\n") return "<br>";
-                    if (char === " ") return " ";
-                    return `<span class="stroke-char ${animClass}" style="--char-text-color: ${textColor}; --char-stroke-color: ${strokeColor}; --char-stroke-width: ${strokeParam};">${char}</span>`;
+                    if (char === " ") return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">&nbsp;</span>`;
+                    
+                    let ledStrokeWidth = strokeSize > 0 ? "2px" : "1.5px";
+                    
+                    return `
+                        <span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">
+                            <span class="char-layer-stroke" style="-webkit-text-stroke: ${strokeParam} ${strokeColor}; display: ${strokeSize > 0 ? 'block' : 'none'};">${char}</span>
+                            <span class="char-layer-fill" style="color: ${textColor};">${char}</span>
+                            <span class="char-layer-led ${animClass}" style="-webkit-text-stroke: ${ledStrokeWidth} #0026ff; display: ${t.ledStroke ? 'block' : 'none'};">${char}</span>
+                        </span>
+                    `;
                 }).join("");
 
                 textBlockHtml = `<div class="text-banner-content" style="font-size: ${computedSize}px; line-height: ${lineHeightValue};">${innerCharsHtml}</div>`;
@@ -1333,7 +1396,7 @@
     }
 
     function addAdminTextBannerItem() { 
-        window.localTextBannersArray.push({ active: true, text: "Escribe un aviso publicitario aquí...", fontSize: 24, lineHeight: 140, position: "start", url: "", fontUrl: "", useFont: true, strokeSize: 0, strokeColor: "#000000", textColor: "#ffffff", ledStroke: false }); 
+        window.localTextBannersArray.push({ active: true, text: "Escribe un aviso publicitario aquí...", fontSize: 24, lineHeight: 140, letterSpacing: 0, position: "start", url: "", fontUrl: "", useFont: true, strokeSize: 0, strokeColor: "#000000", textColor: "#ffffff", ledStroke: false }); 
         renderAdminTextBannersUI(); 
     }
     function updateAdminTextBannerField(idx, field, val) { window.localTextBannersArray[idx][field] = val; }
@@ -1620,13 +1683,49 @@
         document.getElementById('address-block').style.display = "block";
         
         if (navigator.geolocation) {
-            customAlert("Buscando señal GPS...", "Localizando Teléfono");
-            navigator.geolocation.getCurrentPosition(
-                (position) => { closeModalTop(); gpsCoords = `${position.coords.latitude},${position.coords.longitude}`; customAlert("¡Ubicación GPS capturada con éxito!", "Ubicación Lista"); },
-                (error) => { closeModalTop(); gpsCoords = ""; customAlert("No se pudo conectar al GPS automáticamente. Escribe tus señas abajo por favor.", "Dirección Manual"); },
-                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-            );
-        } else { gpsCoords = ""; }
+            obtenerUbicacionGPS();
+        } else { 
+            gpsCoords = ""; 
+            customAlert("Tu dispositivo no soporta geolocalización automática. Escribe tus señas manuales abajo.", "Dirección Manual");
+        }
+    }
+
+    function obtenerUbicacionGPS() {
+        customAlert(`
+            <div style="text-align:center; padding:10px;">
+                <i class="fas fa-spinner fa-spin" style="color:#0026ff; font-size:2.2rem;"></i><br><br>
+                <b>Conectando con satélites GPS...</b><br>
+                <span style="font-size:0.8rem; color:#aaa; display:block; margin-top:5px;">Buscando señal de alta precisión. Asegúrate de tener la ubicación activa de tu celular.</span>
+            </div>
+        `, "Localizando Celular");
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                closeModalTop();
+                gpsCoords = `${position.coords.latitude},${position.coords.longitude}`;
+                customAlert(`
+                    <div style="text-align:center; color:#25D366; padding:10px;">
+                        <i class="fas fa-check-circle" style="font-size:2.5rem;"></i><br><br>
+                        <b>¡Ubicación GPS capturada con éxito!</b>
+                    </div>
+                `, "Ubicación Lista");
+            },
+            (error) => {
+                gpsCoords = "";
+                customAlert(`
+                    <div style="text-align:center; padding:5px;">
+                        <i class="fas fa-exclamation-triangle" style="color:#ff9900; font-size:2.2rem;"></i><br><br>
+                        <b>No logramos capturar la señal de tu GPS automáticamente.</b>
+                        <p style="font-size:0.85rem; color:#ccc; margin:10px 0 18px 0; line-height:1.4;">A veces el teléfono bloquea el primer intento o la señal tarda un momento en estabilizarse.</p>
+                        <button class="btn-loc active" style="width:100%; padding:13px; font-weight:bold; margin-bottom:12px; border:none; border-radius:6px; cursor:pointer; font-size:0.95rem; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="obtenerUbicacionGPS()">
+                            <i class="fas fa-redo"></i> REINTENTAR CAPTURA GPS
+                        </button>
+                        <span style="font-size:0.8rem; color:#aaa; display:block; margin-top:8px;">O si lo prefieres, puedes escribir tus señas manuales abajo.</span>
+                    </div>
+                `, "Señal de GPS Débil");
+            },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
     }
 
     function setPickup() { deliveryMode = "RETIRO EN LOCAL"; isSelected = true; gpsCoords = ""; document.getElementById('btn-pickup').classList.add('active'); document.getElementById('btn-location').classList.remove('active'); document.getElementById('address-block').style.display = "none"; }
@@ -1681,7 +1780,7 @@
         window.localBannersArray.forEach((banner, idx) => {
             if (cart[banner.title] && cart[banner.title].qty > 0) {
                 let noteInput = document.getElementById(`note-banner-${idx}`); let noteText = noteInput ? noteInput.value.trim() : "";
-                listHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span>${cart[banner.title].qty}x ${banner.title} (Promo)</span><span>₡${(cart[banner.title].qty * banner.price).toLocaleString()}</span></div>${noteText ? `<span style="color:#666; font-style:italic;">"${noteText}"</span>` : ""}</div>`;
+                listHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span>${cart[banner.title].qty}x ${banner.title}</span><span>₡${(cart[banner.title].qty * banner.price).toLocaleString()}</span></div>${noteText ? `<span style="color:#666; font-style:italic;">"${noteText}"</span>` : ""}</div>`;
                 hasItems = true;
             }
         });
@@ -1723,7 +1822,7 @@
             if (cart[banner.title] && cart[banner.title].qty > 0) {
                 let qty = cart[banner.title].qty;
                 let noteInput = document.getElementById(`note-banner-${idx}`); let noteText = noteInput ? noteInput.value.trim() : "";
-                msg += `• ${qty}x ${banner.title} (Promo)    *₡${(qty * banner.price).toLocaleString()}*${noteText ? ' ('+noteText+')' : ''}%0A`;
+                msg += `• ${qty}x ${banner.title}    *₡${(qty * banner.price).toLocaleString()}*${noteText ? ' ('+noteText+')' : ''}%0A`;
             }
         });
 
