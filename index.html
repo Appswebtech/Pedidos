@@ -61,16 +61,17 @@
         .category-content { display: none; background: rgba(22, 22, 22, 0.95); padding: 15px; border-radius: 0 0 12px 12px; border: 1px solid #333; border-top: none; margin-top: -10px; margin-bottom: 15px; }
 
         .menu-item { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid #222; padding-bottom: 12px; }
-        .item-main { display: flex; align-items: center; gap: 12px; width: 100%; }
-        .item-img { width: 75px; height: 75px; border-radius: 10px; object-fit: cover; background-color: #222; cursor: zoom-in; border: 1px solid #333; }
+        .item-main { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; box-sizing: border-box; }
+        .item-img { width: 75px; height: 75px; border-radius: 10px; object-fit: cover; background-color: #222; cursor: zoom-in; border: 1px solid #333; flex-shrink: 0; }
         
-        .item-info { text-align: left; flex-grow: 1; }
-        .item-title { font-weight: bold; font-size: 0.95rem; color: #fff; }
+        .item-info { text-align: left; flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .item-title { font-weight: bold; font-size: 0.95rem; color: #fff; word-break: break-word; }
         .item-price { color: #0026ff; font-weight: bold; font-size: 0.85rem; }
         
-        .item-controls { display: flex; align-items: center; gap: 5px; }
-        .btn-qty { background: #333; border: none; color: white; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .qty-input { width: 45px; height: 28px; background: transparent; border: 1px solid #444; color: white; text-align: center; border-radius: 4px; font-weight: bold; font-size: 1rem; }
+        /* FIJACIÓN ESTRUCTURAL DE CAJA DE CONTROLES v13.5 */
+        .item-controls { display: flex; align-items: center; gap: 5px; flex-shrink: 0; user-select: none; }
+        .btn-qty { background: #333; border: none; color: white; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-weight: bold; flex-shrink: 0; }
+        .qty-input { width: 45px; height: 28px; background: transparent; border: 1px solid #444; color: white; text-align: center; border-radius: 4px; font-weight: bold; font-size: 1rem; flex-shrink: 0; }
 
         .item-note { width: 100%; background: #0f0f0f; border: 1px solid #333; color: #fff; font-size: 0.85rem; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; }
         .item-note::placeholder { color: #666; }
@@ -113,7 +114,7 @@
             overflow: hidden;
         }
 
-        /* ARQUITECTURA DE MOTOR GRÁFICO AVANZADO v13.4 (CAPAS FLOTANTES DE ALTA PRECISIÓN HORIZONTAL) */
+        /* ARQUITECTURA DE MOTOR GRÁFICO AVANZADO v13.5 (CAPAS FLOTANTES DE ALTA PRECISIÓN HORIZONTAL) */
         .text-banner-content {
             width: 100%;
             text-align: center;
@@ -381,7 +382,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 13.4</p>
+    <p class="version-tag">Versión 13.5</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -523,7 +524,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v13.4)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v13.5)</h3>
         
         <div class="admin-section-title"><i class="fas fa-images"></i> Campañas Especiales de Banners</div>
         <button class="pay-option-btn" onclick="toggleAdminSectionBlock('admin-banners-management-block', 'banners')" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
@@ -738,6 +739,13 @@
         window.localBannersArray.forEach((b, idx) => {
             let noteInput = document.getElementById(`note-banner-${idx}`); if (noteInput) noteInput.value = "";
             let qtyInput = document.getElementById(`qty-banner-counter-${idx}`); if (qtyInput) qtyInput.value = "0";
+        });
+
+        window.localMenuArray.forEach((cat, catIdx) => {
+            (cat.products || []).forEach((prod, prodIdx) => {
+                let noteInput = document.getElementById('note-' + prod.name); if (noteInput) noteInput.value = "";
+                let qtyInput = document.getElementById(`qty-${catIdx}-${prodIdx}`); if (qtyInput) qtyInput.value = "0";
+            });
         });
         
         let btnLoc = document.getElementById('btn-location'); if (btnLoc) btnLoc.classList.remove('active');
@@ -1036,7 +1044,8 @@
                 let banner = item.data;
                 let idx = item.index;
                 let bannerPrice = parseFloat(banner.price || 0);
-                let currentPromoQty = cart[banner.title] ? cart[banner.title].qty : 0;
+                let cartKey = `banner_${idx}`;
+                let currentPromoQty = cart[cartKey] ? cart[cartKey].qty : 0;
 
                 let mediaHtml = "";
                 if (banner.url) {
@@ -1059,9 +1068,9 @@
                     </div>
                     <div style="display:flex; justify-content:flex-start; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid #222;">
                         <div class="item-controls">
-                            <button class="btn-qty" onclick="changeQty('${banner.title.replace(/'/g, "\\'")}', -1, ${bannerPrice})">-</button>
+                            <button class="btn-qty" onclick="changeQty('${cartKey}', '${banner.title.replace(/'/g, "\\'")}', -1, ${bannerPrice})">-</button>
                             <input type="number" id="qty-banner-counter-${idx}" class="qty-input" value="${currentPromoQty}" readonly>
-                            <button class="btn-qty" onclick="changeQty('${banner.title.replace(/'/g, "\\'")}', 1, ${bannerPrice})">+</button>
+                            <button class="btn-qty" onclick="changeQty('${cartKey}', '${banner.title.replace(/'/g, "\\'")}', 1, ${bannerPrice})">+</button>
                         </div>
                     </div>
                     <input type="text" id="note-banner-${idx}" class="item-note" placeholder="Indícanos tus comentarios para esta promo..." style="margin-top:10px;">
@@ -1463,8 +1472,9 @@
         let container = document.getElementById('main-dynamic-menu-container'); let html = "";
         window.localMenuArray.forEach((cat, catIdx) => {
             html += `<button class="category-btn" onclick="toggle('dyn-cat-${catIdx}')">${cat.name} <span>▼</span></button><div id="dyn-cat-${catIdx}" class="category-content">`;
-            (cat.products || []).forEach(prod => {
-                let safeQty = cart[prod.name] ? cart[prod.name].qty : 0; let mediaHtml = "";
+            (cat.products || []).forEach((prod, prodIdx) => {
+                let cartKey = `prod_${catIdx}_${prodIdx}`;
+                let safeQty = cart[cartKey] ? cart[cartKey].qty : 0; let mediaHtml = "";
                 let isVideo = prod.img && (prod.img.toLowerCase().includes('.mp4') || prod.img.toLowerCase().includes('.webm') || prod.img.toLowerCase().includes('.mov'));
                 if (isVideo) { mediaHtml = `<video src="${prod.img}" class="item-img" autoplay loop muted playsinline onclick="zoomImg(this.src, true)"></video>`; } 
                 else { mediaHtml = `<img src="${prod.img || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=200&auto=format&fit=crop'}" class="item-img" onclick="zoomImg(this.src, false)">`; }
@@ -1474,9 +1484,9 @@
                             ${mediaHtml}
                             <div class="item-info"><span class="item-title">${prod.name}</span><span class="item-price">₡${prod.price.toLocaleString('en-US')}</span></div>
                             <div class="item-controls">
-                                <button class="btn-qty" onclick="changeQty('${prod.name.replace(/'/g, "\\'")}', -1, ${prod.price})">-</button>
-                                <input type="number" id="qty-${prod.name}" class="qty-input" value="${safeQty}" onchange="manualQty('${prod.name.replace(/'/g, "\\'")}', this.value, ${prod.price})">
-                                <button class="btn-qty" onclick="changeQty('${prod.name.replace(/'/g, "\\'")}', 1, ${prod.price})">+</button>
+                                <button class="btn-qty" onclick="changeQty('${cartKey}', '${prod.name.replace(/'/g, "\\'")}', -1, ${prod.price})">-</button>
+                                <input type="number" id="qty-${catIdx}-${prodIdx}" class="qty-input" value="${safeQty}" onchange="manualQty('${cartKey}', '${prod.name.replace(/'/g, "\\'")}', this.value, ${prod.price})">
+                                <button class="btn-qty" onclick="changeQty('${cartKey}', '${prod.name.replace(/'/g, "\\'")}', 1, ${prod.price})">+</button>
                             </div>
                         </div>
                         <input type="text" id="note-${prod.name}" class="item-note" placeholder="${prod.desc || 'indicanos tu comentario'}">
@@ -1759,20 +1769,34 @@
 
     function showSinpe() { openModal('sinpeModal'); }
     function toggle(id) { let el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; }
-    function changeQty(name, val, price) { if (!cart[name]) cart[name] = { qty: 0, price: price }; let newQty = cart[name].qty + val; if (newQty < 0) newQty = 0; manualQty(name, newQty, price); }
+    
+    function changeQty(key, displayName, val, price) { 
+        if (!cart[key]) cart[key] = { qty: 0, price: price, name: displayName }; 
+        let newQty = cart[key].qty + val; 
+        if (newQty < 0) newQty = 0; 
+        manualQty(key, displayName, newQty, price); 
+    }
 
-    function manualQty(name, value, price) {
-        if (!cart[name]) cart[name] = { qty: 0, price: price };
+    function manualQty(key, displayName, value, price) {
+        if (!cart[key]) cart[key] = { qty: 0, price: price, name: displayName };
         let newQty = parseInt(value) || 0; if (newQty < 0) newQty = 0;
-        total += (newQty - cart[name].qty) * price; cart[name].qty = newQty;
-        let el = document.getElementById('qty-' + name); if(el) el.value = cart[name].qty;
         
-        window.localBannersArray.forEach((b, idx) => {
-            if (b.title === name) {
-                let bannerCounter = document.getElementById(`qty-banner-counter-${idx}`);
-                if (bannerCounter) bannerCounter.value = cart[name].qty;
-            }
-        });
+        total += (newQty - cart[key].qty) * price;
+        cart[key].qty = newQty;
+        cart[key].name = displayName;
+        
+        if (key.startsWith('banner_')) {
+            let idx = key.split('_')[1];
+            let bannerCounter = document.getElementById(`qty-banner-counter-${idx}`);
+            if (bannerCounter) bannerCounter.value = newQty;
+        } else if (key.startsWith('prod_')) {
+            let parts = key.split('_');
+            let catIdx = parts[1];
+            let prodIdx = parts[2];
+            let el = document.getElementById(`qty-${catIdx}-${prodIdx}`);
+            if (el) el.value = newQty;
+        }
+        
         document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
     }
     
@@ -1783,35 +1807,38 @@
     }
     function closeZoomModal() { document.getElementById('zoomModal').innerHTML = ""; closeModalTop(); }
 
+    /* MOTOR DE CONSOLIDACIÓN v13.5 (SUMA EXACTA POR NOMBRE LIMPIO) */
     function getConsolidatedCart() {
         let consolidated = {};
         
-        window.localMenuArray.forEach(cat => {
-            (cat.products || []).forEach(prod => {
-                if (cart[prod.name] && cart[prod.name].qty > 0) {
-                    let noteInput = document.getElementById('note-' + prod.name);
-                    let note = noteInput ? noteInput.value.trim() : "";
-                    if (!consolidated[prod.name]) {
-                        consolidated[prod.name] = { qty: 0, price: prod.price, notes: [] };
+        for (let key in cart) {
+            let item = cart[key];
+            if (item && item.qty > 0) {
+                let displayName = item.name;
+                let note = "";
+                
+                if (key.startsWith('prod_')) {
+                    let parts = key.split('_');
+                    let catIdx = parts[1];
+                    let prodIdx = parts[2];
+                    let prodObj = window.localMenuArray[catIdx]?.products[prodIdx];
+                    if (prodObj) {
+                        let noteInput = document.getElementById('note-' + prodObj.name);
+                        if (noteInput) note = noteInput.value.trim();
                     }
-                    consolidated[prod.name].qty += cart[prod.name].qty;
-                    if (note) consolidated[prod.name].notes.push(note);
+                } else if (key.startsWith('banner_')) {
+                    let idx = key.split('_')[1];
+                    let noteInput = document.getElementById(`note-banner-${idx}`);
+                    if (noteInput) note = noteInput.value.trim();
                 }
-            });
-        });
-
-        window.localBannersArray.forEach((banner, idx) => {
-            if (cart[banner.title] && cart[banner.title].qty > 0) {
-                let noteInput = document.getElementById(`note-banner-${idx}`);
-                let noteText = noteInput ? noteInput.value.trim() : "";
-                if (!consolidated[banner.title]) {
-                    consolidated[banner.title] = { qty: 0, price: parseFloat(banner.price || 0), notes: [] };
+                
+                if (!consolidated[displayName]) {
+                    consolidated[displayName] = { qty: 0, price: item.price, notes: [] };
                 }
-                consolidated[banner.title].qty += cart[banner.title].qty;
-                if (noteText) consolidated[banner.title].notes.push(noteText);
+                consolidated[displayName].qty += item.qty;
+                if (note) consolidated[displayName].notes.push(note);
             }
-        });
-
+        }
         return consolidated;
     }
 
