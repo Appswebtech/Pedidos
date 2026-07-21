@@ -68,7 +68,7 @@
         .item-title { font-weight: bold; font-size: 0.95rem; color: #fff; word-break: break-word; }
         .item-price { color: #0026ff; font-weight: bold; font-size: 0.85rem; }
         
-        /* FIJACIÓN ESTRUCTURAL DE CAJA DE CONTROLES v13.5 */
+        /* FIJACIÓN ESTRUCTURAL DE CAJA DE CONTROLES */
         .item-controls { display: flex; align-items: center; gap: 5px; flex-shrink: 0; user-select: none; }
         .btn-qty { background: #333; border: none; color: white; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-weight: bold; flex-shrink: 0; }
         .qty-input { width: 45px; height: 28px; background: transparent; border: 1px solid #444; color: white; text-align: center; border-radius: 4px; font-weight: bold; font-size: 1rem; flex-shrink: 0; }
@@ -114,7 +114,7 @@
             overflow: hidden;
         }
 
-        /* ARQUITECTURA DE MOTOR GRÁFICO AVANZADO v13.5 (CAPAS FLOTANTES DE ALTA PRECISIÓN HORIZONTAL) */
+        /* ARQUITECTURA DE MOTOR GRÁFICO AVANZADO v13.6.1 (CAPAS EXTERIORES DE CINTA LED) */
         .text-banner-content {
             width: 100%;
             text-align: center;
@@ -123,7 +123,6 @@
             display: block;
         }
 
-        /* CONTENEDOR MAESTRO DE CADA GLIFO INDEPENDIENTE */
         .char-master-wrapper {
             position: relative;
             display: inline-block;
@@ -131,8 +130,8 @@
             white-space: nowrap;
         }
 
-        /* CAPA 1: TRAZO VECTORIAL TRADICIONAL (FONDO) */
-        .char-layer-stroke {
+        /* CAPA 1: CINTA LED VECTORIAL AL FONDO (NO ATRAVIESA LA LETRA) */
+        .char-layer-led {
             position: absolute;
             top: 0;
             left: 0;
@@ -142,27 +141,26 @@
             white-space: nowrap;
         }
 
-        /* CAPA 2: RELLENO SÓLIDO LIMPIO DE LA LETRA */
-        .char-layer-fill {
-            position: relative;
-            display: inline-block;
-            pointer-events: none;
-            z-index: 2;
-            white-space: nowrap;
-        }
-
-        /* CAPA 3: CINTA LED VECTORIAL SÓLIDA SUPERPUESTA (FRENTE) */
-        .char-layer-led {
+        /* CAPA 2: BORDE / TRAZO (CAPA INTERMEDIA) */
+        .char-layer-stroke {
             position: absolute;
             top: 0;
             left: 0;
             color: transparent !important;
             pointer-events: none;
-            z-index: 3;
+            z-index: 5;
             white-space: nowrap;
         }
 
-        /* ANIMACIÓN CRISP/SÓLIDA PARA LA CINTA LED CONTORNO */
+        /* CAPA 3: RELLENO SÓLIDO LIMPIO DE LA LETRA (AL FRENTE) */
+        .char-layer-fill {
+            position: relative;
+            display: inline-block;
+            pointer-events: none;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
         @keyframes ledSolidLineAnim {
             0%, 100% { -webkit-text-stroke-color: #0026ff; }
             25% { -webkit-text-stroke-color: #00ffcc; }
@@ -174,7 +172,6 @@
             animation: ledSolidLineAnim 4s linear infinite !important;
         }
 
-        /* CONTENEDOR MULTIMEDIA INFERIOR DIVIDIDO */
         .text-banner-media-wrapper {
             width: 100%;
             height: auto;
@@ -191,7 +188,6 @@
             display: block;
         }
 
-        /* ESTILOS EXCLUSIVOS PARA DESLIZADORES PREMIUM */
         .admin-slider {
             width: 100%;
             -webkit-appearance: none;
@@ -382,7 +378,7 @@
         </div>
     </div>
 
-    <p class="version-tag">Versión 13.5</p>
+    <p class="version-tag">Versión 13.6.1</p>
 
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
@@ -524,8 +520,28 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v13.5)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v13.6.1)</h3>
         
+        <!-- PANEL DE ANALÍTICA DE VISITAS -->
+        <div class="admin-section-title"><i class="fas fa-chart-line"></i> Estadísticas de Visitas del Negocio</div>
+        <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+            <div style="display: flex; justify-content: space-around; margin-bottom: 10px;">
+                <div>
+                    <div style="font-size: 0.72rem; color: #aaa; font-weight: bold;">DISPOSITIVOS ÚNICOS (HOY)</div>
+                    <div id="stat-devices-today" style="font-size: 1.4rem; font-weight: bold; color: #00ffcc;">0</div>
+                </div>
+                <div style="border-left: 1px solid #333;"></div>
+                <div>
+                    <div style="font-size: 0.72rem; color: #aaa; font-weight: bold;">VISITAS TOTALES (HOY)</div>
+                    <div id="stat-views-today" style="font-size: 1.4rem; font-weight: bold; color: #25D366;">0</div>
+                </div>
+            </div>
+            <div style="border-top: 1px dashed #333; padding-top: 8px; display: flex; justify-content: space-around; font-size: 0.8rem; color: #bbb;">
+                <div>Total Dispositivos: <b id="stat-devices-all" style="color: #00ffcc;">0</b></div>
+                <div>Total Visitas: <b id="stat-views-all" style="color: #25D366;">0</b></div>
+            </div>
+        </div>
+
         <div class="admin-section-title"><i class="fas fa-images"></i> Campañas Especiales de Banners</div>
         <button class="pay-option-btn" onclick="toggleAdminSectionBlock('admin-banners-management-block', 'banners')" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
             <i class="fas fa-image"></i> Gestionar Banners (Imágenes/Video)
@@ -664,6 +680,11 @@
     let modalStack = [];
     let programmaticBackCount = 0;
 
+    /* DETECTOR DE ENTORNO SEGURO PARA CODEPEN E IFRAMES */
+    function isTopWindow() {
+        try { return window.self === window.top; } catch (e) { return false; }
+    }
+
     function checkModalLock() {
         if (modalStack.length > 0) { document.body.classList.add('modal-lock'); } 
         else { document.body.classList.remove('modal-lock'); }
@@ -681,7 +702,9 @@
         modalStack.push(id);
         document.getElementById(id).style.display = "flex";
         checkModalLock();
-        history.pushState({ depth: modalStack.length }, "");
+        if (isTopWindow()) {
+            try { history.pushState({ depth: modalStack.length }, ""); } catch(e){}
+        }
     }
 
     function closeModalTop() {
@@ -693,8 +716,10 @@
                 document.getElementById(prevId).style.display = "flex";
             }
             checkModalLock();
-            programmaticBackCount++;
-            history.back();
+            if (isTopWindow()) {
+                programmaticBackCount++;
+                try { history.back(); } catch(e){}
+            }
         }
     }
 
@@ -707,8 +732,10 @@
             });
             modalStack = [];
             checkModalLock();
-            programmaticBackCount += count;
-            history.go(-count);
+            if (isTopWindow()) {
+                programmaticBackCount += count;
+                try { history.go(-count); } catch(e){}
+            }
         }
     }
 
@@ -792,6 +819,65 @@
         return Math.round(minPx + ((val - 1) * (maxPx - minPx) / 99));
     }
 
+    /* OBTENCIÓN PROTEGIDA DE IDENTIFICADOR DE DISPOSITIVO PARA IFRAMES Y CODEPEN */
+    function getDeviceId() {
+        let deviceId = null;
+        try {
+            deviceId = localStorage.getItem('cp_device_id');
+            if (!deviceId) {
+                deviceId = 'dev_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
+                localStorage.setItem('cp_device_id', deviceId);
+            }
+        } catch (e) {
+            deviceId = 'dev_temp_' + Math.random().toString(36).substring(2, 9);
+        }
+        return deviceId;
+    }
+
+    function registrarVisitaAnalytics() {
+        try {
+            let deviceId = getDeviceId();
+            let todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+
+            let dailyRef = db.collection("visitas_diarias").doc(todayStr);
+            dailyRef.set({
+                fecha: todayStr,
+                visitas_totales: firebase.firestore.FieldValue.increment(1),
+                dispositivos: firebase.firestore.FieldValue.arrayUnion(deviceId)
+            }, { merge: true }).catch(e => console.error(e));
+
+            let globalRef = db.collection("configuraciones").doc("cooking-pollos");
+            globalRef.set({
+                total_views_all_time: firebase.firestore.FieldValue.increment(1),
+                all_devices: firebase.firestore.FieldValue.arrayUnion(deviceId)
+            }, { merge: true }).catch(e => console.error(e));
+        } catch (err) { console.error("Analytics Error:", err); }
+    }
+
+    function cargarEstadisticasAdmin() {
+        let todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+        
+        db.collection("visitas_diarias").doc(todayStr).get().then(doc => {
+            if (doc.exists) {
+                let data = doc.data();
+                let totalViews = data.visitas_totales || 0;
+                let uniqueDevs = (data.dispositivos && Array.isArray(data.dispositivos)) ? data.dispositivos.length : 0;
+                let elV = document.getElementById('stat-views-today'); if(elV) elV.innerText = totalViews.toLocaleString();
+                let elD = document.getElementById('stat-devices-today'); if(elD) elD.innerText = uniqueDevs.toLocaleString();
+            }
+        }).catch(err => console.error(err));
+
+        db.collection("configuraciones").doc("cooking-pollos").get().then(doc => {
+            if (doc.exists) {
+                let data = doc.data();
+                let totalAllViews = data.total_views_all_time || 0;
+                let uniqueAllDevs = (data.all_devices && Array.isArray(data.all_devices)) ? data.all_devices.length : 0;
+                let elAV = document.getElementById('stat-views-all'); if(elAV) elAV.innerText = totalAllViews.toLocaleString();
+                let elAD = document.getElementById('stat-devices-all'); if(elAD) elAD.innerText = uniqueAllDevs.toLocaleString();
+            }
+        }).catch(err => console.error(err));
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         let scheduleContainer = document.getElementById('admin-schedule-container');
         let htmlSchedule = "";
@@ -812,6 +898,8 @@
             `;
         });
         scheduleContainer.innerHTML = htmlSchedule;
+
+        registrarVisitaAnalytics();
 
         db.collection("configuraciones").doc("cooking-pollos").onSnapshot((doc) => {
             if (doc.exists) {
@@ -865,7 +953,9 @@
                         syncNeeded = true;
                     }
                 });
-                if (syncNeeded) {
+                
+                if (syncNeeded && !window.gallerySyncedInSession) {
+                    window.gallerySyncedInSession = true;
                     db.collection("configuraciones").doc("cooking-pollos").update({ gallery_media: window.globalGalleryArray }).catch(()=>{});
                 }
 
@@ -1000,7 +1090,8 @@
                     
                     let strokeParam = strokeSize > 0 ? `${strokeSize}px` : '0px';
                     let animClass = t.ledStroke ? 'led-stroke-mov' : '';
-                    
+                    let ledStrokeWidth = (strokeSize > 0 ? (strokeSize * 2 + 4) : 4) + "px";
+
                     let bannerText = t.text || "";
                     let charsArray = Array.from(bannerText);
                     
@@ -1016,12 +1107,11 @@
                             return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam}; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;">${char}</span>`;
                         }
                         
-                        let ledStrokeWidth = strokeSize > 0 ? "2px" : "1.5px";
                         return `
                             <span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">
+                                <span class="char-layer-led ${animClass}" style="-webkit-text-stroke: ${ledStrokeWidth} #0026ff; display: ${t.ledStroke ? 'block' : 'none'};">${char}</span>
                                 <span class="char-layer-stroke" style="-webkit-text-stroke: ${strokeParam} ${strokeColor}; display: ${strokeSize > 0 ? 'block' : 'none'};">${char}</span>
                                 <span class="char-layer-fill" style="color: ${textColor};">${char}</span>
-                                <span class="char-layer-led ${animClass}" style="-webkit-text-stroke: ${ledStrokeWidth} #0026ff; display: ${t.ledStroke ? 'block' : 'none'};">${char}</span>
                             </span>
                         `;
                     }).join("");
@@ -1370,7 +1460,8 @@
                 
                 let strokeParam = strokeSize > 0 ? `${strokeSize}px` : '0px';
                 let animClass = t.ledStroke ? 'led-stroke-mov' : '';
-                
+                let ledStrokeWidth = (strokeSize > 0 ? (strokeSize * 2 + 4) : 4) + "px";
+
                 let bannerText = t.text || "";
                 let charsArray = Array.from(bannerText);
                 
@@ -1386,12 +1477,11 @@
                         return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam}; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;">${char}</span>`;
                     }
                     
-                    let ledStrokeWidth = strokeSize > 0 ? "2px" : "1.5px";
                     return `
                         <span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">
+                            <span class="char-layer-led ${animClass}" style="-webkit-text-stroke: ${ledStrokeWidth} #0026ff; display: ${t.ledStroke ? 'block' : 'none'};">${char}</span>
                             <span class="char-layer-stroke" style="-webkit-text-stroke: ${strokeParam} ${strokeColor}; display: ${strokeSize > 0 ? 'block' : 'none'};">${char}</span>
                             <span class="char-layer-fill" style="color: ${textColor};">${char}</span>
-                            <span class="char-layer-led ${animClass}" style="-webkit-text-stroke: ${ledStrokeWidth} #0026ff; display: ${t.ledStroke ? 'block' : 'none'};">${char}</span>
                         </span>
                     `;
                 }).join("");
@@ -1665,8 +1755,11 @@
 
     function verifyAdminPin() {
         let enteredPin = document.getElementById('input-login-pin').value.trim(); let hashedEntered = CryptoJS.SHA256(enteredPin).toString();
-        if (enteredPin === currentGlobalPin || hashedEntered === currentGlobalPin) { closeModalTop(); openModal('adminModal'); } 
-        else { customAlert("PIN incorrecto.", "Security"); }
+        if (enteredPin === currentGlobalPin || hashedEntered === currentGlobalPin) { 
+            closeModalTop(); 
+            openModal('adminModal'); 
+            cargarEstadisticasAdmin();
+        } else { customAlert("PIN incorrecto.", "Security"); }
         document.getElementById('input-login-pin').value = "";
     }
 
@@ -1698,7 +1791,7 @@
             updateConfigObject[day + '_close'] = document.getElementById(`input-${day}-close`).value.trim() || "11:00 PM";
         });
 
-        db.collection("configuraciones").doc("cooking-pollos").set(updateConfigObject)
+        db.collection("configuraciones").doc("cooking-pollos").set(updateConfigObject, { merge: true })
         .then(() => {
             customAlert("Cambios y assets sincronizados con éxito.", "Nube Al Día");
             closeModals(); renderUserDynamicMenu(); renderMainPageBanners();
@@ -1807,7 +1900,7 @@
     }
     function closeZoomModal() { document.getElementById('zoomModal').innerHTML = ""; closeModalTop(); }
 
-    /* MOTOR DE CONSOLIDACIÓN v13.5 (SUMA EXACTA POR NOMBRE LIMPIO) */
+    /* MOTOR DE CONSOLIDACIÓN */
     function getConsolidatedCart() {
         let consolidated = {};
         
