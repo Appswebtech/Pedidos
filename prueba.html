@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Pedidos | Cloud Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <style>
+        /* PROTECCIÓN ADICIONAL CSS */
+        img, video { 
+            -webkit-user-drag: none; 
+            -khtml-user-drag: none; 
+            -moz-user-drag: none; 
+            -o-user-drag: none; 
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* CONFIGURACIÓN CRÍTICA DE BLOQUEO DE FONDO INMÓVIL */
+        body.modal-lock {
+            overflow: hidden !important;
+            height: 100vh !important;
+            touch-action: none;
+        }
+
+        body { 
+            background-color: #0b0b0b; 
+            color: #ffffff; 
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif; 
+            margin: 0; 
+            padding-bottom: 240px;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            transition: background 0.5s ease;
+        }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; text-align: center; position: relative; }
+        
+        header { padding: 40px 0 30px; }
+        .header-title { letter-spacing: 2px; font-size: 2.2rem; margin: 0; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+
+        /* INDICADOR DE HORARIO PREMIUM DINÁMICO */
+        .badge-horario { position: absolute; top: 20px; left: 20px; background: rgba(17,17,17,0.85); border: 1px solid #333; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 8px; cursor: pointer; z-index: 10; backdrop-filter: blur(5px); transition: 0.3s; }
+        .badge-horario:hover { background: rgba(30,30,30,0.95); transform: scale(1.03); }
+        .dot-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
+
+        .nota-uso { background-color: rgba(17, 17, 17, 0.9); border: 2px dashed #0026ff; padding: 15px; margin: 20px auto; border-radius: 10px; text-align: left; }
+        .nota-uso strong { color: #0026ff; display: block; margin-bottom: 5px; }
+
+        .name-input { width: 100%; background: #0f0f0f; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-top: 15px; box-sizing: border-box; outline: none; font-size: 1rem; }
+        .name-input:focus { border-color: #0026ff; }
+
+        .category-btn { background-color: rgba(17, 17, 17, 0.9); color: #fff; width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #333; border-radius: 12px; text-align: left; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .category-content { display: none; background: rgba(22, 22, 22, 0.95); padding: 15px; border-radius: 0 0 12px 12px; border: 1px solid #333; border-top: none; margin-top: -10px; margin-bottom: 15px; }
+
+        .menu-item { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid #222; padding-bottom: 12px; }
+        .item-main { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; box-sizing: border-box; }
+        .item-img { width: 75px; height: 75px; border-radius: 10px; object-fit: cover; background-color: #222; cursor: zoom-in; border: 1px solid #333; flex-shrink: 0; }
+        
+        .item-info { text-align: left; flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .item-title { font-weight: bold; font-size: 0.95rem; color: #fff; word-break: break-word; }
+        .item-price { color: #0026ff; font-weight: bold; font-size: 0.85rem; }
+        
+        /* FIJACIÓN ESTRUCTURAL DE CAJA DE CONTROLES */
+        .item-controls { display: flex; align-items: center; gap: 5px; flex-shrink: 0; user-select: none; }
+        .btn-qty { background: #333; border: none; color: white; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-weight: bold; flex-shrink: 0; }
+        .qty-input { width: 45px; height: 28px; background: transparent; border: 1px solid #444; color: white; text-align: center; border-radius: 4px; font-weight: bold; font-size: 1rem; flex-shrink: 0; }
+
+        .item-note { width: 100%; background: #0f0f0f; border: 1px solid #333; color: #fff; font-size: 0.85rem; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; }
+        .item-note::placeholder { color: #666; }
+        .item-note:focus { border-color: #0026ff; }
+
+        /* EFECTO EMULADOR DE CINTA LED DINÁMICA DE NEÓN MULTICOLOR PARA CONTENEDORES */
+        @keyframes ledStripPulse {
+            0% { border-color: #0026ff; box-shadow: 0 0 12px #0026ff, inset 0 0 4px #0026ff; }
+            25% { border-color: #00ffcc; box-shadow: 0 0 16px #00ffcc, inset 0 0 4px #00ffcc; }
+            50% { border-color: #ff00ff; box-shadow: 0 0 12px #ff00ff, inset 0 0 4px #ff00ff; }
+            75% { border-color: #3300ff; box-shadow: 0 0 16px #3300ff, inset 0 0 4px #3300ff; }
+            100% { border-color: #0026ff; box-shadow: 0 0 12px #0026ff, inset 0 0 4px #0026ff; }
+        }
+
+        .promo-led-container {
+            background: rgba(11, 11, 11, 0.95); 
+            border: 2px solid #0026ff; 
+            padding: 16px; 
+            margin: 0 auto 25px auto; 
+            border-radius: 14px; 
+            text-align: left; 
+            box-sizing: border-box;
+            animation: ledStripPulse 4s linear infinite;
+        }
+
+        /* BANNER LED ADAPTABLE Y ELÁSTICO SIN CORTES */
+        .text-banner-container {
+            background: rgba(11, 11, 11, 0.95);
+            border: 2px solid #0026ff;
+            padding: 16px;
+            margin: 0 auto 20px auto;
+            border-radius: 14px;
+            box-sizing: border-box;
+            animation: ledStripPulse 4s linear infinite;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            height: auto !important;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* ARQUITECTURA DE MOTOR GRÁFICO AVANZADO v13.6.1 (CAPAS EXTERIORES DE CINTA LED) */
+        .text-banner-content {
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            word-wrap: break-word;
+            display: block;
+        }
+
+        .char-master-wrapper {
+            position: relative;
+            display: inline-block;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* CAPA 1: CINTA LED VECTORIAL AL FONDO (NO ATRAVIESA LA LETRA) */
+        .char-layer-led {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: transparent !important;
+            pointer-events: none;
+            z-index: 1;
+            white-space: nowrap;
+        }
+
+        /* CAPA 2: BORDE / TRAZO (CAPA INTERMEDIA) */
+        .char-layer-stroke {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: transparent !important;
+            pointer-events: none;
+            z-index: 5;
+            white-space: nowrap;
+        }
+
+        /* CAPA 3: RELLENO SÓLIDO LIMPIO DE LA LETRA (AL FRENTE) */
+        .char-layer-fill {
+            position: relative;
+            display: inline-block;
+            pointer-events: none;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        @keyframes ledSolidLineAnim {
+            0%, 100% { -webkit-text-stroke-color: #0026ff; }
+            25% { -webkit-text-stroke-color: #00ffcc; }
+            50% { -webkit-text-stroke-color: #ff00ff; }
+            75% { -webkit-text-stroke-color: #3300ff; }
+        }
+
+        .led-stroke-mov {
+            animation: ledSolidLineAnim 4s linear infinite !important;
+        }
+
+        .text-banner-media-wrapper {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            overflow: hidden;
+            display: block;
+            background: rgba(0,0,0,0.2);
+        }
+        .text-banner-media-wrapper img, .text-banner-media-wrapper video {
+            width: 100%;
+            height: auto;
+            max-height: 280px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .admin-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            background: #333;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+            margin: 10px 0;
+        }
+        .admin-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #0026ff;
+            cursor: pointer;
+            box-shadow: 0 0 6px #0026ff;
+            transition: 0.2s;
+        }
+        .admin-slider::-webkit-slider-thumb:active {
+            transform: scale(1.2);
+            background: #00ffcc;
+            box-shadow: 0 0 10px #00ffcc;
+        }
+
+        .cart-footer { position: fixed; bottom: 0; left: 0; right: 0; background: #111; padding: 15px; border-top: 2px solid #0026ff; z-index: 1000; text-align: center; }
+        .total-container { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; }
+        .footer-btns { display: flex; justify-content: center; align-items: center; gap: 15px; }
+        .btn-ticket { background: #222; border: 1px solid #0026ff; color: #fff; padding: 6px 12px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; }
+        .btn-send { background-color: #25D366; color: white; padding: 14px 0; border-radius: 50px; font-weight: bold; width: 95%; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px auto 0; cursor: pointer; border: none; font-size: 1.1rem; }
+
+        .modal-overlay { display: none; position: fixed; z-index: 2100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
+        .modal-box { background: white; color: black; padding: 25px; border-radius: 12px; width: 85%; max-width: 350px; text-align: center; }
+        .pay-option-btn { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #f0f0f0; border-radius: 8px; font-weight: bold; cursor: pointer; background: #fafafa; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; color: #333; }
+        
+        .ticket-style { font-family: 'Courier New', Courier, monospace; background: white; color: black; padding: 25px; border-radius: 5px; width: 85%; max-width: 350px; text-align: center; }
+        .ticket-header { border-bottom: 1px dashed #000; margin-bottom: 15px; padding-bottom: 15px; }
+
+        #zoomModal { background-color: rgba(0, 0, 0, 0.95); cursor: zoom-out; }
+        #zoomModal img, #zoomModal video { max-width: 95%; max-height: 85%; border-radius: 10px; }
+
+        .delivery-btns { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-loc, .btn-pickup { flex: 1; min-width: 130px; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
+        
+        .btn-loc { background: #333; border: 1px solid #444; } 
+        .btn-pickup { background: #333; border: 1px solid #444; }
+        
+        .btn-loc.active { background: #0026ff; border: none; color: white; } 
+        .btn-pickup.active { background: #ff9900; border: none; color: white; }
+
+        .business-info-section { margin-top: 40px; padding: 20px; background: rgba(20,20,20,0.85); border-radius: 15px; border: 1px solid #333; text-align: center; }
+        .business-desc { font-size: 0.9rem; color: #ccc; font-style: italic; line-height: 1.4; display: none; margin-bottom: 15px; }
+        .maps-btn-container { margin: 15px 0; display: none; }
+        .btn-maps-link { background: #ea4335; color: white; padding: 10px 18px; border-radius: 30px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .señas-text { font-size: 0.85rem; color: #aaa; margin: 8px 0 0 0; font-weight: 500; }
+        
+        .social-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; width: 100%; }
+        .social-row-btn { display: none; align-items: center; gap: 12px; text-decoration: none; color: white; font-size: 0.95rem; font-weight: 600; background: rgba(255,255,255,0.04); padding: 10px 16px; border-radius: 30px; border: 1px solid #222; width: 85%; max-width: 280px; box-sizing: border-box; transition: 0.3s; }
+        .social-row-btn i { font-size: 1.3rem; }
+        .social-row-btn:hover { background: rgba(255,255,255,0.08); border-color: #0026ff; }
+        
+        .version-tag { color: #555; font-weight: bold; margin: 40px auto 10px; font-size: 0.8rem; text-align: center; letter-spacing: 1px; }
+        
+        #adminModal .modal-box { max-width: 440px; text-align: left; background: #141414; color: white; border: 2px solid #0026ff; max-height: 80vh; overflow-y: auto; padding: 20px; }
+        .admin-section-title { font-size: 1rem; color: #0026ff; border-bottom: 1px solid #333; padding-bottom: 5px; margin: 15px 0 10px 0; font-weight: bold; }
+        .admin-field { margin-bottom: 12px; }
+        .admin-field label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px; font-weight: bold; }
+        
+        .admin-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 0.9rem; margin-bottom: 4px; }
+        .admin-input:focus { border-color: #0026ff; }
+
+        select.admin-input, select.schedule-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: #222;
+            color: white;
+            border: 1px solid #444;
+            padding: 10px 35px 10px 12px !important;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230026ff'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 18px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        select.schedule-select {
+            padding: 6px 25px 6px 8px !important;
+            background-position: right 6px center;
+            background-size: 14px;
+            font-size: 0.8rem;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .3s; border: 1px solid #444; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; }
+        input:checked + .slider { background-color: #0026ff; border-color: #0026ff; box-shadow: 0 0 8px rgba(0, 38, 255, 0.5); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+        
+        .schedule-config-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; background: rgba(255,255,255,0.02); padding: 6px; border-radius: 6px; border: 1px solid #222; }
+        .schedule-day-label { width: 75px; font-size: 0.85rem; font-weight: bold; color: #fff; }
+        .schedule-time-input { width: 85px; background: #222; border: 1px solid #444; color: white; padding: 6px; border-radius: 4px; font-size: 0.85rem; text-align: center; outline: none; }
+
+        .admin-cat-block { background: #1c1c1c; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+        .admin-prod-card { background: #262626; border: 1px solid #444; border-radius: 6px; padding: 10px; margin-top: 8px; position: relative; }
+        .btn-admin-delete { background: #ea4335; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; height: 38px; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-admin-delete:hover { background: #ff5c4d; }
+        
+        .btn-admin-toggle-cat { background: transparent; border: none; color: #0026ff; font-size: 1.1rem; cursor: pointer; padding: 0 8px; height: 38px; display: inline-flex; align-items: center; justify-content: center; }
+        .admin-actions { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 0; background: #141414; padding-top: 10px; }
+
+        .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; max-height: 260px; overflow-y: auto; padding-right: 4px; }
+        .gallery-item-box { position: relative; border-radius: 6px; overflow: hidden; border: 1px solid #444; cursor: pointer; background: #000; height: 75px; }
+        .gallery-item-box:hover { border-color: #0026ff; }
+        .gallery-item-box img, .gallery-item-box video { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-item-trash { position: absolute; top: 2px; right: 2px; background: rgba(234,67,53,0.9); color: white; border: none; border-radius: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; cursor: pointer; z-index: 5; }
+
+        .media-badge {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            background: rgba(11, 11, 11, 0.85);
+            color: #ffffff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.62rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid #333;
+            pointer-events: none;
+            z-index: 4;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;"> 
+<div class="container">
+    
+    <div id="schedule-badge" class="badge-horario" onclick="showScheduleDetails()">
+        <span class="dot-status" style="color: #666;"></span><i class="fas fa-clock"></i> Evaluar...
+    </div>
+
+    <header>
+        <img id="main-profile-img" src="" style="display:none; max-width: 220px; max-height: 160px; object-fit: contain; margin: 0 auto 15px; border-radius: 0; border: none; box-shadow: none; background: transparent;">
+        <h1 class="header-title" id="main-title">Conectando con Google...</h1>
+    </header>
+
+    <!-- CONTENEDOR DE PUBLICIDAD COMPLETO -->
+    <div id="banners-main-container"></div>
+
+    <div class="nota-uso">
+        <strong>⚠️ NOTA IMPORTANTE:</strong>
+        <span>• <b>Si estás en casa:</b> Seleccioná tus productos y envianos tu pedido por WhatsApp.<br>• <b>Si estás en el local:</b> Consultá el menú aquí. Haz tu pedido en la caja por favor.</span>
+    </div>
+
+    <div id="main-dynamic-menu-container">
+        <p style="color:#aaa; font-style:italic; padding:20px;">Cargando menú en tiempo real...</p>
+    </div>
+
+    <div class="business-info-section">
+        <p id="display-description" class="business-desc"></p>
+        <div id="display-maps-container" class="maps-btn-container">
+            <a id="display-maps-link" href="#" target="_blank" class="btn-maps-link">
+                <i class="fas fa-map-marked-alt"></i> Ver Ubicación en Google Maps
+            </a>
+            <p id="display-señas-local" class="señas-text"></p>
+        </div>
+        
+        <div class="social-container">
+            <a id="link-fb" class="social-row-btn" href="#" target="_blank" style="color: #1877f2;"><i class="fab fa-facebook"></i> <span id="text-fb" style="color:white;">Facebook</span></a>
+            <a id="link-ig" class="social-row-btn" href="#" target="_blank" style="color: #c13584;"><i class="fab fa-instagram"></i> <span id="text-ig" style="color:white;">Instagram</span></a>
+            <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
+        </div>
+    </div>
+
+    <p class="version-tag">Versión 13.6.1</p>
+
+    <div class="cart-footer">
+        <div class="total-container">Total Orden: ₡<span id="grand-total">0</span></div>
+        <div class="footer-btns">
+            <button class="btn-ticket" onclick="showTicket()">📋 Ver Detalle</button>
+        </div>
+        <button class="btn-send" onclick="openPayModal()">
+            <i class="fab fa-whatsapp"></i> ENVIAR PEDIDO
+        </button>
+        <div onclick="processAdminClick()" style="position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; cursor: pointer; background: transparent; z-index: 9999;"></div>
+    </div>
+</div>
+
+<div id="zoomModal" class="modal-overlay" onclick="closeZoomModal()"></div>
+
+<!-- MODAL GALERÍA CLOUD -->
+<div id="galleryModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #0026ff; max-width: 380px;">
+        <h3 style="margin-top:0; color:#0026ff; text-align:center;"><i class="fas fa-cloud"></i> Biblioteca de la Nube</h3>
+        <p style="font-size:0.8rem; color:#aaa; margin-bottom:12px; text-align:center;">Selecciona una foto existente o elimínala permanentemente de la nube.</p>
+        <div id="gallery-items-grid" class="gallery-grid"></div>
+        <button style="margin-top:20px; width:100%; padding:12px; background:#222; color:white; border:1px solid #444; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">Cerrar Galería</button>
+    </div>
+</div>
+
+<!-- DIÁLOGO DE CONFIRMACIÓN ELEGANTE PREMIUM -->
+<div id="customConfirmModal" class="modal-overlay" style="z-index: 9999;">
+    <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #ea4335; max-width: 320px; text-align: center; padding: 25px; border-radius: 12px;">
+        <h3 id="confirmTitle" style="margin-top:0; color: #ea4335; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <i class="fas fa-exclamation-triangle"></i> ¿Eliminar Archivo?
+        </h3>
+        <p id="confirmMessage" style="font-size: 0.95rem; color: #ccc; margin: 15px 0 20px 0; line-height: 1.4; text-align: center;"></p>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button id="btn-confirm-yes" class="btn-admin-delete" style="flex:1; height:40px; font-weight:bold;">Sí, Eliminar</button>
+            <button class="btn-admin-save" onclick="closeModalTop()" style="flex:1; height:40px; background:#222; border:1px solid #444; color:white; font-weight:bold;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="ticketModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="ticket-style" onclick="event.stopPropagation()">
+        <img id="ticket-logo" src="" style="display:none; max-width: 120px; max-height: 80px; object-fit: contain; margin: 0 auto 12px; border-radius:0; border:none;">
+        <div class="ticket-header"><h3 id="ticket-title" style="margin: 0; font-family: sans-serif;">Cargando...</h3></div>
+        <div id="ticket-list" style="text-align: left; font-size: 0.85rem; color: black;"></div>
+        <div style="border-top:1px dashed #000; margin-top:15px; padding-top:10px; font-weight:bold; display:flex; justify-content:space-between; font-size:1.1rem; color: black;">
+            <span>TOTAL:</span><span>₡<span id="t-total">0</span></span>
+        </div>
+        <button style="margin-top:20px; width:100%; padding:12px; background:#0026ff; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">CERRAR</button>
+    </div>
+</div>
+
+<div id="payModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0;">💳 Método de Pago</h3>
+        <button class="pay-option-btn" onclick="showSinpe()"><i class="fas fa-mobile-alt" style="color:#0026ff"></i> SINPE MÓVIL</button>
+        <button class="pay-option-btn" onclick="askCashAmount()"><i class="fas fa-money-bill-wave" style="color:#25D366"></i> EFECTIVO</button>
+    </div>
+</div>
+
+<div id="sinpeModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <h3>📲 Datos SINPE</h3>
+        <div style="background:#f0f4ff; border:2px solid #0026ff; padding:15px; border-radius:8px;">
+            <span id="display-sinpe-num" style="font-size:1.4rem; font-weight:bold; color:#0026ff;">--------</span><br>
+            <span id="display-sinpe-name" style="font-size:0.85rem; font-weight:600;">Cargando titular...</span>
+        </div>
+        <button class="btn-send" style="width:100%; margin-top:15px;" onclick="confirmPaymentAndGetDetails('SINPE')">CONFIRMAR Y PROSEGUIR</button>
+    </div>
+</div>
+
+<div id="cashModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0; color:#25D366;"><i class="fas fa-money-bill-wave"></i> Pago en Efectivo</h3>
+        <p style="font-size:0.85rem; color:#444; margin-bottom:15px;">Selecciona cómo vas a cancelar tu orden en la entrega:</p>
+        
+        <button class="pay-option-btn" onclick="payExactCash()" style="border-color: #25D366; background: #f0fff4; color: #1e7e34;">
+            <i class="fas fa-check-double"></i> Pago Exacto: ₡<span id="cash-exact-total">0</span>
+        </button>
+        
+        <div style="margin: 15px 0; font-size: 0.8rem; color: #888; font-weight: bold; letter-spacing: 1px;">O REQUIERE VUELTO CON:</div>
+        
+        <input type="number" id="input-cash-amount" class="name-input" placeholder="Ej: 5000 o 10000" inputmode="numeric" style="color: black; background: #f5f5f5; border: 1px solid #ccc; text-align:center; font-size: 1.2rem; font-weight: bold;">
+        <button class="btn-send" style="width:100%; margin-top:15px;" onclick="processCustomCashPayment()">
+            <i class="fas fa-calculator"></i> CALCULAR VUELTO Y PROSEGUIR
+        </button>
+    </div>
+</div>
+
+<div id="finalDataModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="modal-box" onclick="event.stopPropagation()" style="text-align: left; max-width: 350px; background: white; color: black;">
+        <h3 style="margin-top:0; color:#0026ff; text-align:center;"><i class="fas fa-user-edit"></i> Datos de Entrega</h3>
+        <p style="font-size:0.85rem; color:#555; margin-bottom:15px; text-align:center;">Para finalizar tu pedido, por favor rellena estos datos obligatorios:</p>
+        
+        <p style="font-size: 0.85rem; color: #444; margin-bottom: 5px; font-weight: bold;">¿Cómo recibirás tu pedido?</p>
+        <div class="delivery-btns" style="margin-bottom: 15px; display: flex; gap: 10px;">
+            <button class="btn-loc" id="btn-location" onclick="setExpress()">
+                <i class="fas fa-motorcycle"></i> EXPRESS
+            </button>
+            <button class="btn-pickup" id="btn-pickup" onclick="setPickup()">
+                <i class="fas fa-store"></i> RECOGER
+            </button>
+        </div>
+        
+        <label style="font-size: 0.85rem; color: #444; font-weight: bold;">Tu nombre por favor:</label>
+        <input type="text" id="user-name" class="name-input" placeholder="Escribe tu nombre..." style="margin-top:5px; margin-bottom:15px; color: black; background: #f5f5f5; border: 1px solid #ccc;">
+        
+        <div id="address-block" style="display: none; margin-bottom: 15px;">
+            <label style="font-size: 0.85rem; color: #444; font-weight: bold;">Dirección de Entrega / Señas (Opcional):</label>
+            <input type="text" id="delivery-address" class="name-input" placeholder="Ej: Frente a Goyo, casa de portón verde..." style="margin-top:5px; color: black; background: #f5f5f5; border: 1px solid #ccc;">
+        </div>
+        
+        <button class="btn-send" style="width:100%; margin-top:15px;" onclick="validateAndSendOrder()">
+            <i class="fab fa-whatsapp"></i> ENVIAR PEDIDO POR WHATSAPP
+        </button>
+    </div>
+</div>
+
+<div id="loginModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #0026ff; max-width: 320px;">
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-lock"></i> Acceso Admin</h3>
+        <p style="font-size:0.85rem; color:#aaa; margin-bottom:15px; text-align:center;">Ingresa el PIN de seguridad para abrir el panel.</p>
+        <input type="password" id="input-login-pin" class="name-input" placeholder="••••" inputmode="numeric" pattern="[0-9]*" style="text-align: center; font-size: 1.6rem; letter-spacing: 6px; background: #222; border-color: #444; color: white; padding: 10px 0;">
+        <div class="admin-actions" style="margin-top: 20px;">
+            <button class="btn-admin-save" onclick="verifyAdminPin()">Entrar</button>
+            <button class="btn-admin-close" onclick="closeModalTop()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="customAlertModal" class="modal-overlay" onclick="closeCustomAlert()" style="z-index: 9999;">
+    <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #0026ff; max-width: 320px; text-align: center; padding: 25px; border-radius: 12px;">
+        <h3 id="customAlertTitle" style="margin-top:0; color: #0026ff; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <i class="fas fa-info-circle"></i> Aviso
+        </h3>
+        <p id="customAlertMessage" style="font-size: 0.95rem; color: #ccc; margin: 15px 0 20px 0; line-height: 1.4; text-align: center;"></p>
+        <button class="btn-admin-save" onclick="closeCustomAlert()" style="width: 100%; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Aceptar</button>
+    </div>
+</div>
+
+<div id="adminModal" class="modal-overlay" onclick="closeModals()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v13.6.1)</h3>
+        
+        <!-- PANEL DE ANALÍTICA DE VISITAS -->
+        <div class="admin-section-title"><i class="fas fa-chart-line"></i> Estadísticas de Visitas del Negocio</div>
+        <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+            <div style="display: flex; justify-content: space-around; margin-bottom: 10px;">
+                <div>
+                    <div style="font-size: 0.72rem; color: #aaa; font-weight: bold;">DISPOSITIVOS ÚNICOS (HOY)</div>
+                    <div id="stat-devices-today" style="font-size: 1.4rem; font-weight: bold; color: #00ffcc;">0</div>
+                </div>
+                <div style="border-left: 1px solid #333;"></div>
+                <div>
+                    <div style="font-size: 0.72rem; color: #aaa; font-weight: bold;">VISITAS TOTALES (HOY)</div>
+                    <div id="stat-views-today" style="font-size: 1.4rem; font-weight: bold; color: #25D366;">0</div>
+                </div>
+            </div>
+            <div style="border-top: 1px dashed #333; padding-top: 8px; display: flex; justify-content: space-around; font-size: 0.8rem; color: #bbb;">
+                <div>Total Dispositivos: <b id="stat-devices-all" style="color: #00ffcc;">0</b></div>
+                <div>Total Visitas: <b id="stat-views-all" style="color: #25D366;">0</b></div>
+            </div>
+        </div>
+
+        <div class="admin-section-title"><i class="fas fa-images"></i> Campañas Especiales de Banners</div>
+        <button class="pay-option-btn" onclick="toggleAdminSectionBlock('admin-banners-management-block', 'banners')" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
+            <i class="fas fa-image"></i> Gestionar Banners (Imágenes/Video)
+        </button>
+        
+        <div id="admin-banners-management-block" style="display:none; background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; border:1px solid #333; margin-bottom:15px;">
+            <button class="btn-pickup" style="background:#0026ff; border:none; width:100%; margin-bottom:12px; padding:10px;" onclick="addAdminBannerItem()">
+                <i class="fas fa-plus"></i> Agregar Banner 🌄
+            </button>
+            <div id="admin-banners-list-container"></div>
+        </div>
+
+        <button class="pay-option-btn" onclick="toggleAdminSectionBlock('admin-text-banners-management-block', 'text_banners')" style="background:#222; color:white; border-color:#333; margin-bottom:15px;">
+            <i class="fas fa-font"></i> Gestionar Banners de Texto LED
+        </button>
+        
+        <div id="admin-text-banners-management-block" style="display:none; background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; border:1px solid #333; margin-bottom:15px;">
+            <button class="btn-pickup" style="background:#0026ff; border:none; width:100%; margin-bottom:12px; padding:10px;" onclick="addAdminTextBannerItem()">
+                <i class="fas fa-plus"></i> Agregar Banner de Texto
+            </button>
+            <div id="admin-text-banners-list-container"></div>
+        </div>
+
+        <div class="admin-section-title"><i class="fas fa-utensils"></i> Menú del Establecimiento</div>
+        <button class="pay-option-btn" onclick="toggleAdminMenuSection()" style="background:#222; color:white; border-color:#333; margin-bottom:10px;">
+            <i class="fas fa-bars"></i> Gestionar Categorías y Productos
+        </button>
+        
+        <div id="admin-menu-management-block" style="display:none; background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; border:1px solid #333; margin-bottom:15px;">
+            <button class="btn-pickup" style="background:#0026ff; border:none; width:100%; margin-bottom:12px; padding:10px;" onclick="addAdminCategory()">
+                <i class="fas fa-plus"></i> Agregar Categoría
+            </button>
+            <div id="admin-categories-list"></div>
+        </div>
+
+        <div class="admin-section-title">Seguridad Criptográfica</div>
+        <div class="admin-field">
+            <label>Cambiar PIN de Acceso Administrador</label>
+            <input type="text" id="input-admin-pin" class="admin-input" placeholder="🔒 PIN Protegido (Escribe uno nuevo para cambiar)">
+        </div>
+
+        <div class="admin-section-title">Calendario Semanal Comercial (AM / PM)</div>
+        <div style="margin-bottom:15px; font-size:0.8rem; color:#aaa;">Indica las horas usando el formato AM o PM. Ejemplo: <b>11:30 AM</b> o <b>10:00 PM</b>.</div>
+        
+        <div id="admin-schedule-container"></div>
+
+        <div class="admin-section-title">Identidad del Negocio</div>
+        <div class="admin-field"><label>Nombre del Local (Déjalo en blanco para ver solo el logo)</label><input type="text" id="input-page-title" class="admin-input"></div>
+        <div class="admin-field"><label>WhatsApp receptor de Pedidos</label><input type="text" id="input-whatsapp" class="admin-input"></div>
+        
+        <div class="admin-field">
+            <label>Imagen de Fondo del Local</label>
+            <div style="display:flex; gap:8px; margin-top:4px;">
+                <button class="btn-ticket" style="flex:1;" onclick="triggerFileInput('file-bg-input')"><i class="fas fa-upload"></i> Dispositivo</button>
+                <button class="btn-ticket" style="background:#0026ff; border-color:#0026ff; flex:1;" onclick="openCloudGallery('bg', null, null, null)"><i class="fas fa-cloud"></i> Nube</button>
+                <input type="file" id="file-bg-input" accept="image/*" onchange="uploadBgImage(this)" style="display:none;">
+            </div>
+            <button class="btn-admin-delete" id="btn-delete-bg" onclick="clearBgImage()" style="width:100%; height:30px; font-size:0.8rem; margin-top:5px; background:#ea4335; display:none;"><i class="fas fa-trash-alt"></i> Eliminar Fondo Actual</button>
+            <input type="hidden" id="input-bg-url">
+        </div>
+
+        <div class="admin-field">
+            <label>Foto de Perfil (Logo del Negocio)</label>
+            <div style="display:flex; gap:8px; margin-top:4px;">
+                <button class="btn-ticket" style="flex:1;" onclick="triggerFileInput('file-profile-input')"><i class="fas fa-upload"></i> Dispositivo</button>
+                <button class="btn-ticket" style="background:#0026ff; border-color:#0026ff; flex:1;" onclick="openCloudGallery('profile', null, null, null)"><i class="fas fa-cloud"></i> Nube</button>
+                <input type="file" id="file-profile-input" accept="image/*" onchange="uploadProfileImage(this)" style="display:none;">
+            </div>
+            <button class="btn-admin-delete" id="btn-delete-profile" onclick="clearProfileImage()" style="width:100%; height:30px; font-size:0.8rem; margin-top:5px; background:#ea4335; display:none;"><i class="fas fa-trash-alt"></i> Eliminar Logo Actual</button>
+            <input type="hidden" id="input-profile-url">
+        </div>
+
+        <div class="admin-field"><label>Descripción / Historia (Footer)</label><textarea id="input-description" class="admin-input" style="height:60px; font-family:sans-serif;"></textarea></div>
+        
+        <div class="admin-section-title">Finanzas & SINPE</div>
+        <div class="admin-field"><label>Número de Teléfono SINPE</label><input type="text" id="input-sinpe-num" class="admin-input"></div>
+        <div class="admin-field"><label>Nombre del Titular de Cuenta</label><input type="text" id="input-sinpe-name" class="admin-input"></div>
+        
+        <div class="admin-section-title">Geolocalización & Mapas</div>
+        <div class="admin-field"><label>Enlace Google Maps del Local</label><input type="text" id="input-maps-url" class="admin-input"></div>
+        <div class="admin-field"><label>Dirección Manual / Señas Locales</label><input type="text" id="input-señas-local" class="admin-input"></div>
+        
+        <div class="admin-section-title">Redes Sociales (Enlaces y Nombres)</div>
+        <div class="admin-field"><label>Enlace de Facebook</label><input type="text" id="input-fb" class="admin-input"></div>
+        <div class="admin-field"><label>Nombre de Usuario Facebook</label><input type="text" id="input-fb-name" class="admin-input"></div>
+        <div class="admin-field"><label>Enlace de Instagram</label><input type="text" id="input-ig" class="admin-input"></div>
+        <div class="admin-field"><label>Nombre de Usuario Instagram</label><input type="text" id="input-ig-name" class="admin-input"></div>
+        <div class="admin-field"><label>Enlace de TikTok</label><input type="text" id="input-tk" class="admin-input"></div>
+        <div class="admin-field"><label>Nombre de Usuario TikTok</label><input type="text" id="input-tk-name" class="admin-input"></div>
+        
+        <div class="admin-actions">
+            <button class="btn-admin-save" onclick="applyAdminChanges()">Guardar en la Nube</button>
+            <button class="btn-admin-close" onclick="closeModals()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDzNsBj-W-9yEVqrFQejWr_IQVn8IcWVeA",
+        authDomain: "cooking-pollos.firebaseapp.com",
+        projectId: "cooking-pollos",
+        storageBucket: "cooking-pollos.firebasestorage.app",
+        messagingSenderId: "25242186743",
+        appId: "1:25242186743:web:ba235270917ffd51b1f4f2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const CLOUDINARY_CLOUD_NAME = "easkxjiw";
+    const CLOUDINARY_UPLOAD_PRESET = "cooking_pollos_preset";
+
+    let cart = {}; let total = 0; let deliveryMode = ""; let isSelected = false;
+    let adminClicks = 0; let adminTimeout;
+    let gpsCoords = ""; let cashPaidAmount = 0; let changeNeeded = 0;
+    let currentPaymentMethod = ""; 
+    
+    let currentGlobalWhatsApp = "85135269";
+    let currentGlobalTitle = "Web Pedidos";
+    let currentGlobalPin = "1234";
+
+    const daysOrder = ['lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do'];
+    const daysNames = { lu: "Lunes", ma: "Martes", mi: "Miércoles", ju: "Jueves", vi: "Viernes", sa: "Sábado", do: "Domingo" };
+    
+    window.currentScheduleData = {};
+    window.localMenuArray = []; 
+    window.adminExpandedCats = {}; 
+
+    window.localBannersArray = [];
+    window.localTextBannersArray = [];
+    
+    window.globalGalleryArray = [];
+    let galleryTarget = { type: '', catIdx: null, prodIdx: null, bannerIdx: null };
+
+    let modalStack = [];
+    let programmaticBackCount = 0;
+
+    /* DETECTOR DE ENTORNO SEGURO PARA CODEPEN E IFRAMES */
+    function isTopWindow() {
+        try { return window.self === window.top; } catch (e) { return false; }
+    }
+
+    function checkModalLock() {
+        if (modalStack.length > 0) { document.body.classList.add('modal-lock'); } 
+        else { document.body.classList.remove('modal-lock'); }
+    }
+
+    function openModal(id) {
+        if (modalStack.length > 0) {
+            let topId = modalStack[modalStack.length - 1];
+            if (topId === id) {
+                document.getElementById(id).style.display = "flex";
+                return;
+            }
+            document.getElementById(topId).style.display = "none";
+        }
+        modalStack.push(id);
+        document.getElementById(id).style.display = "flex";
+        checkModalLock();
+        if (isTopWindow()) {
+            try { history.pushState({ depth: modalStack.length }, ""); } catch(e){}
+        }
+    }
+
+    function closeModalTop() {
+        if (modalStack.length > 0) {
+            let closedId = modalStack.pop();
+            document.getElementById(closedId).style.display = "none";
+            if (modalStack.length > 0) {
+                let prevId = modalStack[modalStack.length - 1];
+                document.getElementById(prevId).style.display = "flex";
+            }
+            checkModalLock();
+            if (isTopWindow()) {
+                programmaticBackCount++;
+                try { history.back(); } catch(e){}
+            }
+        }
+    }
+
+    function closeModals() {
+        let count = modalStack.length;
+        if (count > 0) {
+            modalStack.forEach(id => {
+                let m = document.getElementById(id);
+                if (m) m.style.display = "none";
+            });
+            modalStack = [];
+            checkModalLock();
+            if (isTopWindow()) {
+                programmaticBackCount += count;
+                try { history.go(-count); } catch(e){}
+            }
+        }
+    }
+
+    window.addEventListener('popstate', function(event) {
+        if (programmaticBackCount > 0) { programmaticBackCount--; return; }
+        if (modalStack.length > 0) {
+            let closedId = modalStack.pop();
+            document.getElementById(closedId).style.display = "none";
+            if (modalStack.length > 0) {
+                let prevId = modalStack[modalStack.length - 1];
+                document.getElementById(prevId).style.display = "flex";
+            }
+            checkModalLock();
+        }
+    });
+
+    function triggerFileInput(id) {
+        let el = document.getElementById(id);
+        if (el) el.click();
+    }
+
+    function resetCartAndInputs() {
+        cart = {}; total = 0; deliveryMode = ""; isSelected = false; gpsCoords = ""; cashPaidAmount = 0; changeNeeded = 0; currentPaymentMethod = "";
+        let nameInput = document.getElementById('user-name'); if (nameInput) nameInput.value = "";
+        let addrInput = document.getElementById('delivery-address'); if (addrInput) addrInput.value = "";
+        let cashInput = document.getElementById('input-cash-amount'); if (cashInput) cashInput.value = "";
+        
+        window.localBannersArray.forEach((b, idx) => {
+            let noteInput = document.getElementById(`note-banner-${idx}`); if (noteInput) noteInput.value = "";
+            let qtyInput = document.getElementById(`qty-banner-counter-${idx}`); if (qtyInput) qtyInput.value = "0";
+        });
+
+        window.localMenuArray.forEach((cat, catIdx) => {
+            (cat.products || []).forEach((prod, prodIdx) => {
+                let noteInput = document.getElementById('note-' + prod.name); if (noteInput) noteInput.value = "";
+                let qtyInput = document.getElementById(`qty-${catIdx}-${prodIdx}`); if (qtyInput) qtyInput.value = "0";
+            });
+        });
+        
+        let btnLoc = document.getElementById('btn-location'); if (btnLoc) btnLoc.classList.remove('active');
+        let btnPickup = document.getElementById('btn-pickup'); if (btnPickup) btnPickup.classList.remove('active');
+        let addrBlock = document.getElementById('address-block'); if (addrBlock) addrBlock.style.display = "none";
+        
+        renderUserDynamicMenu();
+        renderMainPageBanners();
+        document.getElementById('grand-total').innerText = "0";
+    }
+
+    function customAlert(message, title = "Aviso del Sistema") {
+        document.getElementById('customAlertTitle').innerHTML = title;
+        document.getElementById('customAlertMessage').innerHTML = message;
+        openModal('customAlertModal');
+    }
+    function customConfirm(message, onConfirm) {
+        document.getElementById('confirmMessage').innerText = message;
+        let btnYes = document.getElementById('btn-confirm-yes');
+        btnYes.onclick = function() {
+            closeModalTop();
+            onConfirm();
+        };
+        openModal('customConfirmModal');
+    }
+    function closeCustomAlert() { closeModalTop(); }
+
+    function convertTimeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        let match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+        if (!match) return 0;
+        let hours = parseInt(match[1]); let minutes = parseInt(match[2]); let ampm = match[3];
+        if (ampm) {
+            ampm = ampm.toUpperCase();
+            if (ampm === "PM" && hours < 12) hours += 12;
+            if (ampm === "AM" && hours === 12) hours = 0;
+        }
+        return (hours * 60) + minutes;
+    }
+
+    function calcFontPixelSize(pctValue) {
+        let minPx = 12; let maxPx = 90;
+        let val = parseInt(pctValue) || 24;
+        return Math.round(minPx + ((val - 1) * (maxPx - minPx) / 99));
+    }
+
+    /* OBTENCIÓN PROTEGIDA DE IDENTIFICADOR DE DISPOSITIVO PARA IFRAMES Y CODEPEN */
+    function getDeviceId() {
+        let deviceId = null;
+        try {
+            deviceId = localStorage.getItem('cp_device_id');
+            if (!deviceId) {
+                deviceId = 'dev_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
+                localStorage.setItem('cp_device_id', deviceId);
+            }
+        } catch (e) {
+            deviceId = 'dev_temp_' + Math.random().toString(36).substring(2, 9);
+        }
+        return deviceId;
+    }
+
+    function registrarVisitaAnalytics() {
+        try {
+            let deviceId = getDeviceId();
+            let todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+
+            let dailyRef = db.collection("visitas_diarias").doc(todayStr);
+            dailyRef.set({
+                fecha: todayStr,
+                visitas_totales: firebase.firestore.FieldValue.increment(1),
+                dispositivos: firebase.firestore.FieldValue.arrayUnion(deviceId)
+            }, { merge: true }).catch(e => console.error(e));
+
+            let globalRef = db.collection("configuraciones").doc("cooking-pollos");
+            globalRef.set({
+                total_views_all_time: firebase.firestore.FieldValue.increment(1),
+                all_devices: firebase.firestore.FieldValue.arrayUnion(deviceId)
+            }, { merge: true }).catch(e => console.error(e));
+        } catch (err) { console.error("Analytics Error:", err); }
+    }
+
+    function cargarEstadisticasAdmin() {
+        let todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Costa_Rica' });
+        
+        db.collection("visitas_diarias").doc(todayStr).get().then(doc => {
+            if (doc.exists) {
+                let data = doc.data();
+                let totalViews = data.visitas_totales || 0;
+                let uniqueDevs = (data.dispositivos && Array.isArray(data.dispositivos)) ? data.dispositivos.length : 0;
+                let elV = document.getElementById('stat-views-today'); if(elV) elV.innerText = totalViews.toLocaleString();
+                let elD = document.getElementById('stat-devices-today'); if(elD) elD.innerText = uniqueDevs.toLocaleString();
+            }
+        }).catch(err => console.error(err));
+
+        db.collection("configuraciones").doc("cooking-pollos").get().then(doc => {
+            if (doc.exists) {
+                let data = doc.data();
+                let totalAllViews = data.total_views_all_time || 0;
+                let uniqueAllDevs = (data.all_devices && Array.isArray(data.all_devices)) ? data.all_devices.length : 0;
+                let elAV = document.getElementById('stat-views-all'); if(elAV) elAV.innerText = totalAllViews.toLocaleString();
+                let elAD = document.getElementById('stat-devices-all'); if(elAD) elAD.innerText = uniqueAllDevs.toLocaleString();
+            }
+        }).catch(err => console.error(err));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        let scheduleContainer = document.getElementById('admin-schedule-container');
+        let htmlSchedule = "";
+        daysOrder.forEach(day => {
+            htmlSchedule += `
+                <div class="schedule-config-row">
+                    <span class="schedule-day-label">${daysNames[day]}:</span>
+                    <select id="input-${day}-status" class="schedule-select" onchange="toggleTimeInputs('${day}')">
+                        <option value="abierto">Abierto</option>
+                        <option value="cerrado">Cerrado</option>
+                    </select>
+                    <div id="row-times-${day}" style="display:inline-flex; align-items:center; gap:4px;">
+                        <input type="text" id="input-${day}-open" class="schedule-time-input" placeholder="11:30 AM">
+                        <span style="font-size:0.75rem; color:#aaa;">a</span>
+                        <input type="text" id="input-${day}-close" class="schedule-time-input" placeholder="10:00 PM">
+                    </div>
+                </div>
+            `;
+        });
+        scheduleContainer.innerHTML = htmlSchedule;
+
+        registrarVisitaAnalytics();
+
+        db.collection("configuraciones").doc("cooking-pollos").onSnapshot((doc) => {
+            if (doc.exists) {
+                let data = doc.data();
+                
+                currentGlobalTitle = data.page_title || "";
+                currentGlobalWhatsApp = data.whatsapp || "85135269";
+                currentGlobalPin = data.admin_pin || "1234";
+
+                daysOrder.forEach(day => {
+                    window.currentScheduleData[day + '_status'] = data[day + '_status'] || "abierto";
+                    window.currentScheduleData[day + '_open'] = data[day + '_open'] || "11:00 AM";
+                    window.currentScheduleData[day + '_close'] = data[day + '_close'] || "11:00 PM";
+                    document.getElementById(`input-${day}-status`).value = window.currentScheduleData[day + '_status'];
+                    document.getElementById(`input-${day}-open`).value = window.currentScheduleData[day + '_open'];
+                    document.getElementById(`input-${day}-close`).value = window.currentScheduleData[day + '_close'];
+                    toggleTimeInputs(day);
+                });
+
+                ejecutarEvaluadorCalendarioCR();
+
+                if (data.menu && data.menu.length > 0) { window.localMenuArray = data.menu; } 
+                else {
+                    window.localMenuArray = [{
+                        name: "🍗 Pollo Frito",
+                        products: [{ name: "Pieza de Pollo", price: 1950, desc: "indicanos tu comentario", img: "" }]
+                    }];
+                }
+
+                window.localBannersArray = data.banners || [];
+                window.localTextBannersArray = data.text_banners || [];
+                
+                window.globalGalleryArray = (data.gallery_media || []).map(item => {
+                    if (typeof item === 'string') return { url: item, public_id: "" };
+                    return item;
+                });
+
+                let extractedUrls = [];
+                if (data.bg_url) extractedUrls.push(data.bg_url);
+                if (data.profile_url) extractedUrls.push(data.profile_url);
+                window.localBannersArray.forEach(b => { if(b.url) extractedUrls.push(b.url); });
+                window.localTextBannersArray.forEach(t => { if(t.url) extractedUrls.push(t.url); });
+                window.localMenuArray.forEach(cat => {
+                    (cat.products || []).forEach(p => { if(p.img) extractedUrls.push(p.img); });
+                });
+
+                let syncNeeded = false;
+                extractedUrls.forEach(url => {
+                    if(url && !window.globalGalleryArray.some(item => item && item.url === url)) {
+                        window.globalGalleryArray.unshift({ url: url, public_id: "" });
+                        syncNeeded = true;
+                    }
+                });
+                
+                if (syncNeeded && !window.gallerySyncedInSession) {
+                    window.gallerySyncedInSession = true;
+                    db.collection("configuraciones").doc("cooking-pollos").update({ gallery_media: window.globalGalleryArray }).catch(()=>{});
+                }
+
+                renderUserDynamicMenu();
+                renderMainPageBanners();
+                renderAdminBannersUI();
+                renderAdminTextBannersUI();
+
+                if (currentGlobalTitle.trim() !== "") {
+                    document.getElementById('main-title').innerText = currentGlobalTitle;
+                    document.getElementById('main-title').style.display = "block";
+                } else { document.getElementById('main-title').style.display = "none"; }
+                
+                if (data.profile_url && data.profile_url.trim() !== "") {
+                    document.getElementById('main-profile-img').src = data.profile_url;
+                    document.getElementById('main-profile-img').style.display = "block";
+                    document.getElementById('input-profile-url').value = data.profile_url;
+                    document.getElementById('btn-delete-profile').style.display = "inline-flex";
+                } else {
+                    document.getElementById('main-profile-img').style.display = "none";
+                    document.getElementById('input-profile-url').value = "";
+                    document.getElementById('btn-delete-profile').style.display = "none";
+                }
+
+                if (data.bg_url && data.bg_url.trim() !== "") {
+                    document.body.style.backgroundImage = `url('${data.bg_url}')`;
+                    document.getElementById('input-bg-url').value = data.bg_url;
+                    document.getElementById('btn-delete-bg').style.display = "inline-flex";
+                } else {
+                    document.body.style.backgroundImage = "none";
+                    document.getElementById('input-bg-url').value = "";
+                    document.getElementById('btn-delete-bg').style.display = "none";
+                }
+
+                document.getElementById('display-sinpe-num').innerText = formatSinpeSpacing(data.sinpe_num || "85135269");
+                document.getElementById('display-sinpe-name').innerText = data.sinpe_name || "Jesús Antonio Madrigal Barrientos";
+
+                if (data.description && data.description.trim() !== "") {
+                    document.getElementById('display-description').innerText = data.description;
+                    document.getElementById('display-description').style.display = "block";
+                } else { document.getElementById('display-description').style.display = "none"; }
+
+                if (data.maps_url && data.maps_url.trim() !== "") {
+                    document.getElementById('display-maps-link').href = data.maps_url;
+                    document.getElementById('display-señas-local').innerText = data.señas_local || "";
+                    document.getElementById('display-maps-container').style.display = "block";
+                } else { document.getElementById('display-maps-container').style.display = "none"; }
+
+                toggleSocialRow('link-fb', 'text-fb', data.fb, data.fb_name, "Facebook");
+                toggleSocialRow('link-ig', 'text-ig', data.ig, data.ig_name, "Instagram");
+                toggleSocialRow('link-tk', 'text-tk', data.tk, data.tk_name, "TikTok");
+
+                document.getElementById('input-admin-pin').value = "";
+                document.getElementById('input-admin-pin').placeholder = "🔒 PIN Protegido (Escribe uno nuevo para cambiar)";
+                
+                document.getElementById('input-bg-url').value = data.bg_url || "";
+                document.getElementById('input-page-title').value = currentGlobalTitle;
+                document.getElementById('input-whatsapp').value = currentGlobalWhatsApp;
+                document.getElementById('input-sinpe-num').value = data.sinpe_num || "";
+                document.getElementById('input-sinpe-name').value = data.sinpe_name || "";
+                document.getElementById('input-maps-url').value = data.maps_url || "";
+                document.getElementById('input-señas-local').value = data.señas_local || "";
+                document.getElementById('input-description').value = data.description || "";
+                
+                document.getElementById('input-fb').value = data.fb || "";
+                document.getElementById('input-fb-name').value = data.fb_name || "";
+                document.getElementById('input-ig').value = data.ig || "";
+                document.getElementById('input-ig-name').value = data.ig_name || "";
+                document.getElementById('input-tk').value = data.tk || "";
+                document.getElementById('input-tk-name').value = data.tk_name || "";
+            }
+        });
+        setInterval(ejecutarEvaluadorCalendarioCR, 20000);
+    });
+
+    function toggleTimeInputs(day) {
+        let status = document.getElementById(`input-${day}-status`).value;
+        document.getElementById(`row-times-${day}`).style.display = (status === 'cerrado') ? 'none' : 'inline-flex';
+    }
+
+    function renderMainPageBanners() {
+        let container = document.getElementById('banners-main-container');
+        if (!container) return; container.innerHTML = "";
+
+        let activeTexts = window.localTextBannersArray.filter(t => t.active);
+        let sequenceList = [];
+
+        activeTexts.forEach(t => {
+            if (t.position === 'start' || !t.position) sequenceList.push({ type: 'text', data: t });
+        });
+
+        window.localBannersArray.forEach((banner, originalIdx) => {
+            if (!banner.active || !banner.title) return;
+            activeTexts.forEach(t => {
+                if (t.position === `above_${originalIdx}`) sequenceList.push({ type: 'text', data: t });
+            });
+            sequenceList.push({ type: 'media', data: banner, index: originalIdx });
+            activeTexts.forEach(t => {
+                if (t.position === `below_${originalIdx}`) sequenceList.push({ type: 'text', data: t });
+            });
+        });
+
+        activeTexts.forEach(t => {
+            if (t.position === 'end') sequenceList.push({ type: 'text', data: t });
+        });
+
+        sequenceList.forEach((item, sIdx) => {
+            if (item.type === 'text') {
+                let t = item.data;
+                let div = document.createElement('div');
+                div.className = "text-banner-container";
+                
+                if (t.fontUrl && t.useFont !== false) {
+                    let fontFaceName = `CustomFontBanner_${sIdx}`;
+                    if (!document.getElementById(`style-font-${sIdx}`)) {
+                        let s = document.createElement('style');
+                        s.id = `style-font-${sIdx}`;
+                        s.innerHTML = `@font-face { font-family: '${fontFaceName}'; src: url('${t.fontUrl}'); }`;
+                        document.head.appendChild(s);
+                    }
+                    div.style.fontFamily = fontFaceName;
+                } else { div.style.fontFamily = "inherit"; }
+
+                let textBlockHtml = "";
+                if (t.text && t.text.trim() !== "") {
+                    let strokeSize = parseInt(t.strokeSize) || 0;
+                    let strokeColor = t.strokeColor || "#000000";
+                    let textColor = t.textColor || "#ffffff";
+                    let lineHeightValue = (t.lineHeight || 140) / 100;
+                    let computedSize = calcFontPixelSize(t.fontSize || 24);
+                    let letterSpacingParam = (t.letterSpacing || 0) + "px";
+                    
+                    let strokeParam = strokeSize > 0 ? `${strokeSize}px` : '0px';
+                    let animClass = t.ledStroke ? 'led-stroke-mov' : '';
+                    let ledStrokeWidth = (strokeSize > 0 ? (strokeSize * 2 + 4) : 4) + "px";
+
+                    let bannerText = t.text || "";
+                    let charsArray = Array.from(bannerText);
+                    
+                    let innerCharsHtml = charsArray.map(char => {
+                        if (char === "\n") return "<br>";
+                        if (char === " ") return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">&nbsp;</span>`;
+                        
+                        let isEmoji = false;
+                        try { isEmoji = /\p{Extended_Pictographic}/u.test(char) || /\p{Emoji_Presentation}/u.test(char); } 
+                        catch(e) { isEmoji = char.codePointAt(0) > 0xFFFF; }
+                        
+                        if (isEmoji) {
+                            return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam}; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;">${char}</span>`;
+                        }
+                        
+                        return `
+                            <span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">
+                                <span class="char-layer-led ${animClass}" style="-webkit-text-stroke: ${ledStrokeWidth} #0026ff; display: ${t.ledStroke ? 'block' : 'none'};">${char}</span>
+                                <span class="char-layer-stroke" style="-webkit-text-stroke: ${strokeParam} ${strokeColor}; display: ${strokeSize > 0 ? 'block' : 'none'};">${char}</span>
+                                <span class="char-layer-fill" style="color: ${textColor};">${char}</span>
+                            </span>
+                        `;
+                    }).join("");
+
+                    textBlockHtml = `<div class="text-banner-content" style="font-size: ${computedSize}px; line-height: ${lineHeightValue};">${innerCharsHtml}</div>`;
+                }
+
+                let mediaBlockHtml = "";
+                if (t.url) {
+                    let isVideo = t.url.toLowerCase().includes('.mp4') || t.url.toLowerCase().includes('.webm') || t.url.toLowerCase().includes('.mov');
+                    let mediaTag = isVideo 
+                        ? `<video src="${t.url}" autoplay loop muted playsinline onclick="zoomImg(this.src, true)"></video>`
+                        : `<img src="${t.url}" onclick="zoomImg(this.src, false)">`;
+                    mediaBlockHtml = `<div class="text-banner-media-wrapper">${mediaTag}</div>`;
+                }
+
+                div.innerHTML = `${textBlockHtml}${mediaBlockHtml}`;
+                container.appendChild(div);
+            } else if (item.type === 'media') {
+                let banner = item.data;
+                let idx = item.index;
+                let bannerPrice = parseFloat(banner.price || 0);
+                let cartKey = `banner_${idx}`;
+                let currentPromoQty = cart[cartKey] ? cart[cartKey].qty : 0;
+
+                let mediaHtml = "";
+                if (banner.url) {
+                    let isVideo = banner.url.toLowerCase().includes('.mp4') || banner.url.toLowerCase().includes('.webm') || banner.url.toLowerCase().includes('.mov');
+                    mediaHtml = isVideo 
+                        ? `<video src="${banner.url}" autoplay loop muted playsinline style="width:78px; height:78px; border-radius:8px; object-fit:cover; border:1px solid #333;" onclick="zoomImg(this.src, true)"></video>`
+                        : `<img src="${banner.url}" style="width:78px; height:78px; border-radius:8px; object-fit:cover; border:1px solid #333;" onclick="zoomImg(this.src, false)">`;
+                }
+
+                let div = document.createElement('div'); div.className = "promo-led-container";
+                div.innerHTML = `
+                    <div style="background:#0026ff; color:white; padding:4px 9px; font-size: 0.75rem; font-weight:bold; border-radius:4px; display:inline-block; margin-bottom:12px; letter-spacing: 1px;"><i class="fas fa-star fa-spin"></i> RECOMENDACIÓN DESTACADA</div>
+                    <div style="display:flex; gap:14px; align-items:center;">
+                        ${mediaHtml}
+                        <div style="flex:1; text-align:left;">
+                            <div style="font-weight:bold; font-size:1.1rem; color:#fff;">${banner.title}</div>
+                            <div style="color:#0026ff; font-weight:bold; font-size:1.05rem; margin:3px 0; text-shadow: 0 0 5px rgba(0, 38, 255, 0.4);">₡${bannerPrice.toLocaleString('en-US')}</div>
+                            <div style="font-size:0.8rem; color:#bbb; line-height:1.35;">${banner.desc || ""}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-start; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid #222;">
+                        <div class="item-controls">
+                            <button class="btn-qty" onclick="changeQty('${cartKey}', '${banner.title.replace(/'/g, "\\'")}', -1, ${bannerPrice})">-</button>
+                            <input type="number" id="qty-banner-counter-${idx}" class="qty-input" value="${currentPromoQty}" readonly>
+                            <button class="btn-qty" onclick="changeQty('${cartKey}', '${banner.title.replace(/'/g, "\\'")}', 1, ${bannerPrice})">+</button>
+                        </div>
+                    </div>
+                    <input type="text" id="note-banner-${idx}" class="item-note" placeholder="Indícanos tus comentarios para esta promo..." style="margin-top:10px;">
+                `;
+                container.appendChild(div);
+            }
+        });
+    }
+
+    function toggleAdminSectionBlock(id, arrayType) {
+        let block = document.getElementById(id);
+        if(block.style.display === "none") {
+            block.style.display = "block";
+            if (arrayType === 'banners') renderAdminBannersUI();
+            if (arrayType === 'text_banners') renderAdminTextBannersUI();
+        } else { block.style.display = "none"; }
+    }
+
+    function openCloudGallery(type, catIdx, prodIdx, bannerIdx) {
+        galleryTarget = { type: type, catIdx: catIdx, prodIdx: prodIdx, bannerIdx: bannerIdx };
+        renderGalleryItemsUI();
+        openModal('galleryModal');
+    }
+
+    function renderGalleryItemsUI() {
+        let grid = document.getElementById('gallery-items-grid'); if(!grid) return; grid.innerHTML = "";
+        if (window.globalGalleryArray.length === 0) {
+            grid.innerHTML = `<p style="grid-column:span 3; color:#666; font-style:italic; font-size:0.8rem; text-align:center; padding:15px;">La biblioteca en la nube está vacía.</p>`;
+            return;
+        }
+
+        window.globalGalleryArray.forEach((item, idx) => {
+            if (!item) return;
+            let isVideo = item.url && (item.url.toLowerCase().includes('.mp4') || item.url.toLowerCase().includes('.webm') || item.url.toLowerCase().includes('.mov'));
+            let mediaTag = isVideo ? `<video src="${item.url}" muted></video>` : `<img src="${item.url || ''}">`;
+            let badgeHtml = isVideo ? `<div class="media-badge" style="color:#ff9900;"><i class="fas fa-video"></i> Video</div>` : `<div class="media-badge" style="color:#0026ff;"><i class="fas fa-image"></i> Imagen</div>`;
+            
+            let box = document.createElement('div'); box.className = "gallery-item-box";
+            box.innerHTML = `
+                <div onclick="selectMediaFromGallery(${idx})" style="width:100%; height:100%;">${mediaTag}</div>
+                ${badgeHtml}
+                <button class="gallery-item-trash" onclick="deleteMediaFromGallery(${idx}, event)" title="Eliminar de la nube y app"><i class="fas fa-trash-alt"></i></button>
+            `;
+            grid.appendChild(box);
+        });
+    }
+
+    function selectMediaFromGallery(idx) {
+        if (!window.globalGalleryArray[idx]) return;
+        let selectedUrl = window.globalGalleryArray[idx].url;
+        if (galleryTarget.type === 'product') {
+            window.localMenuArray[galleryTarget.catIdx].products[galleryTarget.prodIdx].img = selectedUrl;
+            renderAdminMenuUI();
+        } else if (galleryTarget.type === 'banner') {
+            window.localBannersArray[galleryTarget.bannerIdx].url = selectedUrl;
+            renderAdminBannersUI();
+        } else if (galleryTarget.type === 'text_banner') {
+            window.localTextBannersArray[galleryTarget.bannerIdx].url = selectedUrl;
+            updateAdminTextBannerLive(galleryTarget.bannerIdx, 'url', selectedUrl);
+        } else if (galleryTarget.type === 'bg') {
+            document.getElementById('input-bg-url').value = selectedUrl;
+            document.getElementById('btn-delete-bg').style.display = "inline-flex";
+        } else if (galleryTarget.type === 'profile') {
+            document.getElementById('input-profile-url').value = selectedUrl;
+            document.getElementById('btn-delete-profile').style.display = "inline-flex";
+        }
+        closeModalTop();
+    }
+
+    function deleteMediaFromGallery(idx, event) {
+        event.stopPropagation();
+        customConfirm("¿Seguro que deseas eliminar este archivo de la nube permanentemente? Se quitará de tu biblioteca.", async function() {
+            let targetItem = window.globalGalleryArray[idx];
+            window.globalGalleryArray.splice(idx, 1);
+            if (targetItem && targetItem.public_id) {
+                const formData = new FormData(); formData.append("public_id", targetItem.public_id); formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+                fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/destroy`, { method: "POST", body: formData }).catch(()=>{});
+            }
+            await db.collection("configuraciones").doc("cooking-pollos").update({ gallery_media: window.globalGalleryArray });
+            renderGalleryItemsUI();
+        });
+    }
+
+    async function trackMediaInCloudGallery(url, publicId) {
+        if(!window.globalGalleryArray) window.globalGalleryArray = [];
+        if(!window.globalGalleryArray.some(item => item && item.url === url)) {
+            window.globalGalleryArray.unshift({ url: url, public_id: publicId || "" });
+            await db.collection("configuraciones").doc("cooking-pollos").update({ gallery_media: window.globalGalleryArray }).catch(()=>{});
+        }
+    }
+
+    function renderAdminBannersUI() {
+        let container = document.getElementById('admin-banners-list-container'); if (!container) return; let html = "";
+        window.localBannersArray.forEach((banner, idx) => {
+            let thumbHtml = "";
+            if (banner.url) {
+                let isVideo = banner.url.toLowerCase().includes('.mp4') || banner.url.toLowerCase().includes('.webm') || banner.url.toLowerCase().includes('.mov');
+                thumbHtml = isVideo ? `<video src="${banner.url}" autoplay loop muted playsinline style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;"></video>` : `<img src="${banner.url}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">`;
+            }
+            html += `
+                <div class="admin-prod-card" style="border-left:3px solid #0026ff;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:0.85rem; font-weight:bold; color:#0026ff;"><i class="fas fa-image"></i> 🌄 Banner de Imagen #${idx + 1}</span>
+                        <label class="switch">
+                            <input type="checkbox" onchange="updateAdminBannerField(${idx}, 'active', this.checked)" ${banner.active ? 'checked' : ''}>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="admin-field"><label>Título del Banner / Combo</label><input type="text" class="admin-input" value="${banner.title || ''}" onchange="updateAdminBannerField(${idx}, 'title', this.value)"></div>
+                    <div class="admin-field"><label>Precio del Combo (₡)</label><input type="number" class="admin-input" value="${banner.price || 0}" onchange="updateAdminBannerField(${idx}, 'price', this.value)"></div>
+                    <div class="admin-field"><label>Descripción del Banner</label><input type="text" class="admin-input" value="${banner.desc || ''}" onchange="updateAdminBannerField(${idx}, 'desc', this.value)"></div>
+                    <div class="admin-field">
+                        <label>Multimedia del Banner</label>
+                        <div style="display:flex; gap:8px; margin-top:4px;">
+                            <button class="btn-ticket" style="flex:1;" onclick="triggerFileInput('file-banner-input-${idx}')"><i class="fas fa-upload"></i> Dispositivo</button>
+                            <button class="btn-ticket" style="background:#0026ff; border-color:#0026ff; flex:1;" onclick="openCloudGallery('banner', null, null, ${idx})"><i class="fas fa-cloud"></i> Nube</button>
+                            <input type="file" id="file-banner-input-${idx}" accept="image/*,video/*" onchange="uploadBannerMediaFile(this, ${idx})" style="display:none;">
+                        </div>
+                        <div style="margin-top:6px; text-align:right;">${thumbHtml}</div>
+                    </div>
+                    <button class="btn-admin-delete" onclick="deleteAdminBannerItem(${idx})" style="width:100%; height:28px; font-size:0.75rem;"><i class="fas fa-trash-alt"></i> Eliminar Banner</button>
+                </div>
+            `;
+        });
+        container.innerHTML = html || `<p style="color:#888; font-style:italic; font-size:0.8rem; text-align:center; padding:10px;">No hay banners multimedia agregados.</p>`;
+    }
+
+    function renderAdminTextBannersUI() {
+        let container = document.getElementById('admin-text-banners-list-container'); if (!container) return; let html = "";
+        
+        window.localTextBannersArray.forEach((tBanner, idx) => {
+            let positionOptions = `<option value="start" ${tBanner.position === 'start' || !tBanner.position ? 'selected' : ''}>Al principio de todo</option>`;
+            window.localBannersArray.forEach((b, bIdx) => {
+                let bannerNameText = b.title ? b.title.trim() : `Banner #${bIdx + 1}`;
+                positionOptions += `
+                    <option value="above_${bIdx}" ${tBanner.position === `above_${bIdx}` ? 'selected' : ''}>Encima de: 🌄 ${bannerNameText}</option>
+                    <option value="below_${bIdx}" ${tBanner.position === `below_${bIdx}` ? 'selected' : ''}>Debajo de: 🌄 ${bannerNameText}</option>
+                `;
+            });
+            positionOptions += `<option value="end" ${tBanner.position === 'end' ? 'selected' : ''}>Al final de todo</option>`;
+
+            let useFontChecked = tBanner.useFont !== false ? 'checked' : '';
+            let ledStrokeChecked = tBanner.ledStroke ? 'checked' : '';
+            let strokeVal = tBanner.strokeSize || 0;
+            let sizeVal = tBanner.fontSize || 24;
+            let lhVal = tBanner.lineHeight || 140;
+            let lsVal = tBanner.letterSpacing || 0;
+
+            html += `
+                <div class="admin-prod-card" style="border-left:3px solid #ff9900;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:0.85rem; font-weight:bold; color:#ff9900;"><i class="fas fa-font"></i> Banner de Texto #${idx + 1}</span>
+                        <label class="switch">
+                            <input type="checkbox" onchange="updateAdminTextBannerField(${idx}, 'active', this.checked)" ${tBanner.active ? 'checked' : ''}>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="admin-field">
+                        <label style="color: #25D366; font-weight: bold; font-size:0.8rem;"><i class="fas fa-eye"></i> Simulación en Vivo:</label>
+                        <div id="tb-preview-${idx}" class="text-banner-container" style="margin-top: 5px; background:#0e0e0e; pointer-events:none;"></div>
+                    </div>
+
+                    <div class="admin-field">
+                        <label>Anuncio / Comunicado (Soporta emojis)</label>
+                        <textarea class="admin-input" style="height:50px; font-family:sans-serif; font-size:0.85rem;" oninput="updateAdminTextBannerLive(${idx}, 'text', this.value)">${tBanner.text || ''}</textarea>
+                    </div>
+                    
+                    <div class="admin-field">
+                        <label><i class="fas fa-layer-group"></i> Ubicación en la Pantalla</label>
+                        <select class="admin-input" onchange="updateAdminTextBannerLive(${idx}, 'position', this.value)" style="width:100%;">
+                            ${positionOptions}
+                        </select>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-bottom:12px;">
+                        <div style="flex:1;">
+                            <label style="display:block; font-size:0.75rem; color:#aaa; margin-bottom:4px; font-weight:bold;"><i class="fas fa-palette"></i> Color Letra</label>
+                            <input type="color" class="admin-input" value="${tBanner.textColor || '#ffffff'}" oninput="updateAdminTextBannerLive(${idx}, 'textColor', this.value)" style="height:38px; padding:2px; cursor:pointer;">
+                        </div>
+                        <div style="flex:1;">
+                            <label style="display:block; font-size:0.75rem; color:#aaa; margin-bottom:4px; font-weight:bold;"><i class="fas fa-paint-brush"></i> Color Borde</label>
+                            <input type="color" class="admin-input" value="${tBanner.strokeColor || '#000000'}" oninput="updateAdminTextBannerLive(${idx}, 'strokeColor', this.value)" style="height:38px; padding:2px; cursor:pointer;">
+                        </div>
+                    </div>
+
+                    <div class="admin-field">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label style="margin:0;"><i class="fas fa-text-height"></i> Tamaño de las Letras</label>
+                            <span id="lbl-size-${idx}" style="font-size:0.8rem; font-weight:bold; color:#0026ff;">${sizeVal}%</span>
+                        </div>
+                        <input type="range" min="1" max="100" value="${sizeVal}" class="admin-slider" oninput="updateAdminTextBannerLive(${idx}, 'fontSize', this.value)">
+                    </div>
+
+                    <div class="admin-field">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label style="margin:0;"><i class="fas fa-arrows-alt-v"></i> Separación entre Líneas</label>
+                            <span id="lbl-lh-${idx}" style="font-size:0.8rem; font-weight:bold; color:#ff00ff;">${lhVal}%</span>
+                        </div>
+                        <input type="range" min="50" max="250" value="${lhVal}" class="admin-slider" oninput="updateAdminTextBannerLive(${idx}, 'lineHeight', this.value)">
+                    </div>
+
+                    <div class="admin-field">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label style="margin:0;"><i class="fas fa-arrows-alt-h"></i> Separación entre Letras (Letter Spacing)</label>
+                            <span id="lbl-ls-${idx}" style="font-size:0.8rem; font-weight:bold; color:#00ffcc;">${lsVal}px</span>
+                        </div>
+                        <input type="range" min="-5" max="20" value="${lsVal}" class="admin-slider" oninput="updateAdminTextBannerLive(${idx}, 'letterSpacing', this.value)">
+                    </div>
+
+                    <div class="admin-field">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label style="margin:0;"><i class="fas fa-border-style"></i> Grosor del Borde (Stroke)</label>
+                            <span id="lbl-stroke-${idx}" style="font-size:0.8rem; font-weight:bold; color:#00ffcc;">${strokeVal}px</span>
+                        </div>
+                        <input type="range" min="0" max="8" value="${strokeVal}" class="admin-slider" oninput="updateAdminTextBannerLive(${idx}, 'strokeSize', this.value)">
+                    </div>
+
+                    <div class="admin-field" style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,38,255,0.05); padding:10px; border-radius:6px; border:1px solid #0026ff; margin-bottom:12px;">
+                        <label style="margin:0; font-weight:bold; font-size:0.8rem; color:#fff;"><i class="fas fa-magic fa-spin"></i> Efecto Cinta LED en Contorno de Letras</label>
+                        <label class="switch">
+                            <input type="checkbox" onchange="updateAdminTextBannerLive(${idx}, 'ledStroke', this.checked)" ${ledStrokeChecked}>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="admin-field">
+                        <label><i class="fas fa-photo-video"></i> Imagen o Video Incluido (Opcional)</label>
+                        <div style="display:flex; gap:8px; margin-top:4px;">
+                            <button class="btn-ticket" style="flex:1;" onclick="triggerFileInput('file-tb-media-input-${idx}')"><i class="fas fa-upload"></i> Celular</button>
+                            <button class="btn-ticket" style="background:#0026ff; border-color:#0026ff; flex:1;" onclick="openCloudGallery('text_banner', null, null, ${idx})"><i class="fas fa-cloud"></i> Nube</button>
+                            <input type="file" id="file-tb-media-input-${idx}" accept="image/*,video/*" onchange="uploadTextBannerMediaFile(this, ${idx})" style="display:none;">
+                        </div>
+                        <div id="media-link-status-${idx}">
+                            ${tBanner.url ? `<div style="margin-top:6px; text-align:right; font-size:0.75rem; color:#25D366; font-weight:bold;"><i class="fas fa-check-circle"></i> Archivo Vinculado <span style="color:#ea4335; cursor:pointer; margin-left:8px;" onclick="clearTextBannerMedia(${idx})">[Quitar]</span></div>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="admin-field" style="background:rgba(255,255,255,0.02); padding:10px; border-radius:6px; border:1px solid #333;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <label style="margin:0;"><i class="fas fa-font"></i> Tipografía Personalizada</label>
+                            <label class="switch">
+                                <input type="checkbox" onchange="updateAdminTextBannerLive(${idx}, 'useFont', this.checked)" ${useFontChecked}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div style="display:flex; gap:8px; margin-top:4px;">
+                            <button class="btn-ticket" style="width:100%; background:#222; border-color:#555; font-size:0.8rem;" onclick="triggerFileInput('file-tb-font-input-${idx}')"><i class="fas fa-file-upload"></i> Subir Letra (.ttf, .otf)</button>
+                            <input type="file" id="file-tb-font-input-${idx}" accept=".ttf,.otf,.woff,.woff2" onchange="uploadTextBannerFontFile(this, ${idx})" style="display:none;">
+                        </div>
+                        <div id="font-link-status-${idx}">
+                            ${tBanner.fontUrl ? `<div style="margin-top:6px; text-align:right; font-size:0.75rem; color:#0026ff; font-weight:bold;"><i class="fas fa-link"></i> Letra Guardada ${tBanner.useFont === false ? '<span style="color:#aaa;">(Desactivada)</span>' : '<span style="color:#25D366;">(Activa)</span>'} <span style="color:#ea4335; cursor:pointer; margin-left:8px;" onclick="clearTextBannerFont(${idx})">[Eliminar]</span></div>` : ''}
+                        </div>
+                    </div>
+
+                    <button class="btn-admin-delete" onclick="deleteAdminTextBannerItem(${idx})" style="width:100%; height:28px; font-size:0.75rem;"><i class="fas fa-trash-alt"></i> Eliminar Anuncio de Texto</button>
+                </div>
+            `;
+        });
+        container.innerHTML = html || `<p style="color:#888; font-style:italic; font-size:0.8rem; text-align:center; padding:10px;">No hay anuncios de texto agregados.</p>`;
+        
+        window.localTextBannersArray.forEach((_, idx) => {
+            updateAdminTextBannerLive(idx, 'text', window.localTextBannersArray[idx].text || '');
+        });
+    }
+
+    function updateAdminTextBannerLive(idx, field, val) {
+        window.localTextBannersArray[idx][field] = val;
+        
+        if (field === 'fontSize') { document.getElementById(`lbl-size-${idx}`).innerText = val + "%"; }
+        if (field === 'strokeSize') { document.getElementById(`lbl-stroke-${idx}`).innerText = val + "px"; }
+        if (field === 'lineHeight') { document.getElementById(`lbl-lh-${idx}`).innerText = val + "%"; }
+        if (field === 'letterSpacing') { document.getElementById(`lbl-ls-${idx}`).innerText = val + "px"; }
+        
+        let previewDiv = document.getElementById(`tb-preview-${idx}`);
+        if (previewDiv) {
+            let t = window.localTextBannersArray[idx];
+            
+            if (t.fontUrl && t.useFont !== false) {
+                let fontFaceName = `CustomFontBannerPreview_${idx}`;
+                if (!document.getElementById(`style-font-preview-${idx}`)) {
+                    let s = document.createElement('style'); s.id = `style-font-preview-${idx}`;
+                    s.innerHTML = `@font-face { font-family: '${fontFaceName}'; src: url('${t.fontUrl}'); }`;
+                    document.head.appendChild(s);
+                }
+                previewDiv.style.fontFamily = fontFaceName;
+            } else { previewDiv.style.fontFamily = "inherit"; }
+            
+            let textBlockHtml = "";
+            if (t.text && t.text.trim() !== "") {
+                let strokeSize = parseInt(t.strokeSize) || 0;
+                let strokeColor = t.strokeColor || "#000000";
+                let textColor = t.textColor || "#ffffff";
+                let lineHeightValue = (t.lineHeight || 140) / 100;
+                let computedSize = calcFontPixelSize(t.fontSize || 24);
+                let letterSpacingParam = (t.letterSpacing || 0) + "px";
+                
+                let strokeParam = strokeSize > 0 ? `${strokeSize}px` : '0px';
+                let animClass = t.ledStroke ? 'led-stroke-mov' : '';
+                let ledStrokeWidth = (strokeSize > 0 ? (strokeSize * 2 + 4) : 4) + "px";
+
+                let bannerText = t.text || "";
+                let charsArray = Array.from(bannerText);
+                
+                let innerCharsHtml = charsArray.map(char => {
+                    if (char === "\n") return "<br>";
+                    if (char === " ") return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">&nbsp;</span>`;
+                    
+                    let isEmoji = false;
+                    try { isEmoji = /\p{Extended_Pictographic}/u.test(char) || /\p{Emoji_Presentation}/u.test(char); } 
+                    catch(e) { isEmoji = char.codePointAt(0) > 0xFFFF; }
+                    
+                    if (isEmoji) {
+                        return `<span class="char-master-wrapper" style="margin-right: ${letterSpacingParam}; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;">${char}</span>`;
+                    }
+                    
+                    return `
+                        <span class="char-master-wrapper" style="margin-right: ${letterSpacingParam};">
+                            <span class="char-layer-led ${animClass}" style="-webkit-text-stroke: ${ledStrokeWidth} #0026ff; display: ${t.ledStroke ? 'block' : 'none'};">${char}</span>
+                            <span class="char-layer-stroke" style="-webkit-text-stroke: ${strokeParam} ${strokeColor}; display: ${strokeSize > 0 ? 'block' : 'none'};">${char}</span>
+                            <span class="char-layer-fill" style="color: ${textColor};">${char}</span>
+                        </span>
+                    `;
+                }).join("");
+
+                textBlockHtml = `<div class="text-banner-content" style="font-size: ${computedSize}px; line-height: ${lineHeightValue};">${innerCharsHtml}</div>`;
+            }
+            
+            let mediaBlockHtml = "";
+            if (t.url) {
+                let isVideo = t.url.toLowerCase().includes('.mp4') || t.url.toLowerCase().includes('.webm') || t.url.toLowerCase().includes('.mov');
+                let mediaTag = isVideo ? `<video src="${t.url}" autoplay loop muted playsinline style="width:100%; max-height:140px; object-fit:contain;"></video>` : `<img src="${t.url}" style="width:100%; max-height:140px; object-fit:contain;">`;
+                mediaBlockHtml = `<div class="text-banner-media-wrapper" style="margin-top:10px;">${mediaTag}</div>`;
+            }
+            
+            previewDiv.innerHTML = `${textBlockHtml}${mediaBlockHtml}`;
+        }
+    }
+
+    function addAdminBannerItem() { 
+        window.localBannersArray.push({ active: true, title: "Nuevo Combo", price: 0, desc: "", url: "" }); 
+        renderAdminBannersUI(); renderAdminTextBannersUI();
+    }
+    function updateAdminBannerField(idx, field, val) { 
+        if (field === 'price') val = parseFloat(val) || 0; 
+        window.localBannersArray[idx][field] = val; if (field === 'title') renderAdminTextBannersUI();
+    }
+    function deleteAdminBannerItem(idx) { 
+        window.localBannersArray.splice(idx, 1); renderAdminBannersUI(); renderAdminTextBannersUI();
+    }
+
+    function addAdminTextBannerItem() { 
+        window.localTextBannersArray.push({ active: true, text: "Escribe un aviso publicitario aquí...", fontSize: 24, lineHeight: 140, letterSpacing: 0, position: "start", url: "", fontUrl: "", useFont: true, strokeSize: 0, strokeColor: "#000000", textColor: "#ffffff", ledStroke: false }); 
+        renderAdminTextBannersUI(); 
+    }
+    function updateAdminTextBannerField(idx, field, val) { window.localTextBannersArray[idx][field] = val; }
+    function deleteAdminTextBannerItem(idx) { window.localTextBannersArray.splice(idx, 1); renderAdminTextBannersUI(); }
+
+    async function uploadTextBannerMediaFile(input, idx) {
+        let file = input.files[0]; if(!file) return;
+        customAlert("Sincronizando archivo multimedia...", "Subiendo Asset");
+        const formData = new FormData(); formData.append("file", file); formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: "POST", body: formData });
+            const data = await response.json(); window.localTextBannersArray[idx].url = data.secure_url;
+            await trackMediaInCloudGallery(data.secure_url, data.public_id);
+            document.getElementById(`media-link-status-${idx}`).innerHTML = `<div style="margin-top:6px; text-align:right; font-size:0.75rem; color:#25D366; font-weight:bold;"><i class="fas fa-check-circle"></i> Archivo Vinculado <span style="color:#ea4335; cursor:pointer; margin-left:8px;" onclick="clearTextBannerMedia(${idx})">[Quitar]</span></div>`;
+            updateAdminTextBannerLive(idx, 'url', data.secure_url); customAlert("¡Multimedia vinculado al banner led!", "Éxito");
+        } catch (error) { customAlert("Fallo en la carga."); }
+    }
+
+    async function uploadTextBannerFontFile(input, idx) {
+        let file = input.files[0]; if(!file) return;
+        customAlert("Instalando tipografía en el servidor cloud...", "Procesando Tipografía");
+        const formData = new FormData(); formData.append("file", file); formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET); formData.append("resource_type", "auto");
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: "POST", body: formData });
+            const data = await response.json(); window.localTextBannersArray[idx].fontUrl = data.secure_url; window.localTextBannersArray[idx].useFont = true;
+            document.getElementById(`font-link-status-${idx}`).innerHTML = `<div style="margin-top:6px; text-align:right; font-size:0.75rem; color:#0026ff; font-weight:bold;"><i class="fas fa-link"></i> Letra Guardada <span style="color:#25D366;">(Activa)</span> <span style="color:#ea4335; cursor:pointer; margin-left:8px;" onclick="clearTextBannerFont(${idx})">[Eliminar]</span></div>`;
+            updateAdminTextBannerLive(idx, 'fontUrl', data.secure_url); customAlert("¡Tipografía registrada con éxito!", "Éxito");
+        } catch (error) { customAlert("Error al procesar el archivo tipográfico."); }
+    }
+
+    function clearTextBannerMedia(idx) { window.localTextBannersArray[idx].url = ""; document.getElementById(`media-link-status-${idx}`).innerHTML = ""; updateAdminTextBannerLive(idx, 'url', ""); }
+    function clearTextBannerFont(idx) { window.localTextBannersArray[idx].fontUrl = ""; window.localTextBannersArray[idx].useFont = false; document.getElementById(`font-link-status-${idx}`).innerHTML = ""; updateAdminTextBannerLive(idx, 'fontUrl', ""); }
+
+    async function uploadBannerMediaFile(input, idx) {
+        let file = input.files[0]; if(!file) return;
+        customAlert("Cargando multimedia en Cloudinary...", "Subiendo Archivo");
+        const formData = new FormData(); formData.append("file", file); formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: "POST", body: formData });
+            const data = await response.json(); window.localBannersArray[idx].url = data.secure_url;
+            await trackMediaInCloudGallery(data.secure_url, data.public_id); renderAdminBannersUI(); renderAdminTextBannersUI(); customAlert("¡Multimedia cargado con éxito!", "¡Éxito!");
+        } catch (error) { customAlert("Error en la carga.", "Fallo"); }
+    }
+
+    function renderUserDynamicMenu() {
+        let container = document.getElementById('main-dynamic-menu-container'); let html = "";
+        window.localMenuArray.forEach((cat, catIdx) => {
+            html += `<button class="category-btn" onclick="toggle('dyn-cat-${catIdx}')">${cat.name} <span>▼</span></button><div id="dyn-cat-${catIdx}" class="category-content">`;
+            (cat.products || []).forEach((prod, prodIdx) => {
+                let cartKey = `prod_${catIdx}_${prodIdx}`;
+                let safeQty = cart[cartKey] ? cart[cartKey].qty : 0; let mediaHtml = "";
+                let isVideo = prod.img && (prod.img.toLowerCase().includes('.mp4') || prod.img.toLowerCase().includes('.webm') || prod.img.toLowerCase().includes('.mov'));
+                if (isVideo) { mediaHtml = `<video src="${prod.img}" class="item-img" autoplay loop muted playsinline onclick="zoomImg(this.src, true)"></video>`; } 
+                else { mediaHtml = `<img src="${prod.img || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=200&auto=format&fit=crop'}" class="item-img" onclick="zoomImg(this.src, false)">`; }
+                html += `
+                    <div class="menu-item">
+                        <div class="item-main">
+                            ${mediaHtml}
+                            <div class="item-info"><span class="item-title">${prod.name}</span><span class="item-price">₡${prod.price.toLocaleString('en-US')}</span></div>
+                            <div class="item-controls">
+                                <button class="btn-qty" onclick="changeQty('${cartKey}', '${prod.name.replace(/'/g, "\\'")}', -1, ${prod.price})">-</button>
+                                <input type="number" id="qty-${catIdx}-${prodIdx}" class="qty-input" value="${safeQty}" onchange="manualQty('${cartKey}', '${prod.name.replace(/'/g, "\\'")}', this.value, ${prod.price})">
+                                <button class="btn-qty" onclick="changeQty('${cartKey}', '${prod.name.replace(/'/g, "\\'")}', 1, ${prod.price})">+</button>
+                            </div>
+                        </div>
+                        <input type="text" id="note-${prod.name}" class="item-note" placeholder="${prod.desc || 'indicanos tu comentario'}">
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        });
+        container.innerHTML = html || `<p style="color:#aaa; font-style:italic; padding:20px;">No hay productos cargados.</p>`;
+    }
+
+    function toggleAdminMenuSection() {
+        let block = document.getElementById('admin-menu-management-block');
+        if(block.style.display === "none") { block.style.display = "block"; renderAdminMenuUI(); } else { block.style.display = "none"; }
+    }
+
+    function renderAdminMenuUI() {
+        let container = document.getElementById('admin-categories-list'); if (!container) return; let html = "";
+        window.localMenuArray.forEach((cat, catIdx) => {
+            let isExpanded = window.adminExpandedCats[catIdx] || false; let arrow = isExpanded ? "▲" : "▼"; let displayStyle = isExpanded ? "block" : "none";
+            html += `
+                <div class="admin-cat-block">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button class="btn-admin-toggle-cat" onclick="toggleAdminCat(${catIdx})">${arrow}</button>
+                        <input type="text" class="admin-input" value="${cat.name}" onchange="updateLocalCatName(${catIdx}, this.value)" style="flex:1; margin-bottom:0;">
+                        <button class="btn-qty" onclick="moveCategory(${catIdx}, -1)" ${catIdx === 0 ? 'disabled style="opacity:0.2;"' : ''}><i class="fas fa-arrow-up"></i></button>
+                        <button class="btn-qty" onclick="moveCategory(${catIdx}, 1)" ${catIdx === window.localMenuArray.length - 1 ? 'disabled style="opacity:0.2;"' : ''}><i class="fas fa-arrow-down"></i></button>
+                        <button class="btn-admin-delete" onclick="deleteLocalCategory(${catIdx})"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                    <div id="admin-cat-content-${catIdx}" style="display:${displayStyle}; margin-left:10px; border-left:2px solid #0026ff; padding-left:8px; margin-top:10px;">
+                        <button class="btn-loc" style="background:#25D366; font-size:0.75rem; padding:6px; border:none; width:100%; margin-bottom:10px;" onclick="addLocalProduct(${catIdx})"><i class="fas fa-plus-circle"></i> Añadir Producto</button>
+            `;
+            (cat.products || []).forEach((prod, prodIdx) => {
+                let thumbHtml = "";
+                if (prod.img) {
+                    let isVideo = prod.img.toLowerCase().includes('.mp4') || prod.img.toLowerCase().includes('.webm') || prod.img.toLowerCase().includes('.mov');
+                    thumbHtml = isVideo ? `<video src="${prod.img}" autoplay loop muted playsinline style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #555;"></video>` : `<img src="${prod.img}" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #555;">`;
+                }
+                html += `
+                    <div class="admin-prod-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:rgba(0,0,0,0.3); padding:6px; border-radius:4px;">
+                            <span style="font-size:0.75rem; color:#aaa; font-weight:bold;">Producto #${prodIdx + 1}</span>
+                            <div style="display:flex; gap:4px;">
+                                <button class="btn-qty" style="width:28px; height:28px;" onclick="moveProduct(${catIdx}, ${prodIdx}, -1)" ${prodIdx === 0 ? 'disabled style="opacity:0.2;"' : ''}><i class="fas fa-arrow-up"></i></button>
+                                <button class="btn-qty" style="width:28px; height:28px;" onclick="moveProduct(${catIdx}, ${prodIdx}, 1)" ${prodIdx === cat.products.length - 1 ? 'disabled style="opacity:0.2;"' : ''}><i class="fas fa-arrow-down"></i></button>
+                            </div>
+                        </div>
+                        <div class="admin-field"><label>Nombre del Producto</label><input type="text" class="admin-input" value="${prod.name}" onchange="updateLocalProdField(${catIdx}, ${prodIdx}, 'name', this.value)"></div>
+                        <div class="admin-field"><label>Precio (₡)</label><input type="number" class="admin-input" value="${prod.price}" onchange="updateLocalProdField(${catIdx}, ${prodIdx}, 'price', this.value)"></div>
+                        <div class="admin-field"><label>Comentario sugerido</label><input type="text" class="admin-input" value="${prod.desc || ''}" onchange="updateLocalProdField(${catIdx}, ${prodIdx}, 'desc', this.value)"></div>
+                        <div class="admin-field">
+                            <label>Imagen / Video del Producto</label>
+                            <div style="display:flex; gap:8px; margin-top:4px;">
+                                <button class="btn-ticket" style="flex:1;" onclick="triggerFileInput('file-prod-input-${catIdx}-${prodIdx}')"><i class="fas fa-upload"></i> Dispositivo</button>
+                                <button class="btn-ticket" style="background:#0026ff; border-color:#0026ff; flex:1;" onclick="openCloudGallery('product', ${catIdx}, ${prodIdx}, null)"><i class="fas fa-cloud"></i> Nube</button>
+                                <input type="file" id="file-prod-input-${catIdx}-${prodIdx}" accept="image/*,video/*" onchange="convertAndSaveImage(this, ${catIdx}, ${prodIdx})" style="display:none;">
+                            </div>
+                            <div style="margin-top:6px; text-align:right;">${thumbHtml}</div>
+                        </div>
+                        <button class="btn-admin-delete" onclick="deleteLocalProduct(${catIdx}, ${prodIdx})" style="width:100%; height:28px; font-size:0.75rem;"><i class="fas fa-minus-circle"></i> Eliminar Producto</button>
+                    </div>
+                `;
+            });
+            html += `</div></div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function moveCategory(index, direction) {
+        let targetIndex = index + direction; if (targetIndex < 0 || targetIndex >= window.localMenuArray.length) return;
+        let temp = window.localMenuArray[index]; window.localMenuArray[index] = window.localMenuArray[targetIndex]; window.localMenuArray[targetIndex] = temp;
+        renderAdminMenuUI();
+    }
+    function moveProduct(catIdx, prodIdx, direction) {
+        let products = window.localMenuArray[catIdx].products; let targetIdx = prodIdx + direction; if (targetIdx < 0 || targetIdx >= products.length) return;
+        let temp = products[prodIdx]; products[prodIdx] = products[targetIdx]; products[targetIdx] = temp;
+        renderAdminMenuUI();
+    }
+    function toggleAdminCat(catIdx) { window.adminExpandedCats[catIdx] = !window.adminExpandedCats[catIdx]; renderAdminMenuUI(); }
+    function addAdminCategory() { window.localMenuArray.unshift({ name: "Nueva Categoría", products: [] }); renderAdminMenuUI(); }
+    function deleteLocalCategory(catIdx) { window.localMenuArray.splice(catIdx, 1); renderAdminMenuUI(); }
+    function addLocalProduct(catIdx) { if(!window.localMenuArray[catIdx].products) window.localMenuArray[catIdx].products = []; window.localMenuArray[catIdx].products.push({ name: "Nuevo Producto", price: 0, desc: "indicanos tu comentario", img: "" }); renderAdminMenuUI(); }
+    function deleteLocalProduct(catIdx, prodIdx) { window.localMenuArray[catIdx].products.splice(prodIdx, 1); renderAdminMenuUI(); }
+    function updateLocalCatName(catIdx, val) { window.localMenuArray[catIdx].name = val; }
+    function updateLocalProdField(catIdx, prodIdx, field, val) { if(field === 'price') val = parseFloat(val) || 0; window.localMenuArray[catIdx].products[prodIdx][field] = val; }
+
+    async function convertAndSaveImage(input, catIdx, prodIdx) {
+        let file = input.files[0]; if(!file) return;
+        customAlert("Subiendo archivo multimedia a Cloudinary...", "Subiendo Archivo");
+        const formData = new FormData(); formData.append("file", file); formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: "POST", body: formData });
+            const data = await response.json(); window.localMenuArray[catIdx].products[prodIdx].img = data.secure_url;
+            await trackMediaInCloudGallery(data.secure_url, data.public_id); renderAdminMenuUI(); customAlert("¡Archivo subido y registrado con éxito!", "¡Éxito!");
+        } catch (error) { customAlert("Fallo en la subida.", "Error"); }
+    }
+
+    async function uploadBgImage(input) {
+        let file = input.files[0]; if(!file) return;
+        customAlert("Subiendo fondo a Cloudinary...", "Subiendo Archivo");
+        const formData = new FormData(); formData.append("file", file); formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: "POST", body: formData });
+            const data = await response.json(); document.getElementById('input-bg-url').value = data.secure_url;
+            document.getElementById('btn-delete-bg').style.display = "inline-flex"; await trackMediaInCloudGallery(data.secure_url, data.public_id); customAlert("¡Fondo cargado!", "Éxito");
+        } catch (error) { customAlert("Error."); }
+    }
+
+    async function uploadProfileImage(input) {
+        let file = input.files[0]; if(!file) return;
+        customAlert("Subiendo logo a Cloudinary...", "Subiendo Archivo");
+        const formData = new FormData(); formData.append("file", file); formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: "POST", body: formData });
+            const data = await response.json(); document.getElementById('input-profile-url').value = data.secure_url;
+            document.getElementById('btn-delete-profile').style.display = "inline-flex"; await trackMediaInCloudGallery(data.secure_url, data.public_id); customAlert("¡Logo cargado!", "Éxito");
+        } catch (error) { customAlert("Error."); }
+    }
+
+    function clearBgImage() { document.getElementById('input-bg-url').value = ""; document.getElementById('btn-delete-bg').style.display = "none"; }
+    function clearProfileImage() { document.getElementById('input-profile-url').value = ""; document.getElementById('btn-delete-profile').style.display = "none"; }
+
+    function ejecutarEvaluadorCalendarioCR() {
+        try {
+            let crLocaleString = new Date().toLocaleString("en-US", { timeZone: "America/Costa_Rica" });
+            let crDate = new Date(crLocaleString); let currentDayIndex = crDate.getDay(); 
+            const mapperKeys = ['do', 'lu', 'ma', 'mi', 'ju', 'vi', 'sa']; let todayKey = mapperKeys[currentDayIndex];
+            let statusHoy = window.currentScheduleData[todayKey + '_status'] || "abierto"; let badge = document.getElementById('schedule-badge');
+
+            if (statusHoy === "cerrado") {
+                badge.innerHTML = `<span class="dot-status" style="color:#ea4335; background:#ea4335;"></span> Cerrado - Horario`;
+                badge.style.borderColor = "#ea4335"; badge.style.color = "#ea4335"; return;
+            }
+
+            let optionsTime = { timeZone: "America/Costa_Rica", hour: "2-digit", minute: "2-digit", hour12: false };
+            let crTimeFormatter = new Intl.DateTimeFormat("en-US", optionsTime);
+            let [crHour, crMin] = crTimeFormatter.format(new Date()).split(':').map(Number);
+            let openStr = window.currentScheduleData[todayKey + '_open'] || "11:00 AM"; let closeStr = window.currentScheduleData[todayKey + '_close'] || "11:00 PM";
+            let currentMins = (crHour * 60) + crMin; let openMins = convertTimeToMinutes(openStr); let closeMins = convertTimeToMinutes(closeStr);
+            
+            let isOpen = (closeMins > openMins) ? (currentMins >= openMins && currentMins < closeMins) : (currentMins >= openMins || currentMins < closeMins);
+            if (isOpen) {
+                badge.innerHTML = `<span class="dot-status" style="color:#25D366; background:#25D366;"></span> Abierto - Horario`; badge.style.borderColor = "#25D366"; badge.style.color = "#25D366";
+            } else {
+                badge.innerHTML = `<span class="dot-status" style="color:#ea4335; background:#ea4335;"></span> Cerrado - Horario`; badge.style.borderColor = "#ea4335"; badge.style.color = "#ea4335";
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function showScheduleDetails() {
+        let htmlList = `<div style="text-align:left; font-size:0.95rem; line-height:1.6; color:#fff; padding:5px 0;">`;
+        daysOrder.forEach(key => {
+            let status = window.currentScheduleData[key + '_status'] || "abierto";
+            let open = window.currentScheduleData[key + '_open'] || "11:00 AM"; let close = window.currentScheduleData[key + '_close'] || "11:00 PM";
+            let printText = (status === 'cerrado') ? `<span style="color:#ff4d4d; font-weight:bold;">Cerrado</span>` : `De ${open} a ${close}`;
+            htmlList += `<div style="display:flex; justify-content:space-between; border-bottom:1px dashed #333; padding:8px 0;"><span><b>${daysNames[key]}:</b></span><span>${printText}</span></div>`;
+        });
+        htmlList += `</div>`; customAlert(htmlList, "<i class='fas fa-calendar-alt' style='color:#0026ff;'></i> Horario de la Semana");
+    }
+
+    function toggleSocialRow(linkId, textId, urlValue, nameValue, defaultText) {
+        let btn = document.getElementById(linkId); let span = document.getElementById(textId);
+        if(urlValue && urlValue.trim() !== "") { btn.href = urlValue; span.innerText = (nameValue && nameValue.trim() !== "") ? nameValue : defaultText; btn.style.display = "flex"; } 
+        else { btn.style.display = "none"; }
+    }
+
+    document.getElementById('input-login-pin').addEventListener('keypress', function(e) { if (e.key === 'Enter') verifyAdminPin(); });
+    function formatSinpeSpacing(num) { if(num.length === 8) return num.substring(0,4) + "-" + num.substring(4); return num; }
+
+    function processAdminClick() {
+        adminClicks++; clearTimeout(adminTimeout);
+        if (adminClicks >= 7) {
+            adminClicks = 0; document.getElementById('input-login-pin').value = ""; openModal('loginModal'); document.getElementById('input-login-pin').focus();
+        } else { adminTimeout = setTimeout(() => { adminClicks = 0; }, 2500); }
+    }
+
+    function verifyAdminPin() {
+        let enteredPin = document.getElementById('input-login-pin').value.trim(); let hashedEntered = CryptoJS.SHA256(enteredPin).toString();
+        if (enteredPin === currentGlobalPin || hashedEntered === currentGlobalPin) { 
+            closeModalTop(); 
+            openModal('adminModal'); 
+            cargarEstadisticasAdmin();
+        } else { customAlert("PIN incorrecto.", "Security"); }
+        document.getElementById('input-login-pin').value = "";
+    }
+
+    function applyAdminChanges() {
+        let newPinInput = document.getElementById('input-admin-pin').value.trim(); let pinToSave = currentGlobalPin;
+        if (newPinInput !== "") { pinToSave = CryptoJS.SHA256(newPinInput).toString(); }
+
+        let updateConfigObject = {
+            admin_pin: pinToSave, menu: window.localMenuArray, 
+            bg_url: document.getElementById('input-bg-url').value.trim(),
+            profile_url: document.getElementById('input-profile-url').value.trim(),
+            page_title: document.getElementById('input-page-title').value.trim(),
+            whatsapp: document.getElementById('input-whatsapp').value.trim(),
+            sinpe_num: document.getElementById('input-sinpe-num').value.trim(),
+            sinpe_name: document.getElementById('input-sinpe-name').value.trim(),
+            maps_url: document.getElementById('input-maps-url').value.trim(),
+            señas_local: document.getElementById('input-señas-local').value.trim(),
+            description: document.getElementById('input-description').value.trim(),
+            fb: document.getElementById('input-fb').value.trim(), fb_name: document.getElementById('input-fb-name').value.trim(),
+            ig: document.getElementById('input-ig').value.trim(), ig_name: document.getElementById('input-ig-name').value.trim(),
+            tk: document.getElementById('input-tk').value.trim(), tk_name: document.getElementById('input-tk-name').value.trim(),
+            banners: window.localBannersArray, text_banners: window.localTextBannersArray,
+            gallery_media: window.globalGalleryArray
+        };
+
+        daysOrder.forEach(day => {
+            updateConfigObject[day + '_status'] = document.getElementById(`input-${day}-status`).value;
+            updateConfigObject[day + '_open'] = document.getElementById(`input-${day}-open`).value.trim() || "11:00 AM";
+            updateConfigObject[day + '_close'] = document.getElementById(`input-${day}-close`).value.trim() || "11:00 PM";
+        });
+
+        db.collection("configuraciones").doc("cooking-pollos").set(updateConfigObject, { merge: true })
+        .then(() => {
+            customAlert("Cambios y assets sincronizados con éxito.", "Nube Al Día");
+            closeModals(); renderUserDynamicMenu(); renderMainPageBanners();
+        }).catch((error) => { customAlert("Error al guardar."); });
+    }
+
+    function setExpress() {
+        deliveryMode = "ENVÍO EXPRESS"; isSelected = true;
+        document.getElementById('btn-location').classList.add('active'); document.getElementById('btn-pickup').classList.remove('active');
+        document.getElementById('address-block').style.display = "block";
+        
+        if (navigator.geolocation) {
+            obtenerUbicacionGPS();
+        } else { 
+            gpsCoords = ""; 
+            customAlert("Tu dispositivo no soporta geolocalización automática. Escribe tus señas manuales abajo.", "Dirección Manual");
+        }
+    }
+
+    function obtenerUbicacionGPS() {
+        customAlert(`
+            <div style="text-align:center; padding:10px;">
+                <i class="fas fa-spinner fa-spin" style="color:#0026ff; font-size:2.2rem;"></i><br><br>
+                <b>Conectando con satélites GPS...</b><br>
+                <span style="font-size:0.8rem; color:#aaa; display:block; margin-top:5px;">Buscando señal de alta precisión. Asegúrate de tener la ubicación activa de tu celular.</span>
+            </div>
+        `, "Localizando Celular");
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                closeModalTop();
+                gpsCoords = `${position.coords.latitude},${position.coords.longitude}`;
+                customAlert(`
+                    <div style="text-align:center; color:#25D366; padding:10px;">
+                        <i class="fas fa-check-circle" style="font-size:2.5rem;"></i><br><br>
+                        <b>¡Ubicación GPS capturada con éxito!</b>
+                    </div>
+                `, "Ubicación Lista");
+            },
+            (error) => {
+                gpsCoords = "";
+                customAlert(`
+                    <div style="text-align:center; padding:5px;">
+                        <i class="fas fa-exclamation-triangle" style="color:#ff9900; font-size:2.2rem;"></i><br><br>
+                        <b>No logramos capturar la señal de tu GPS automáticamente.</b>
+                        <p style="font-size:0.85rem; color:#ccc; margin:10px 0 18px 0; line-height:1.4;">A veces el teléfono bloquea el primer intento o la señal tarda un momento en estabilizarse.</p>
+                        <button class="btn-loc active" style="width:100%; padding:13px; font-weight:bold; margin-bottom:12px; border:none; border-radius:6px; cursor:pointer; font-size:0.95rem; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="obtenerUbicacionGPS()">
+                            <i class="fas fa-redo"></i> REINTENTAR CAPTURA GPS
+                        </button>
+                        <span style="font-size:0.8rem; color:#aaa; display:block; margin-top:8px;">O si lo prefieres, puedes escribir tus señas manuales abajo.</span>
+                    </div>
+                `, "Señal de GPS Débil");
+            },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+    }
+
+    function setPickup() { deliveryMode = "RETIRO EN LOCAL"; isSelected = true; gpsCoords = ""; document.getElementById('btn-pickup').classList.add('active'); document.getElementById('btn-location').classList.remove('active'); document.getElementById('address-block').style.display = "none"; }
+    function askCashAmount() { document.getElementById('cash-exact-total').innerText = total.toLocaleString('en-US'); document.getElementById('input-cash-amount').value = ""; openModal('cashModal'); }
+    function confirmPaymentAndGetDetails(method) { currentPaymentMethod = method; openModal('finalDataModal'); }
+    function payExactCash() { cashPaidAmount = total; changeNeeded = 0; confirmPaymentAndGetDetails('EFECTIVO (Monto Exacto)'); }
+    
+    function processCustomCashPayment() {
+        let moneyGiven = parseFloat(document.getElementById('input-cash-amount').value) || 0;
+        if (moneyGiven < total) { customAlert(`Debe cubrir el total de ₡${total.toLocaleString()}`, "Monto Insuficiente"); return; }
+        cashPaidAmount = moneyGiven; changeNeeded = cashPaidAmount - total; confirmPaymentAndGetDetails('EFECTIVO (Requiere Vuelto)');
+    }
+
+    function showSinpe() { openModal('sinpeModal'); }
+    function toggle(id) { let el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; }
+    
+    function changeQty(key, displayName, val, price) { 
+        if (!cart[key]) cart[key] = { qty: 0, price: price, name: displayName }; 
+        let newQty = cart[key].qty + val; 
+        if (newQty < 0) newQty = 0; 
+        manualQty(key, displayName, newQty, price); 
+    }
+
+    function manualQty(key, displayName, value, price) {
+        if (!cart[key]) cart[key] = { qty: 0, price: price, name: displayName };
+        let newQty = parseInt(value) || 0; if (newQty < 0) newQty = 0;
+        
+        total += (newQty - cart[key].qty) * price;
+        cart[key].qty = newQty;
+        cart[key].name = displayName;
+        
+        if (key.startsWith('banner_')) {
+            let idx = key.split('_')[1];
+            let bannerCounter = document.getElementById(`qty-banner-counter-${idx}`);
+            if (bannerCounter) bannerCounter.value = newQty;
+        } else if (key.startsWith('prod_')) {
+            let parts = key.split('_');
+            let catIdx = parts[1];
+            let prodIdx = parts[2];
+            let el = document.getElementById(`qty-${catIdx}-${prodIdx}`);
+            if (el) el.value = newQty;
+        }
+        
+        document.getElementById('grand-total').innerText = total.toLocaleString('en-US');
+    }
+    
+    function zoomImg(src, isVideo = false) { 
+        let modal = document.getElementById('zoomModal');
+        modal.innerHTML = isVideo ? `<video src="${src}" autoplay loop muted playsinline style="max-width:95%; max-height:85%; border-radius:10px;"></video>` : `<img src="${src}" style="max-width:95%; max-height:85%; border-radius:10px;">`;
+        openModal('zoomModal');
+    }
+    function closeZoomModal() { document.getElementById('zoomModal').innerHTML = ""; closeModalTop(); }
+
+    /* MOTOR DE CONSOLIDACIÓN */
+    function getConsolidatedCart() {
+        let consolidated = {};
+        
+        for (let key in cart) {
+            let item = cart[key];
+            if (item && item.qty > 0) {
+                let displayName = item.name;
+                let note = "";
+                
+                if (key.startsWith('prod_')) {
+                    let parts = key.split('_');
+                    let catIdx = parts[1];
+                    let prodIdx = parts[2];
+                    let prodObj = window.localMenuArray[catIdx]?.products[prodIdx];
+                    if (prodObj) {
+                        let noteInput = document.getElementById('note-' + prodObj.name);
+                        if (noteInput) note = noteInput.value.trim();
+                    }
+                } else if (key.startsWith('banner_')) {
+                    let idx = key.split('_')[1];
+                    let noteInput = document.getElementById(`note-banner-${idx}`);
+                    if (noteInput) note = noteInput.value.trim();
+                }
+                
+                if (!consolidated[displayName]) {
+                    consolidated[displayName] = { qty: 0, price: item.price, notes: [] };
+                }
+                consolidated[displayName].qty += item.qty;
+                if (note) consolidated[displayName].notes.push(note);
+            }
+        }
+        return consolidated;
+    }
+
+    function showTicket() {
+        let consolidated = getConsolidatedCart();
+        let listHtml = ""; let hasItems = false;
+        
+        for (let name in consolidated) {
+            let item = consolidated[name];
+            let combinedNotes = item.notes.length > 0 ? item.notes.join(" | ") : "";
+            listHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span>${item.qty}x ${name}</span><span>₡${(item.qty * item.price).toLocaleString()}</span></div>${combinedNotes ? `<span style="color:#666; font-style:italic;">"${combinedNotes}"</span>` : ""}</div>`;
+            hasItems = true;
+        }
+
+        if (!hasItems) { customAlert("Agrega productos al carrito primero.", "Carrito Vacío"); return; }
+        
+        let profileUrl = document.getElementById('input-profile-url').value;
+        document.getElementById('ticket-logo').src = profileUrl;
+        document.getElementById('ticket-logo').style.display = (profileUrl && profileUrl.trim() !== "") ? "block" : "none";
+        document.getElementById('ticket-title').innerText = currentGlobalTitle;
+        document.getElementById('ticket-list').innerHTML = listHtml;
+        document.getElementById('t-total').innerText = total.toLocaleString('en-US');
+        openModal('ticketModal');
+    }
+
+    function openPayModal() { if (total <= 0) { customAlert("Agrega productos al carrito primero.", "Carrito Vacío"); return; } openModal('payModal'); }
+    function validateAndSendOrder() {
+        let userName = document.getElementById('user-name').value.trim();
+        if (!isSelected) { customAlert("Selecciona si deseas Express o Recoger.", "Tipo de Entrega"); return; }
+        if (userName === "") { customAlert("Escribe tu nombre por favor.", "Falta Tu Nombre"); return; }
+        sendWhatsApp(currentPaymentMethod);
+    }
+
+    function sendWhatsApp(method) {
+        let userName = document.getElementById('user-name').value.trim();
+        let msg = `¡Hola, mi pedido para *${currentGlobalTitle || 'Cooking Pollos'}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`;
+        
+        let consolidated = getConsolidatedCart();
+        
+        for (let name in consolidated) {
+            let item = consolidated[name];
+            let combinedNotes = item.notes.length > 0 ? ` (${item.notes.join(" | ")})` : "";
+            msg += `• ${item.qty}x ${name}    *₡${(item.qty * item.price).toLocaleString()}*${combinedNotes}%0A`;
+        }
+
+        msg += `%0A*Total Neto a Pagar: ₡${total.toLocaleString()}*%0A*Método de Pago:* ${method}`;
+        if (method.includes('EFECTIVO')) {
+            msg += (changeNeeded > 0) ? `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}` : `%0A*Paga con:* Monto Exacto`;
+        }
+        if (deliveryMode === "ENVÍO EXPRESS") {
+            if (gpsCoords !== "") msg += `%0A📍 *Ruta de Entrega:* https://maps.google.com/?q=${gpsCoords}`;
+            let manualDir = document.getElementById('delivery-address').value.trim(); if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`;
+            msg += `%0A%0A⚠️ _Favor coordinar costo de envío por este medio._`;
+        }
+        
+        closeModals(); let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`; resetCartAndInputs(); window.location.href = waUrl;
+    }
+</script>
+</body>
+</html>
+
