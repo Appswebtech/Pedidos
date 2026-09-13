@@ -22,6 +22,45 @@
         .badge-horario:hover { background: rgba(30,30,30,0.95); transform: scale(1.03); }
         .dot-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
         
+        /* BOTÓN FLOTANTE TALONARIO NEÓN */
+        @keyframes billHeartbeat {
+            0%, 80%, 100% { transform: scale(1); box-shadow: 0 0 12px #25D366, inset 0 0 4px #25D366; }
+            85% { transform: scale(1.15); box-shadow: 0 0 22px #00ffcc, inset 0 0 8px #00ffcc; }
+            90% { transform: scale(1.05); }
+            95% { transform: scale(1.18); box-shadow: 0 0 25px #25D366, inset 0 0 10px #25D366; }
+        }
+        .floating-talonario-btn {
+            position: fixed; top: 18px; right: 18px; z-index: 1500;
+            background: rgba(17, 17, 17, 0.92); border: 2px solid #25D366;
+            color: #25D366; padding: 7px 14px; border-radius: 25px;
+            font-weight: bold; font-size: 0.85rem; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            backdrop-filter: blur(5px);
+            animation: billHeartbeat 3s infinite ease-in-out;
+            box-shadow: 0 0 12px #25D366; transition: transform 0.2s;
+            user-select: none;
+        }
+        .floating-talonario-btn:hover { transform: scale(1.08); }
+        .floating-talonario-badge { background: #ea4335; color: white; font-size: 0.68rem; border-radius: 50%; padding: 2px 7px; font-weight: bold; margin-left: 2px; }
+
+        /* MODAL Y GRID DE TALONARIOS */
+        .talonario-card { background: rgba(20, 20, 20, 0.95); border: 1px solid #333; border-radius: 12px; padding: 14px; margin-bottom: 15px; text-align: left; position: relative; overflow: hidden; }
+        .talonario-card-img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid #444; }
+        .talonario-badge-limit { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: bold; background: #0026ff; color: white; margin-bottom: 6px; }
+        @keyframes flashRedAlert { 0%, 100% { background: #ea4335; box-shadow: 0 0 10px #ea4335; } 50% { background: #ff0055; box-shadow: 0 0 2px #ff0055; } }
+        .talonario-badge-limit.critical { animation: flashRedAlert 1s infinite; }
+        
+        .talonario-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin: 12px 0; max-height: 320px; overflow-y: auto; padding: 4px; background: #0a0a0a; border-radius: 8px; border: 1px solid #222; }
+        .num-cell { aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; user-select: none; transition: 0.15s; border: 1px solid #333; position: relative; }
+        .num-cell .num-timer { font-size: 0.52rem; line-height: 1; margin-top: 2px; font-weight: normal; }
+        .num-grey { background: #222; color: #fff; border-color: #444; }
+        .num-grey:hover { background: #333; border-color: #0026ff; }
+        .num-green { background: #25D366 !important; color: #000 !important; border-color: #00ffcc !important; font-weight: 900; }
+        .num-purple { background: #9900ff !important; color: #fff !important; border-color: #c13584 !important; opacity: 0.85; pointer-events: none; }
+        .num-yellow { background: #ffcc00 !important; color: #000 !important; border-color: #ffaa00 !important; font-weight: bold; }
+        .num-paid { display: none !important; }
+        .num-paid-admin { background: #0026ff !important; color: #fff !important; border-color: #00ffcc !important; }
+
         /* Módulo de Calificación por Estrellas */
         .rating-box { background: rgba(17,17,17,0.85); border: 1px solid #333; border-radius: 14px; padding: 12px 16px; margin: 10px auto 20px auto; backdrop-filter: blur(5px); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
         .rating-stars { display: inline-flex; gap: 8px; font-size: 1.5rem; color: #444; cursor: pointer; margin: 8px 0 4px 0; user-select: none; }
@@ -123,6 +162,13 @@
     </style>
 </head>
 <body oncontextmenu="return false;"> 
+
+<!-- BOTÓN FLOTANTE NEÓN DE TALONARIOS / RIFAS -->
+<div id="floating-talonario-btn" class="floating-talonario-btn" onclick="openTalonariosModal()">
+    <i class="fas fa-ticket-alt"></i> <span>TALONARIO</span>
+    <span id="floating-talonario-badge" class="floating-talonario-badge" style="display:none;">0</span>
+</div>
+
 <div class="container">
     <div id="schedule-badge" class="badge-horario" onclick="showScheduleDetails()"><span class="dot-status" style="color: #666;"></span><i class="fas fa-clock"></i> Evaluar...</div>
     <header>
@@ -156,7 +202,7 @@
             <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
         </div>
     </div>
-    <p class="version-tag">Versión 14.8</p>
+    <p class="version-tag">Versión 15.0 | Talonarios Cloud Edition</p>
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span><div id="express-fee-badge" style="display:none; font-size:0.8rem; color:#00ffcc; margin-top:2px; font-weight:normal;"></div></div>
         <div class="footer-btns"><button class="btn-ticket" onclick="showTicket()">📋 Ver Detalle</button></div>
@@ -172,6 +218,47 @@
         <p style="font-size:0.8rem; color:#aaa; margin-bottom:15px; text-align:center;">Registro día a día de tráfico y dispositivos únicos.</p>
         <div id="visitas-diarias-grid" style="display:flex; flex-direction:column; gap:10px;"></div>
         <button style="margin-top:20px; width:100%; padding:12px; background:#222; color:white; border:1px solid #444; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">Cerrar</button>
+    </div>
+</div>
+
+<!-- MODAL 1: GALERÍA DE TALONARIOS ACTIVOS -->
+<div id="talonariosModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #25D366; max-width: 400px; max-height: 85vh; overflow-y: auto; text-align: left;">
+        <h3 style="margin-top:0; color:#25D366; text-align:center;"><i class="fas fa-ticket-alt"></i> Rifas y Talonarios</h3>
+        <p style="font-size:0.8rem; color:#aaa; margin-bottom:15px; text-align:center;">Selecciona la rifa en la que deseas participar:</p>
+        <div id="talonarios-list-container">Cargando rifas...</div>
+        <button style="margin-top:15px; width:100%; padding:12px; background:#222; color:white; border:1px solid #444; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">Cerrar</button>
+    </div>
+</div>
+
+<!-- MODAL 2: PANTALLA DETALLE Y CUADRÍCULA DEL TALONARIO -->
+<div id="talonarioDetalleModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="modal-box" onclick="event.stopPropagation()" style="background: #121212; color: white; border: 2px solid #25D366; max-width: 440px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 18px;">
+        <div id="talonario-detalle-header"></div>
+        
+        <!-- CUADRO INFORMATIVO DE REGLAS Y ESTADOS -->
+        <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: left; font-size: 0.78rem; line-height: 1.45;">
+            <strong style="color: #00ffcc; display: block; margin-bottom: 4px;"><i class="fas fa-info-circle"></i> REGLAS Y ESTADOS DE COMPRA:</strong>
+            <div>1. ⚪ <b>Gris:</b> Disponibles para comprar.</div>
+            <div>2. 🟢 <b>Verde:</b> Tus números seleccionados. Tenés <b>2 minutos</b> para elegir tus números y completar tus datos.</div>
+            <div>3. 🟡 <b>Amarillo (Reservados):</b> Al confirmar, tus números se reservan durante <b>1 hora</b> para realizar el pago.</div>
+            <div style="color: #ff9900; margin-top: 4px;">⚠️ <b>Atención:</b> Si el temporizador de 1 hora llega a cero sin confirmación de pago, tus números serán liberados automáticamente a gris para otro comprador.</div>
+        </div>
+
+        <div id="talonario-grid-wrapper"></div>
+        <div id="talonario-mini-ticket" style="display:none; background:#1a1a1a; border:1px solid #25D366; padding:12px; border-radius:8px; margin-top:12px;"></div>
+
+        <button style="margin-top:15px; width:100%; padding:12px; background:#222; color:white; border:1px solid #444; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">Volver a Rifas</button>
+    </div>
+</div>
+
+<!-- MODAL ADMIN: COMPRADORES Y DETALLE DE NÚMEROS DEL TALONARIO -->
+<div id="adminTalonarioBuyersModal" class="modal-overlay" onclick="closeModalTop()">
+    <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #00ffcc; max-width: 440px; max-height: 85vh; overflow-y: auto; text-align: left;">
+        <h3 style="margin-top:0; color:#00ffcc; text-align:center;"><i class="fas fa-users"></i> Mapa de Compradores</h3>
+        <p style="font-size:0.8rem; color:#aaa; margin-bottom:12px; text-align:center;">Gestiona pagos y liberaciones de números para esta rifa.</p>
+        <div id="admin-talonario-buyers-content">Cargando mapa...</div>
+        <button style="margin-top:15px; width:100%; padding:12px; background:#222; color:white; border:1px solid #444; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">Cerrar Mapa</button>
     </div>
 </div>
 
@@ -275,7 +362,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v14.8)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.0)</h3>
         
         <div class="admin-section-title"><i class="fas fa-chart-line"></i> Estadísticas de Visitas del Negocio</div>
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
@@ -289,6 +376,14 @@
                 <div>Total Visitas: <b id="stat-views-all" style="color: #25D366;">0</b></div>
             </div>
             <button class="btn-ticket" style="width: 100%; background: #0b0b0b; border-color: #00ffcc; color: #00ffcc; font-weight: bold; padding: 8px;" onclick="openHistorialVisitasModal()"><i class="fas fa-clock"></i> Ver Desglose Diario de Visitas (Reloj)</button>
+        </div>
+
+        <!-- MÓDULO ADMINISTRADOR DE TALONARIOS Y RIFAS -->
+        <div class="admin-section-title"><i class="fas fa-ticket-alt"></i> Gestión de Talonarios y Rifas</div>
+        <button class="pay-option-btn" onclick="toggleAdminSectionBlock('admin-talonarios-management-block', 'talonarios')" style="background:#222; color:white; border-color:#333; margin-bottom:15px;"><i class="fas fa-ticket-alt"></i> Crear y Gestionar Rifas Activas</button>
+        <div id="admin-talonarios-management-block" style="display:none; background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; border:1px solid #333; margin-bottom:15px;">
+            <button class="btn-pickup" style="background:#25D366; border:none; width:100%; margin-bottom:12px; padding:10px; font-weight:bold;" onclick="adminAddTalonario()"><i class="fas fa-plus-circle"></i> + Crear Nuevo Talonario de Rifa</button>
+            <div id="admin-talonarios-list-container">Cargando talonarios...</div>
         </div>
 
         <div class="admin-section-title"><i class="fas fa-motorcycle"></i> Cobertura y Tarifas de Envío Express</div>
@@ -421,9 +516,7 @@
         try {
             const res = await fetch("https://upload.imagekit.io/api/v1/files/upload", { 
                 method: "POST", 
-                headers: {
-                    "Authorization": authHeader
-                },
+                headers: { "Authorization": authHeader },
                 body: formData 
             });
             const data = await res.json();
@@ -443,7 +536,10 @@
     let currentGlobalWhatsApp = "85135269", currentGlobalTitle = "Web Pedidos", currentGlobalPin = "1234";
     const daysOrder = ['lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do'], daysNames = { lu: "Lunes", ma: "Martes", mi: "Miércoles", ju: "Jueves", vi: "Viernes", sa: "Sábado", do: "Domingo" }, monthNamesEs = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     window.currentScheduleData = {}; window.localMenuArray = []; window.adminExpandedCats = {}; window.localBannersArray = []; window.localTextBannersArray = []; window.globalGalleryArray = []; window.rawOrdersList = []; window.ratingsData = {};
-    let calViewDate = new Date(), calSelStart = null, calSelEnd = null, galleryTarget = { type: '', catIdx: null, prodIdx: null, bannerIdx: null }, modalStack = [];
+    window.localTalonariosArray = [];
+    let currentActiveTalonarioId = null, currentAdminTalonarioId = null, localSelectedNumbers = [];
+
+    let calViewDate = new Date(), calSelStart = null, calSelEnd = null, galleryTarget = { type: '', catIdx: null, prodIdx: null, bannerIdx: null, talonarioIdx: null }, modalStack = [];
 
     function checkModalLock() { document.body.classList.toggle('modal-lock', modalStack.length > 0); }
     function openModal(id) {
@@ -494,6 +590,552 @@
             return id;
         } catch (e) { return 'dev_temp_' + Math.random().toString(36).substring(2, 9); }
     }
+
+    // --- MÓDULO DE TALONARIOS Y RIFAS (SISTEMA COMPLETO) ---
+    function renderFloatingTalonarioBtn() {
+        let activeRaffled = (window.localTalonariosArray || []).filter(t => t.active);
+        let btn = document.getElementById('floating-talonario-btn');
+        let badge = document.getElementById('floating-talonario-badge');
+        if (activeRaffled.length > 0) {
+            btn.style.display = "flex";
+            badge.style.display = "inline-block";
+            badge.innerText = activeRaffled.length;
+        } else {
+            btn.style.display = "none";
+        }
+    }
+
+    function openTalonariosModal() {
+        renderTalonariosListUI();
+        openModal('talonariosModal');
+    }
+
+    function renderTalonariosListUI() {
+        let container = document.getElementById('talonarios-list-container');
+        if (!container) return;
+        let activeList = (window.localTalonariosArray || []).filter(t => t.active);
+        if (activeList.length === 0) {
+            container.innerHTML = `<p style="color:#aaa; font-style:italic; text-align:center; padding:20px;">No hay rifas o talonarios activos en este momento.</p>`;
+            return;
+        }
+
+        let html = "";
+        let now = Date.now();
+
+        activeList.forEach(t => {
+            let numbersMap = t.numbersMap || {};
+            let paidCount = 0;
+            for (let i = 0; i <= 99; i++) {
+                let numStr = i.toString().padStart(2, '0');
+                if (numbersMap[numStr] && numbersMap[numStr].status === 'paid') paidCount++;
+            }
+            let availableCount = 100 - paidCount;
+            let criticalClass = availableCount <= 9 ? "critical" : "";
+
+            let isWinnerDeclared = t.numeroGanador && t.numeroGanador.trim() !== "";
+
+            if (isWinnerDeclared) {
+                html += `
+                <div class="talonario-card" style="background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.92)), url('${t.img || ''}'); background-size: cover; background-position: center; border-color: #00ffcc;">
+                    <div style="background:#00ffcc; color:#000; font-weight:900; font-size:0.75rem; padding:3px 8px; border-radius:4px; display:inline-block; margin-bottom:8px;"><i class="fas fa-trophy"></i> RIFA FINALIZADA - GANADOR(A)</div>
+                    <h3 style="margin: 0 0 6px 0; color: #fff; font-size:1.1rem;">${t.title}</h3>
+                    <p style="font-size:0.8rem; color:#ccc; margin: 0 0 10px 0;">${t.desc || ''}</p>
+                    <div style="background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc; padding: 10px; border-radius: 8px; text-align: center;">
+                        <div style="font-size:0.8rem; color:#aaa;">SORTEO CON LA LOTERÍA NACIONAL DEL ${t.fechaSorteo || 'SÁBADO'}</div>
+                        <div style="font-size:1.3rem; font-weight:bold; color:#00ffcc; margin:4px 0;">🎉 ¡Ganador(a): ${t.nombreGanador || 'Sorteado'}!</div>
+                        <div style="font-size:1rem; color:#fff; font-weight:bold;">Número Premiado: <span style="background:#00ffcc; color:#000; padding:2px 8px; border-radius:4px;">${t.numeroGanador}</span></div>
+                    </div>
+                </div>`;
+            } else {
+                let mediaHtml = t.img ? `<img src="${t.img}" class="talonario-card-img">` : '';
+                html += `
+                <div class="talonario-card">
+                    ${mediaHtml}
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <span class="talonario-badge-limit ${criticalClass}">🎟️ ${availableCount} / 100 Disponibles</span>
+                            <h3 style="margin:4px 0; color:#fff; font-size:1.1rem;">${t.title}</h3>
+                        </div>
+                        <span style="font-size:1.1rem; font-weight:bold; color:#25D366;">₡${(t.price || 0).toLocaleString()}</span>
+                    </div>
+                    <p style="font-size:0.82rem; color:#bbb; margin:6px 0 10px 0; line-height:1.35;">${t.desc || ''}</p>
+                    <div style="font-size:0.75rem; color:#aaa; margin-bottom:12px;"><i class="fas fa-calendar-alt" style="color:#25D366;"></i> Sorteo: <b>${t.fechaSorteo || 'Próximamente'}</b></div>
+                    <button class="btn-send" style="width:100%; margin:0; padding:10px; font-size:0.95rem;" onclick="openTalonarioDetalleModal('${t.id}')"><i class="fas fa-hand-pointer"></i> ELEGIR NÚMEROS Y PARTICIPAR</button>
+                </div>`;
+            }
+        });
+
+        container.innerHTML = html;
+    }
+
+    function openTalonarioDetalleModal(talId) {
+        currentActiveTalonarioId = talId;
+        localSelectedNumbers = [];
+        renderTalonarioGridUI(talId);
+        openModal('talonarioDetalleModal');
+    }
+
+    function renderTalonarioGridUI(talId) {
+        let t = (window.localTalonariosArray || []).find(item => item.id === talId);
+        if (!t) return;
+
+        let headerContainer = document.getElementById('talonario-detalle-header');
+        let mediaHtml = t.img ? `<img src="${t.img}" style="width:100%; height:120px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid #333;">` : '';
+        
+        headerContainer.innerHTML = `
+            ${mediaHtml}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="margin:0; color:#25D366; font-size:1.2rem;">${t.title}</h3>
+                <span style="font-size:1.1rem; font-weight:bold; color:#00ffcc;">₡${(t.price || 0).toLocaleString()} c/u</span>
+            </div>
+            <div style="font-size:0.8rem; color:#ccc; margin-bottom:10px;">${t.desc || ''}</div>
+            <div style="font-size:0.78rem; color:#aaa; margin-bottom:12px; background:#1c1c1c; padding:6px 10px; border-radius:6px; border:1px solid #333;"><i class="fas fa-calendar-check" style="color:#00ffcc;"></i> Juega con la Lotería Nacional del: <b>${t.fechaSorteo || 'Sáb/Dom'}</b></div>
+        `;
+
+        let gridWrapper = document.getElementById('talonario-grid-wrapper');
+        let numbersMap = t.numbersMap || {};
+        let myDevId = getDeviceId();
+        let now = Date.now();
+
+        let gridHtml = `<div class="talonario-grid">`;
+
+        for (let i = 0; i <= 99; i++) {
+            let numStr = i.toString().padStart(2, '0');
+            let item = numbersMap[numStr] || {};
+            let status = item.status || 'available';
+
+            if (status === 'reserved' && item.expiresAt && now > item.expiresAt) status = 'available';
+            if (status === 'temp_selected' && item.tempExpiresAt && now > item.tempExpiresAt) status = 'available';
+
+            let cellClass = "num-grey";
+            let timerText = "";
+
+            if (status === 'paid') {
+                cellClass = "num-paid";
+            } else if (status === 'reserved') {
+                cellClass = "num-yellow";
+                let remainingMins = Math.max(0, Math.ceil((item.expiresAt - now) / 60000));
+                timerText = `<span class="num-timer">⏱️${remainingMins}m</span>`;
+            } else if (status === 'temp_selected') {
+                if (item.devId === myDevId || localSelectedNumbers.includes(numStr)) {
+                    cellClass = "num-green";
+                } else {
+                    cellClass = "num-purple";
+                }
+            } else if (localSelectedNumbers.includes(numStr)) {
+                cellClass = "num-green";
+            }
+
+            if (status !== 'paid') {
+                gridHtml += `<div class="num-cell ${cellClass}" onclick="toggleSelectNumber('${talId}', '${numStr}')"><span>${numStr}</span>${timerText}</div>`;
+            }
+        }
+
+        gridHtml += `</div>`;
+        gridWrapper.innerHTML = gridHtml;
+
+        renderMiniTicketUI(talId);
+    }
+
+    function toggleSelectNumber(talId, numStr) {
+        let t = (window.localTalonariosArray || []).find(item => item.id === talId);
+        if (!t) return;
+        let numbersMap = t.numbersMap || {};
+        let item = numbersMap[numStr] || {};
+        let now = Date.now();
+
+        if (item.status === 'paid') return;
+        if (item.status === 'reserved' && item.expiresAt && now <= item.expiresAt) {
+            customAlert("Este número se encuentra reservado en proceso de pago.", "Número Reservado");
+            return;
+        }
+        if (item.status === 'temp_selected' && item.devId !== getDeviceId() && item.tempExpiresAt && now <= item.tempExpiresAt) {
+            customAlert("Otro cliente está eligiendo este número en este momento.", "Número en Selección");
+            return;
+        }
+
+        let idx = localSelectedNumbers.indexOf(numStr);
+        if (idx >= 0) {
+            localSelectedNumbers.splice(idx, 1);
+            db.collection("talonarios").doc(talId).set({
+                [`numbersMap.${numStr}`]: { status: 'available' }
+            }, { merge: true }).catch(() => {});
+        } else {
+            localSelectedNumbers.push(numStr);
+            db.collection("talonarios").doc(talId).set({
+                [`numbersMap.${numStr}`]: {
+                    status: 'temp_selected',
+                    devId: getDeviceId(),
+                    tempExpiresAt: now + (2 * 60 * 1000)
+                }
+            }, { merge: true }).catch(() => {});
+        }
+
+        renderTalonarioGridUI(talId);
+    }
+
+    function renderMiniTicketUI(talId) {
+        let ticketDiv = document.getElementById('talonario-mini-ticket');
+        if (!ticketDiv) return;
+
+        if (localSelectedNumbers.length === 0) {
+            ticketDiv.style.display = "none";
+            return;
+        }
+
+        let t = (window.localTalonariosArray || []).find(item => item.id === talId);
+        let unitPrice = t ? (t.price || 0) : 0;
+        let subtotal = localSelectedNumbers.length * unitPrice;
+
+        ticketDiv.style.display = "block";
+        ticketDiv.innerHTML = `
+            <div style="font-weight:bold; color:#25D366; font-size:0.9rem; border-bottom:1px dashed #444; padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between;">
+                <span>🎟️ TU SELECCIÓN (${localSelectedNumbers.length})</span>
+                <span>⏱️ Reserva: 2 min</span>
+            </div>
+            <div style="font-size:0.85rem; color:#fff; margin-bottom:8px;">
+                <b>Números:</b> <span style="color:#00ffcc; font-weight:bold;">${localSelectedNumbers.sort().join(', ')}</span>
+            </div>
+            <div style="font-size:1rem; font-weight:bold; color:#fff; margin-bottom:12px;">
+                TOTAL: <span style="color:#25D366;">₡${subtotal.toLocaleString()}</span>
+            </div>
+            <div style="margin-bottom:10px;">
+                <input type="text" id="talonario-user-name" class="name-input" placeholder="Tu nombre completo..." style="margin-top:0; margin-bottom:8px; font-size:0.85rem; padding:8px;">
+                <input type="tel" id="talonario-user-phone" class="name-input" placeholder="Tu número de teléfono..." style="margin-top:0; font-size:0.85rem; padding:8px;">
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-ticket" style="flex:1; background:#ea4335; border:none; color:white; font-weight:bold; padding:8px;" onclick="cancelTalonarioSelection('${talId}')">Cancelar</button>
+                <button class="btn-send" style="flex:2; margin:0; padding:10px; font-size:0.85rem;" onclick="processReserveTalonario('${talId}')"><i class="fab fa-whatsapp"></i> Confirmar y Reservar</button>
+            </div>
+        `;
+    }
+
+    function cancelTalonarioSelection(talId) {
+        let myDevId = getDeviceId();
+        localSelectedNumbers.forEach(numStr => {
+            db.collection("talonarios").doc(talId).set({
+                [`numbersMap.${numStr}`]: { status: 'available' }
+            }, { merge: true }).catch(() => {});
+        });
+        localSelectedNumbers = [];
+        renderTalonarioGridUI(talId);
+    }
+
+    function processReserveTalonario(talId) {
+        let nameEl = document.getElementById('talonario-user-name');
+        let phoneEl = document.getElementById('talonario-user-phone');
+        let uName = nameEl ? nameEl.value.trim() : "";
+        let uPhone = phoneEl ? phoneEl.value.trim() : "";
+
+        if (uName === "") { customAlert("Por favor escribe tu nombre completo.", "Dato Requerido"); return; }
+        if (uPhone === "") { customAlert("Por favor escribe tu número de teléfono.", "Dato Requerido"); return; }
+
+        let t = (window.localTalonariosArray || []).find(item => item.id === talId);
+        if (!t) return;
+
+        let now = Date.now();
+        let expires1Hour = now + (60 * 60 * 1000);
+
+        let updateData = {};
+        localSelectedNumbers.forEach(numStr => {
+            updateData[`numbersMap.${numStr}`] = {
+                status: 'reserved',
+                devId: getDeviceId(),
+                name: uName,
+                phone: uPhone,
+                expiresAt: expires1Hour,
+                createdAt: now
+            };
+        });
+
+        db.collection("talonarios").doc(talId).set(updateData, { merge: true }).then(() => {
+            let numsStr = localSelectedNumbers.sort().join(', ');
+            let subtotal = localSelectedNumbers.length * (t.price || 0);
+
+            let msg = `¡Hola! Reservé el/los número(s) *${numsStr}* para la rifa de *${t.title}*.%0A%0A• *Cliente:* ${uName}%0A• *Teléfono:* ${uPhone}%0A• *Monto a Pagar:* ₡${subtotal.toLocaleString()}%0A%0AQuedo atento para enviar el comprobante o cancelar en el local.`;
+
+            let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
+            localSelectedNumbers = [];
+            closeModals();
+            window.location.href = waUrl;
+        }).catch(() => {
+            customAlert("Error al registrar reserva en la nube.", "Error");
+        });
+    }
+
+    // --- MÓDULO ADMINISTRADOR DE TALONARIOS (CORREGIDO CON RENDERIZADO OPTIMISTA) ---
+    function adminRenderTalonariosUI() {
+        let container = document.getElementById('admin-talonarios-list-container');
+        if (!container) return;
+        let list = window.localTalonariosArray || [];
+
+        if (list.length === 0) {
+            container.innerHTML = `<p style="color:#888; font-style:italic; font-size:0.8rem; text-align:center; padding:10px;">No hay talonarios creados.</p>`;
+            return;
+        }
+
+        let html = "";
+        list.forEach((t, idx) => {
+            let thumbHtml = t.img ? `<img src="${t.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : '';
+            html += `
+            <div class="admin-prod-card" style="border-left:3px solid #25D366;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:0.85rem; font-weight:bold; color:#25D366;"><i class="fas fa-ticket-alt"></i> Talonario #${idx + 1}</span>
+                    <label class="switch"><input type="checkbox" onchange="adminUpdateTalonarioField('${t.id}', 'active', this.checked)" ${t.active ? 'checked' : ''}><span class="slider round"></span></label>
+                </div>
+                <div class="admin-field"><label>Título del Talonario / Rifa</label><input type="text" class="admin-input" value="${t.title || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'title', this.value)"></div>
+                <div class="admin-field"><label>Precio por Número (₡)</label><input type="number" class="admin-input" value="${t.price || 0}" onchange="adminUpdateTalonarioField('${t.id}', 'price', parseFloat(this.value)||0)"></div>
+                <div class="admin-field"><label>Premio / Descripción</label><input type="text" class="admin-input" value="${t.desc || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'desc', this.value)"></div>
+                <div class="admin-field"><label>Fecha del Sorteo (Ej: Domingo 20 Septiembre)</label><input type="text" class="admin-input" value="${t.fechaSorteo || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'fechaSorteo', this.value)"></div>
+                
+                <div class="admin-field">
+                    <label>Imagen del Premio</label>
+                    <div style="display:flex; gap:8px; margin-top:4px;">
+                        <button class="btn-ticket" style="flex:1;" onclick="triggerFileInput('file-tal-input-${idx}')"><i class="fas fa-upload"></i> Dispositivo</button>
+                        <button class="btn-ticket" style="background:#0026ff; border-color:#0026ff; flex:1;" onclick="openCloudGallery('talonario', null, null, null, '${t.id}')"><i class="fas fa-cloud"></i> Nube</button>
+                        <input type="file" id="file-tal-input-${idx}" accept="image/*" onchange="uploadTalonarioMediaFile(this, '${t.id}')" style="display:none;">
+                    </div>
+                    <div style="margin-top:6px; text-align:right;">${thumbHtml}</div>
+                </div>
+
+                <div style="background:#111; border:1px solid #444; padding:10px; border-radius:6px; margin-bottom:10px;">
+                    <label style="color:#00ffcc; font-size:0.8rem; font-weight:bold; display:block; margin-bottom:4px;">🏆 Declarar Número Ganador</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" id="admin-winner-num-${t.id}" class="admin-input" placeholder="Ej: 07" value="${t.numeroGanador || ''}" style="margin:0; text-align:center; font-weight:bold;">
+                        <button class="btn-ticket" style="background:#00ffcc; color:#000; font-weight:bold; border:none;" onclick="adminSetWinner('${t.id}')">Guardar</button>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button class="btn-ticket" style="flex:1; background:#0026ff; border-color:#0026ff;" onclick="adminOpenBuyersModal('${t.id}')"><i class="fas fa-users"></i> Ver Compradores</button>
+                    <button class="btn-admin-delete" style="flex:1; height:32px; font-size:0.75rem;" onclick="adminDeleteTalonario('${t.id}')"><i class="fas fa-trash-alt"></i> Eliminar Rifa</button>
+                </div>
+            </div>`;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function adminAddTalonario() {
+        try {
+            let newRef = db.collection("talonarios").doc();
+            let newTalonario = {
+                id: newRef.id,
+                active: true,
+                title: "Nueva Rifa",
+                price: 1000,
+                desc: "Descripción del premio...",
+                fechaSorteo: "Domingo de Lotería",
+                img: "",
+                numeroGanador: "",
+                nombreGanador: "",
+                numbersMap: {}
+            };
+
+            // 1. Renderizado optimista instantáneo
+            if (!window.localTalonariosArray) window.localTalonariosArray = [];
+            window.localTalonariosArray.unshift(newTalonario);
+            adminRenderTalonariosUI();
+
+            // 2. Guardar en Firestore con manejo de respuesta
+            newRef.set({
+                active: newTalonario.active,
+                title: newTalonario.title,
+                price: newTalonario.price,
+                desc: newTalonario.desc,
+                fechaSorteo: newTalonario.fechaSorteo,
+                img: newTalonario.img,
+                numeroGanador: newTalonario.numeroGanador,
+                nombreGanador: newTalonario.nombreGanador,
+                numbersMap: newTalonario.numbersMap
+            }).then(() => {
+                customAlert("¡Talonario creado e integrado a la nube con éxito!", "Éxito");
+            }).catch((err) => {
+                console.error("Error al guardar talonario en Firestore:", err);
+                customAlert("Talonario visible en tu pantalla. (Aviso de red: " + (err.message || "Permisos de base de datos") + ")", "Aviso de Sincronización");
+            });
+        } catch (e) {
+            console.error("Error en adminAddTalonario:", e);
+            customAlert("Ocurrió un error al procesar el botón: " + e.message, "Atención");
+        }
+    }
+
+    function adminUpdateTalonarioField(talId, field, val) {
+        let item = (window.localTalonariosArray || []).find(t => t.id === talId);
+        if (item) item[field] = val;
+        db.collection("talonarios").doc(talId).update({ [field]: val }).catch((err) => {
+            console.error("Error al actualizar campo de talonario:", err);
+        });
+    }
+
+    function adminDeleteTalonario(talId) {
+        customConfirm("¿Seguro que deseas eliminar este talonario permanentemente?", () => {
+            if (window.localTalonariosArray) {
+                window.localTalonariosArray = window.localTalonariosArray.filter(t => t.id !== talId);
+                adminRenderTalonariosUI();
+            }
+            db.collection("talonarios").doc(talId).delete().then(() => {
+                customAlert("Talonario eliminado de la nube.", "Eliminado");
+            }).catch((err) => {
+                customAlert("Error al eliminar en la nube: " + err.message, "Error");
+            });
+        });
+    }
+
+    async function uploadTalonarioMediaFile(input, talId) {
+        let file = input.files[0]; if(!file) return;
+        customAlert("Subiendo imagen a ImageKit...", "Subiendo Asset");
+        try {
+            const data = await uploadToImageKit(file);
+            if (data && data.url) {
+                addMediaToLocalGallery(data.url, data.fileId);
+                let item = (window.localTalonariosArray || []).find(t => t.id === talId);
+                if (item) item.img = data.url;
+                adminRenderTalonariosUI();
+                await db.collection("talonarios").doc(talId).update({ img: data.url });
+                await db.collection("configuraciones").doc("cooking-pollos").update({ gallery_media: window.globalGalleryArray });
+                customAlert("¡Imagen vinculada a la rifa!", "Éxito");
+            }
+        } catch (e) { customAlert("Fallo en la carga: " + e.message); }
+    }
+
+    function adminSetWinner(talId) {
+        let numEl = document.getElementById(`admin-winner-num-${talId}`);
+        let winnerNum = numEl ? numEl.value.trim() : "";
+        if (winnerNum === "") { customAlert("Escribe un número premiado.", "Aviso"); return; }
+
+        let t = (window.localTalonariosArray || []).find(item => item.id === talId);
+        if (!t) return;
+
+        let numbersMap = t.numbersMap || {};
+        let winnerItem = numbersMap[winnerNum] || {};
+        let winnerName = winnerItem.name ? winnerItem.name.split(' ')[0] : "Ganador Desconocido";
+
+        t.numeroGanador = winnerNum;
+        t.nombreGanador = winnerName;
+        adminRenderTalonariosUI();
+
+        db.collection("talonarios").doc(talId).update({
+            numeroGanador: winnerNum,
+            nombreGanador: winnerName
+        }).then(() => {
+            customAlert(`¡Ganador(a) registrado(a): ${winnerName} con el número ${winnerNum}!`, "¡Ganador Publicado!");
+        }).catch((err) => {
+            customAlert("Error al registrar ganador en la nube: " + err.message, "Error");
+        });
+    }
+
+    function adminOpenBuyersModal(talId) {
+        currentAdminTalonarioId = talId;
+        adminRenderBuyersUI(talId);
+        openModal('adminTalonarioBuyersModal');
+    }
+
+    function adminRenderBuyersUI(talId) {
+        let container = document.getElementById('admin-talonario-buyers-content');
+        if (!container) return;
+        let t = (window.localTalonariosArray || []).find(item => item.id === talId);
+        if (!t) return;
+
+        let numbersMap = t.numbersMap || {};
+        let gridHtml = `<div class="talonario-grid" style="max-height:220px;">`;
+        let listHtml = `<div style="margin-top:15px; border-top:1px dashed #444; padding-top:10px;">`;
+
+        let countPaid = 0, countReserved = 0;
+
+        for (let i = 0; i <= 99; i++) {
+            let numStr = i.toString().padStart(2, '0');
+            let item = numbersMap[numStr] || {};
+            let status = item.status || 'available';
+
+            let cellClass = "num-grey";
+            if (status === 'paid') { cellClass = "num-paid-admin"; countPaid++; }
+            else if (status === 'reserved') { cellClass = "num-yellow"; countReserved++; }
+
+            gridHtml += `<div class="num-cell ${cellClass}"><span>${numStr}</span></div>`;
+
+            if (status === 'reserved' || status === 'paid') {
+                let statusBadge = status === 'paid' ? `<span style="color:#25D366; font-weight:bold;">[PAGADO]</span>` : `<span style="color:#ffcc00; font-weight:bold;">[RESERVADO]</span>`;
+                listHtml += `
+                <div style="background:#1c1c1c; border:1px solid #333; padding:8px 10px; border-radius:6px; margin-bottom:6px; font-size:0.8rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:bold; color:#00ffcc;">Número #${numStr} ${statusBadge}</span>
+                        <span style="font-size:0.75rem; color:#aaa;">${item.phone || 'Sin tel'}</span>
+                    </div>
+                    <div style="color:#fff; margin-top:2px;"><b>Cliente:</b> ${item.name || 'Anónimo'}</div>
+                    <div style="display:flex; gap:6px; margin-top:6px;">
+                        ${status === 'reserved' ? `<button class="btn-ticket" style="background:#25D366; color:white; border:none; padding:4px 8px; font-size:0.72rem;" onclick="adminConfirmPayment('${talId}', '${numStr}')">Confirmar Pago</button>` : ''}
+                        <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:4px 8px; font-size:0.72rem;" onclick="adminReleaseNumber('${talId}', '${numStr}')">Liberar a Gris</button>
+                    </div>
+                </div>`;
+            }
+        }
+
+        gridHtml += `</div>`;
+        listHtml += `</div>`;
+
+        container.innerHTML = `
+            <div style="font-size:0.85rem; color:#fff; margin-bottom:8px;"><b>Resumen:</b> <span style="color:#25D366;">${countPaid} Pagados</span> | <span style="color:#ffcc00;">${countReserved} Reservados</span></div>
+            ${gridHtml}
+            ${listHtml}
+        `;
+    }
+
+    function adminConfirmPayment(talId, numStr) {
+        let t = (window.localTalonariosArray || []).find(item => item.id === talId);
+        if (!t) return;
+
+        let numbersMap = t.numbersMap || {};
+        let item = numbersMap[numStr] || {};
+
+        db.collection("talonarios").doc(talId).set({
+            [`numbersMap.${numStr}.status`]: 'paid'
+        }, { merge: true }).then(() => {
+            let msg = `Hola, *${item.name || 'Cliente'}*. Confirmamos tu pago. El número que elegiste fue el *${numStr}*, para jugar en combinación con la Lotería Nacional del *${t.fechaSorteo || 'Sorteo'}*. Participás por *${t.title}* en Cooking Pollos. 🍗🎟️ ¡Muchísima suerte! 🍀`;
+            let waUrl = `https://wa.me/506${item.phone || currentGlobalWhatsApp}?text=${msg}`;
+            window.open(waUrl, '_blank');
+            adminRenderBuyersUI(talId);
+        });
+    }
+
+    function adminReleaseNumber(talId, numStr) {
+        customConfirm(`¿Seguro que deseas liberar el número #${numStr} a color gris?`, () => {
+            db.collection("talonarios").doc(talId).set({
+                [`numbersMap.${numStr}`]: { status: 'available' }
+            }, { merge: true }).then(() => {
+                adminRenderBuyersUI(talId);
+            });
+        });
+    }
+
+    setInterval(() => {
+        if (!window.localTalonariosArray) return;
+        let now = Date.now();
+        window.localTalonariosArray.forEach(t => {
+            let numbersMap = t.numbersMap || {};
+            let changed = false;
+            let updateObj = {};
+
+            for (let i = 0; i <= 99; i++) {
+                let numStr = i.toString().padStart(2, '0');
+                let item = numbersMap[numStr];
+                if (item) {
+                    if (item.status === 'reserved' && item.expiresAt && now > item.expiresAt) {
+                        updateObj[`numbersMap.${numStr}`] = { status: 'available' };
+                        changed = true;
+                    }
+                    if (item.status === 'temp_selected' && item.tempExpiresAt && now > item.tempExpiresAt) {
+                        updateObj[`numbersMap.${numStr}`] = { status: 'available' };
+                        changed = true;
+                    }
+                }
+            }
+
+            if (changed) {
+                db.collection("talonarios").doc(t.id).set(updateObj, { merge: true }).catch(() => {});
+            }
+        });
+    }, 5000);
 
     function getUserRating() {
         let devId = getDeviceId();
@@ -571,11 +1213,9 @@
         let devId = getDeviceId();
         if (!window.ratingsData) window.ratingsData = {};
         
-        // 1. Guardar de forma inmediata en el almacenamiento local
         localStorage.setItem('cp_user_rating', stars);
         window.ratingsData[devId] = stars;
         
-        // 2. Renderizar respuesta visual al instante en la interfaz
         let fb = document.getElementById('rating-user-feedback');
         if (fb) {
             fb.innerText = `¡Gracias por tu calificación de ${stars} ⭐!`;
@@ -583,7 +1223,6 @@
         }
         renderRatingWidget();
 
-        // 3. Guardar en la nube silenciosamente sin interrumpir con ventanas de error si falla la conexión
         db.collection("calificaciones").doc(devId).set({
             rating: stars,
             timestamp: Date.now()
@@ -775,6 +1414,28 @@
         daysOrder.forEach(day => { htmlSchedule += `<div class="schedule-config-row"><span class="schedule-day-label">${daysNames[day]}:</span><select id="input-${day}-status" class="schedule-select" onchange="toggleTimeInputs('${day}')"><option value="abierto">Abierto</option><option value="cerrado">Cerrado</option></select><div id="row-times-${day}" style="display:inline-flex; align-items:center; gap:4px;"><input type="text" id="input-${day}-open" class="schedule-time-input" placeholder="11:30 AM"><span style="font-size:0.75rem; color:#aaa;">a</span><input type="text" id="input-${day}-close" class="schedule-time-input" placeholder="10:00 PM"></div></div>`; });
         scheduleContainer.innerHTML = htmlSchedule; registrarVisitaAnalytics();
 
+        // Escuchador dinámico de Talonarios y Rifas en Tiempo Real
+        db.collection("talonarios").onSnapshot((snapshot) => {
+            let list = [];
+            snapshot.forEach(doc => {
+                let d = doc.data();
+                d.id = doc.id;
+                list.push(d);
+            });
+            window.localTalonariosArray = list;
+            renderFloatingTalonarioBtn();
+            if (modalStack.includes('talonariosModal')) renderTalonariosListUI();
+            if (currentActiveTalonarioId && modalStack.includes('talonarioDetalleModal')) {
+                renderTalonarioGridUI(currentActiveTalonarioId);
+            }
+            if (currentAdminTalonarioId && modalStack.includes('adminTalonarioBuyersModal')) {
+                adminRenderBuyersUI(currentAdminTalonarioId);
+            }
+            if (modalStack.includes('adminModal')) {
+                adminRenderTalonariosUI();
+            }
+        }, (e) => {});
+
         // Escuchador dinámico de calificaciones
         db.collection("calificaciones").onSnapshot((snapshot) => {
             let rMap = {};
@@ -919,11 +1580,20 @@
         let block = document.getElementById(id);
         if (block.style.display === "none") {
             block.style.display = "block";
-            if (arrayType === 'banners') renderAdminBannersUI(); if (arrayType === 'text_banners') renderAdminTextBannersUI(); if (arrayType === 'shipping') renderAdminDeliveryRangesUI(); if (arrayType === 'orders') cargarHistorialPedidosAdmin();
+            if (arrayType === 'banners') renderAdminBannersUI();
+            if (arrayType === 'text_banners') renderAdminTextBannersUI();
+            if (arrayType === 'shipping') renderAdminDeliveryRangesUI();
+            if (arrayType === 'orders') cargarHistorialPedidosAdmin();
+            if (arrayType === 'talonarios') adminRenderTalonariosUI();
         } else block.style.display = "none";
     }
 
-    function openCloudGallery(type, catIdx, prodIdx, bannerIdx) { galleryTarget = { type: type, catIdx: catIdx, prodIdx: prodIdx, bannerIdx: bannerIdx }; renderGalleryItemsUI(); openModal('galleryModal'); }
+    function openCloudGallery(type, catIdx, prodIdx, bannerIdx, talonarioId = null) {
+        galleryTarget = { type: type, catIdx: catIdx, prodIdx: prodIdx, bannerIdx: bannerIdx, talonarioId: talonarioId };
+        renderGalleryItemsUI();
+        openModal('galleryModal');
+    }
+
     function renderGalleryItemsUI() {
         let grid = document.getElementById('gallery-items-grid'); if(!grid) return; grid.innerHTML = "";
         if (window.globalGalleryArray.length === 0) { grid.innerHTML = `<p style="grid-column:span 3; color:#666; font-style:italic; font-size:0.8rem; text-align:center; padding:15px;">La biblioteca en la nube está vacía.</p>`; return; }
@@ -958,6 +1628,12 @@
             await db.collection("configuraciones").doc("cooking-pollos").update({ text_banners: window.localTextBannersArray });
             updateAdminTextBannerLive(galleryTarget.bannerIdx, 'url', selectedUrl); 
             renderMainPageBanners();
+        }
+        else if (galleryTarget.type === 'talonario') {
+            let item = (window.localTalonariosArray || []).find(t => t.id === galleryTarget.talonarioId);
+            if (item) item.img = selectedUrl;
+            adminRenderTalonariosUI();
+            await db.collection("talonarios").doc(galleryTarget.talonarioId).update({ img: selectedUrl });
         }
         else if (galleryTarget.type === 'bg') { 
             document.getElementById('input-bg-url').value = selectedUrl; 
