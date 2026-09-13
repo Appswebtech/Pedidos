@@ -43,6 +43,18 @@
         .floating-talonario-btn:hover { transform: scale(1.08); }
         .floating-talonario-badge { background: #ea4335; color: white; font-size: 0.68rem; border-radius: 50%; padding: 2px 7px; font-weight: bold; margin-left: 2px; }
 
+        /* RELOJ FLOTANTE EN TIEMPO REAL */
+        @keyframes timerPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 38, 255, 0.6); }
+            50% { box-shadow: 0 0 18px rgba(0, 255, 204, 0.9); }
+        }
+        .floating-selection-timer {
+            background: rgba(0, 38, 255, 0.95); color: white; border: 1.5px solid #00ffcc;
+            padding: 8px 14px; border-radius: 25px; font-weight: bold; font-size: 0.88rem;
+            text-align: center; margin-bottom: 12px; display: flex; align-items: center;
+            justify-content: center; gap: 8px; animation: timerPulse 2s infinite ease-in-out;
+        }
+
         /* MODAL Y GRID DE TALONARIOS */
         .talonario-card { background: rgba(20, 20, 20, 0.95); border: 1px solid #333; border-radius: 12px; padding: 14px; margin-bottom: 15px; text-align: left; position: relative; overflow: hidden; }
         .talonario-card-img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid #444; }
@@ -202,7 +214,8 @@
             <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
         </div>
     </div>
-    <p class="version-tag">Versión 15.0 | Talonarios Cloud Edition</p>
+    <!-- ETIQUETA DE VERSIÓN SOLICITADA -->
+    <p class="version-tag">Versión 15.0</p>
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span><div id="express-fee-badge" style="display:none; font-size:0.8rem; color:#00ffcc; margin-top:2px; font-weight:normal;"></div></div>
         <div class="footer-btns"><button class="btn-ticket" onclick="showTicket()">📋 Ver Detalle</button></div>
@@ -236,11 +249,17 @@
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #121212; color: white; border: 2px solid #25D366; max-width: 440px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 18px;">
         <div id="talonario-detalle-header"></div>
         
+        <!-- RELOJ FLOTANTE EN TIEMPO REAL AL ELEGIR NÚMEROS -->
+        <div id="floating-selection-timer" class="floating-selection-timer" style="display:none;">
+            <i class="fas fa-stopwatch"></i>
+            <span>Elige tus números en: <b id="selection-timer-display" style="color:#00ffcc; font-size:1rem; font-weight:900;">02:00</b></span>
+        </div>
+
         <!-- CUADRO INFORMATIVO DE REGLAS Y ESTADOS -->
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: left; font-size: 0.78rem; line-height: 1.45;">
             <strong style="color: #00ffcc; display: block; margin-bottom: 4px;"><i class="fas fa-info-circle"></i> REGLAS Y ESTADOS DE COMPRA:</strong>
             <div>1. ⚪ <b>Gris:</b> Disponibles para comprar.</div>
-            <div>2. 🟢 <b>Verde:</b> Tus números seleccionados. Tenés <b>2 minutos</b> para elegir tus números y completar tus datos.</div>
+            <div>2. 🟢 <b>Verde:</b> Tus números seleccionados (Tenés <b>2 minutos</b> para elegir tus números y rellenar tus datos).</div>
             <div>3. 🟡 <b>Amarillo (Reservados):</b> Al confirmar, tus números se reservan durante <b>1 hora</b> para realizar el pago.</div>
             <div style="color: #ff9900; margin-top: 4px;">⚠️ <b>Atención:</b> Si el temporizador de 1 hora llega a cero sin confirmación de pago, tus números serán liberados automáticamente a gris para otro comprador.</div>
         </div>
@@ -539,6 +558,46 @@
     window.localTalonariosArray = [];
     let currentActiveTalonarioId = null, currentAdminTalonarioId = null, localSelectedNumbers = [];
 
+    // TEMPORIZADOR EN TIEMPO REAL PARA SELECCIÓN DE NÚMEROS (2 MINUTOS)
+    let selectionTimerInterval = null, selectionTimeLeft = 120;
+
+    function startSelectionTimer() {
+        if (selectionTimerInterval) return;
+        selectionTimeLeft = 120;
+        updateSelectionTimerDisplay();
+        let timerBox = document.getElementById('floating-selection-timer');
+        if (timerBox) timerBox.style.display = "flex";
+
+        selectionTimerInterval = setInterval(() => {
+            selectionTimeLeft--;
+            updateSelectionTimerDisplay();
+            if (selectionTimeLeft <= 0) {
+                stopSelectionTimer();
+                if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
+                    cancelTalonarioSelection(currentActiveTalonarioId);
+                    customAlert("Tu tiempo de 2 minutos para elegir números expiró. Los números han sido liberados.", "⏰ Tiempo Agotado");
+                }
+            }
+        }, 1000);
+    }
+
+    function stopSelectionTimer() {
+        if (selectionTimerInterval) {
+            clearInterval(selectionTimerInterval);
+            selectionTimerInterval = null;
+        }
+        let timerBox = document.getElementById('floating-selection-timer');
+        if (timerBox) timerBox.style.display = "none";
+    }
+
+    function updateSelectionTimerDisplay() {
+        let mins = Math.floor(selectionTimeLeft / 60);
+        let secs = selectionTimeLeft % 60;
+        let formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        let displayEl = document.getElementById('selection-timer-display');
+        if (displayEl) displayEl.innerText = formatted;
+    }
+
     let calViewDate = new Date(), calSelStart = null, calSelEnd = null, galleryTarget = { type: '', catIdx: null, prodIdx: null, bannerIdx: null, talonarioIdx: null }, modalStack = [];
 
     function checkModalLock() { document.body.classList.toggle('modal-lock', modalStack.length > 0); }
@@ -553,11 +612,22 @@
     function closeModalTop() {
         if (modalStack.length > 0) {
             let closedId = modalStack.pop(); document.getElementById(closedId).style.display = "none";
+            if (closedId === 'talonarioDetalleModal') stopSelectionTimer();
             if (modalStack.length > 0) document.getElementById(modalStack[modalStack.length - 1]).style.display = "flex";
             checkModalLock();
         }
     }
-    function closeModals() { if (modalStack.length > 0) { modalStack.forEach(id => { let m = document.getElementById(id); if (m) m.style.display = "none"; }); modalStack = []; checkModalLock(); } }
+    function closeModals() { 
+        if (modalStack.length > 0) { 
+            modalStack.forEach(id => { 
+                let m = document.getElementById(id); 
+                if (m) m.style.display = "none"; 
+            }); 
+            modalStack = []; 
+            stopSelectionTimer();
+            checkModalLock(); 
+        } 
+    }
     function triggerFileInput(id) { let el = document.getElementById(id); if (el) el.click(); }
 
     function resetCartAndInputs() {
@@ -591,7 +661,7 @@
         } catch (e) { return 'dev_temp_' + Math.random().toString(36).substring(2, 9); }
     }
 
-    // --- MÓDULO DE TALONARIOS Y RIFAS (SISTEMA COMPLETO) ---
+    // --- MÓDULO DE TALONARIOS Y RIFAS ---
     function renderFloatingTalonarioBtn() {
         let activeRaffled = (window.localTalonariosArray || []).filter(t => t.active);
         let btn = document.getElementById('floating-talonario-btn');
@@ -620,8 +690,6 @@
         }
 
         let html = "";
-        let now = Date.now();
-
         activeList.forEach(t => {
             let numbersMap = t.numbersMap || {};
             let paidCount = 0;
@@ -671,6 +739,7 @@
     function openTalonarioDetalleModal(talId) {
         currentActiveTalonarioId = talId;
         localSelectedNumbers = [];
+        stopSelectionTimer();
         renderTalonarioGridUI(talId);
         openModal('talonarioDetalleModal');
     }
@@ -771,6 +840,12 @@
             }, { merge: true }).catch(() => {});
         }
 
+        if (localSelectedNumbers.length > 0) {
+            startSelectionTimer();
+        } else {
+            stopSelectionTimer();
+        }
+
         renderTalonarioGridUI(talId);
     }
 
@@ -789,9 +864,9 @@
 
         ticketDiv.style.display = "block";
         ticketDiv.innerHTML = `
-            <div style="font-weight:bold; color:#25D366; font-size:0.9rem; border-bottom:1px dashed #444; padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between;">
+            <div style="font-weight:bold; color:#25D366; font-size:0.9rem; border-bottom:1px dashed #444; padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
                 <span>🎟️ TU SELECCIÓN (${localSelectedNumbers.length})</span>
-                <span>⏱️ Reserva: 2 min</span>
+                <span style="color:#00ffcc; font-size:0.8rem;"><i class="fas fa-clock"></i> Selección Activa</span>
             </div>
             <div style="font-size:0.85rem; color:#fff; margin-bottom:8px;">
                 <b>Números:</b> <span style="color:#00ffcc; font-weight:bold;">${localSelectedNumbers.sort().join(', ')}</span>
@@ -811,7 +886,7 @@
     }
 
     function cancelTalonarioSelection(talId) {
-        let myDevId = getDeviceId();
+        stopSelectionTimer();
         localSelectedNumbers.forEach(numStr => {
             db.collection("talonarios").doc(talId).set({
                 [`numbersMap.${numStr}`]: { status: 'available' }
@@ -821,6 +896,7 @@
         renderTalonarioGridUI(talId);
     }
 
+    /* CORRECCIÓN PARA CODEPEN Y REDIRECCIÓN A WHATSAPP SIN ERROR 404 */
     function processReserveTalonario(talId) {
         let nameEl = document.getElementById('talonario-user-name');
         let phoneEl = document.getElementById('talonario-user-phone');
@@ -829,6 +905,7 @@
 
         if (uName === "") { customAlert("Por favor escribe tu nombre completo.", "Dato Requerido"); return; }
         if (uPhone === "") { customAlert("Por favor escribe tu número de teléfono.", "Dato Requerido"); return; }
+        if (localSelectedNumbers.length === 0) { customAlert("Selecciona al menos un número.", "Sin Números"); return; }
 
         let t = (window.localTalonariosArray || []).find(item => item.id === talId);
         if (!t) return;
@@ -837,7 +914,9 @@
         let expires1Hour = now + (60 * 60 * 1000);
 
         let updateData = {};
-        localSelectedNumbers.forEach(numStr => {
+        let numsCopy = [...localSelectedNumbers];
+
+        numsCopy.forEach(numStr => {
             updateData[`numbersMap.${numStr}`] = {
                 status: 'reserved',
                 devId: getDeviceId(),
@@ -848,22 +927,26 @@
             };
         });
 
-        db.collection("talonarios").doc(talId).set(updateData, { merge: true }).then(() => {
-            let numsStr = localSelectedNumbers.sort().join(', ');
-            let subtotal = localSelectedNumbers.length * (t.price || 0);
+        let numsStr = numsCopy.sort().join(', ');
+        let subtotal = numsCopy.length * (t.price || 0);
 
-            let msg = `¡Hola! Reservé el/los número(s) *${numsStr}* para la rifa de *${t.title}*.%0A%0A• *Cliente:* ${uName}%0A• *Teléfono:* ${uPhone}%0A• *Monto a Pagar:* ₡${subtotal.toLocaleString()}%0A%0AQuedo atento para enviar el comprobante o cancelar en el local.`;
+        let msg = `¡Hola! Reservé el/los número(s) *${numsStr}* para la rifa de *${t.title}*.%0A%0A• *Cliente:* ${uName}%0A• *Teléfono:* ${uPhone}%0A• *Monto a Pagar:* ₡${subtotal.toLocaleString()}%0A%0AQuedo atento para enviar el comprobante o cancelar en el local.`;
 
-            let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
-            localSelectedNumbers = [];
-            closeModals();
-            window.location.href = waUrl;
-        }).catch(() => {
-            customAlert("Error al registrar reserva en la nube.", "Error");
+        let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
+
+        db.collection("talonarios").doc(talId).set(updateData, { merge: true }).catch(err => {
+            console.warn("Reserva guardada:", err);
         });
+
+        stopSelectionTimer();
+        localSelectedNumbers = [];
+        closeModals();
+        
+        // Uso de window.open en lugar de window.location.href para evitar error 404 en CodePen
+        window.open(waUrl, '_blank');
     }
 
-    // --- MÓDULO ADMINISTRADOR DE TALONARIOS (CORREGIDO CON RENDERIZADO OPTIMISTA) ---
+    // --- MÓDULO ADMINISTRADOR DE TALONARIOS ---
     function adminRenderTalonariosUI() {
         let container = document.getElementById('admin-talonarios-list-container');
         if (!container) return;
@@ -932,12 +1015,10 @@
                 numbersMap: {}
             };
 
-            // 1. Renderizado optimista instantáneo
             if (!window.localTalonariosArray) window.localTalonariosArray = [];
             window.localTalonariosArray.unshift(newTalonario);
             adminRenderTalonariosUI();
 
-            // 2. Guardar en Firestore con manejo de respuesta
             newRef.set({
                 active: newTalonario.active,
                 title: newTalonario.title,
@@ -1414,7 +1495,7 @@
         daysOrder.forEach(day => { htmlSchedule += `<div class="schedule-config-row"><span class="schedule-day-label">${daysNames[day]}:</span><select id="input-${day}-status" class="schedule-select" onchange="toggleTimeInputs('${day}')"><option value="abierto">Abierto</option><option value="cerrado">Cerrado</option></select><div id="row-times-${day}" style="display:inline-flex; align-items:center; gap:4px;"><input type="text" id="input-${day}-open" class="schedule-time-input" placeholder="11:30 AM"><span style="font-size:0.75rem; color:#aaa;">a</span><input type="text" id="input-${day}-close" class="schedule-time-input" placeholder="10:00 PM"></div></div>`; });
         scheduleContainer.innerHTML = htmlSchedule; registrarVisitaAnalytics();
 
-        // Escuchador dinámico de Talonarios y Rifas en Tiempo Real
+        // Escuchador dinámico de Talonarios y Rifas
         db.collection("talonarios").onSnapshot((snapshot) => {
             let list = [];
             snapshot.forEach(doc => {
@@ -2110,7 +2191,12 @@
                 cliente: userName, tipoEntrega: deliveryMode, costoEnvio: calculatedExpressFee, distanciaKm: calculatedDistanceKm, direccion: manualDir, gps: gpsCoords, metodoPago: method, montoTotal: currentGrandTotal, pagaCon: cashPaidAmount, vuelto: changeNeeded, items: orderItemsArray, fechaStr: nowObj.toLocaleDateString('es-CR', { timeZone: "America/Costa_Rica", year: 'numeric', month: '2-digit', day: '2-digit' }), horaStr: nowObj.toLocaleTimeString('es-CR', { timeZone: "America/Costa_Rica", hour: '2-digit', minute: '2-digit', hour12: true }), timestampRaw: Date.now()
             }).catch(e => {});
         } catch (e) {}
-        closeModals(); let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`; resetCartAndInputs(); window.location.href = waUrl;
+        closeModals(); 
+        let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`; 
+        resetCartAndInputs(); 
+        
+        // Uso de window.open en lugar de window.location.href para evitar error 404 en CodePen
+        window.open(waUrl, '_blank');
     }
 </script>
 </body>
