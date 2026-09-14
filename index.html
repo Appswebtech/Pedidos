@@ -55,6 +55,18 @@
             justify-content: center; gap: 4px; animation: timerPulse 2s infinite ease-in-out;
         }
 
+        /* CUENTA REGRESIVA DE SORTEO EN VIVO */
+        .raffle-countdown-box {
+            background: rgba(0, 38, 255, 0.15); border: 1px solid #0026ff;
+            color: #00ffcc; padding: 8px 12px; border-radius: 8px;
+            font-weight: 800; font-size: 0.9rem; text-align: center;
+            margin: 8px 0 12px 0; letter-spacing: 0.5px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .raffle-countdown-box.expired {
+            background: rgba(234, 67, 53, 0.18); border-color: #ea4335; color: #ff9999;
+        }
+
         /* MODAL Y GRID DE TALONARIOS */
         .talonario-card { background: rgba(20, 20, 20, 0.95); border: 1px solid #333; border-radius: 12px; padding: 14px; margin-bottom: 15px; text-align: left; position: relative; overflow: hidden; }
         
@@ -219,7 +231,7 @@
             <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
         </div>
     </div>
-    <p class="version-tag">Versión 15.1</p>
+    <p class="version-tag">Versión 15.2</p>
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span><div id="express-fee-badge" style="display:none; font-size:0.8rem; color:#00ffcc; margin-top:2px; font-weight:normal;"></div></div>
         <div class="footer-btns"><button class="btn-ticket" onclick="showTicket()">📋 Ver Detalle</button></div>
@@ -398,7 +410,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.1)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.2)</h3>
         
         <div class="admin-section-title"><i class="fas fa-chart-line"></i> Estadísticas de Visitas del Negocio</div>
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
@@ -575,7 +587,7 @@
     window.localTalonariosArray = [];
     let currentActiveTalonarioId = null, currentAdminTalonarioId = null, localSelectedNumbers = [];
 
-    // TEMPORIZADOR EN TIEMPO REAL (5 MINUTOS = 300 SEGUNDOS)
+    // TEMPORIZADOR EN TIEMPO REAL PARA SELECCIÓN DE NÚMEROS (5 MINUTOS)
     let selectionTimerInterval = null, selectionTimeLeft = 300;
 
     function startSelectionTimer() {
@@ -614,6 +626,81 @@
         let displayEl = document.getElementById('selection-timer-display');
         if (displayEl) displayEl.innerText = formatted;
     }
+
+    // UTILERÍA: FORMATEAR FECHA Y HORA PROGRAMADA EN LENGUAJE NATURAL
+    function formatRaffleDateTime(isoStr) {
+        if (!isoStr || isoStr.trim() === "") return "Sin fecha programada";
+        let d = new Date(isoStr);
+        if (isNaN(d.getTime())) return isoStr;
+        return d.toLocaleString('es-CR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
+
+    // UTILERÍA: CALCULAR CUENTA REGRESIVA EN VIVO (DÍAS, HORAS, MINUTOS, SEGUNDOS)
+    function formatCountdownObj(targetIso) {
+        if (!targetIso || targetIso.trim() === "") return { expired: false, text: "⏳ Tiempo no estipulado", totalMs: 9999999999 };
+        let targetMs = new Date(targetIso).getTime();
+        let nowMs = Date.now();
+        let diff = targetMs - nowMs;
+
+        if (diff <= 0) {
+            return { expired: true, text: "🔒 SORTEO CERRADO", totalMs: 0 };
+        }
+
+        let totalSecs = Math.floor(diff / 1000);
+        let days = Math.floor(totalSecs / (3600 * 24));
+        let hours = Math.floor((totalSecs % (3600 * 24)) / 3600);
+        let minutes = Math.floor((totalSecs % 3600) / 60);
+        let seconds = totalSecs % 60;
+
+        let hh = hours.toString().padStart(2, '0');
+        let mm = minutes.toString().padStart(2, '0');
+        let ss = seconds.toString().padStart(2, '0');
+
+        let daysText = days > 0 ? `${days}d ` : '';
+        return {
+            expired: false,
+            text: `⏳ Cierra en: ${daysText}${hh}h ${mm}m ${ss}s`,
+            totalMs: diff
+        };
+    }
+
+    // ACTUALIZADOR GLOBAL SEGUNDO A SEGUNDO DE LAS CUENTAS REGRESIVAS
+    setInterval(() => {
+        if (!window.localTalonariosArray || window.localTalonariosArray.length === 0) return;
+        window.localTalonariosArray.forEach(t => {
+            let cdObj = formatCountdownObj(t.fechaSorteoISO);
+            
+            // Actualizar tarjeta en la lista principal
+            let cardCdEl = document.getElementById(`raffle-countdown-card-${t.id}`);
+            if (cardCdEl) {
+                cardCdEl.innerText = cdObj.text;
+                if (cdObj.expired) cardCdEl.classList.add('expired');
+                else cardCdEl.classList.remove('expired');
+            }
+
+            // Actualizar vista detallada si está abierta
+            let detailCdEl = document.getElementById(`raffle-countdown-detail-${t.id}`);
+            if (detailCdEl) {
+                detailCdEl.innerText = cdObj.text;
+                if (cdObj.expired) {
+                    detailCdEl.style.color = '#ff9999';
+                    let gridWrapper = document.getElementById('talonario-grid-wrapper');
+                    if (gridWrapper && gridWrapper.style.pointerEvents !== "none") {
+                        gridWrapper.style.pointerEvents = "none";
+                        gridWrapper.style.opacity = "0.5";
+                    }
+                }
+            }
+        });
+    }, 1000);
 
     let calViewDate = new Date(), calSelStart = null, calSelEnd = null, galleryTarget = { type: '', catIdx: null, prodIdx: null, bannerIdx: null, talonarioIdx: null }, modalStack = [];
 
@@ -735,7 +822,10 @@
             let criticalClass = availableCount <= 9 ? "critical" : "";
 
             let isWinnerDeclared = t.numeroGanador && t.numeroGanador.trim() !== "";
-            let isTimeClosed = t.fechaSorteoISO && (now >= new Date(t.fechaSorteoISO).getTime());
+            let cdObj = formatCountdownObj(t.fechaSorteoISO);
+            let isTimeClosed = cdObj.expired;
+
+            let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
 
             if (isWinnerDeclared) {
                 html += `
@@ -744,7 +834,7 @@
                     <h3 style="margin: 0 0 6px 0; color: #fff; font-size:1.1rem;">${t.title}</h3>
                     <p style="font-size:0.8rem; color:#ccc; margin: 0 0 10px 0;">${t.desc || ''}</p>
                     <div style="background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc; padding: 10px; border-radius: 8px; text-align: center;">
-                        <div style="font-size:0.8rem; color:#aaa;">SORTEO CON LA LOTERÍA NACIONAL DEL ${t.fechaSorteo || 'SÁBADO'}</div>
+                        <div style="font-size:0.78rem; color:#aaa;">SORTEO CELEBRADO EL: <b>${formattedDateStr}</b></div>
                         <div style="font-size:1.3rem; font-weight:bold; color:#00ffcc; margin:4px 0;">🎉 ¡Ganador(a): ${t.nombreGanador || 'Sorteado'}!</div>
                         <div style="font-size:1rem; color:#fff; font-weight:bold;">Número Premiado: <span style="background:#00ffcc; color:#000; padding:2px 8px; border-radius:4px;">${t.numeroGanador}</span></div>
                     </div>
@@ -756,7 +846,7 @@
                     <h3 style="margin:4px 0; color:#fff; font-size:1.1rem;">${t.title}</h3>
                     <p style="font-size:0.82rem; color:#bbb; margin:6px 0 10px 0; line-height:1.35;">${t.desc || ''}</p>
                     <div style="background:rgba(234,67,53,0.15); border:1px solid #ea4335; padding:10px; border-radius:8px; text-align:center; font-size:0.85rem; color:#ff9999; font-weight:bold;">
-                        🔒 Se alcanzó la hora límite del sorteo. No se admiten más compras.
+                        🔒 Se alcanzó la hora límite (${formattedDateStr}). No se admiten más compras.
                     </div>
                 </div>`;
             } else {
@@ -772,7 +862,10 @@
                         <span style="font-size:1.1rem; font-weight:bold; color:#25D366;">₡${(t.price || 0).toLocaleString()}</span>
                     </div>
                     <p style="font-size:0.82rem; color:#bbb; margin:6px 0 10px 0; line-height:1.35;">${t.desc || ''}</p>
-                    <div style="font-size:0.75rem; color:#aaa; margin-bottom:12px;"><i class="fas fa-calendar-alt" style="color:#25D366;"></i> Sorteo: <b>${t.fechaSorteo || 'Próximamente'}</b></div>
+                    
+                    <div style="font-size:0.78rem; color:#aaa; margin-bottom:6px;"><i class="fas fa-calendar-alt" style="color:#25D366;"></i> Fecha de Sorteo: <b>${formattedDateStr}</b></div>
+                    <div id="raffle-countdown-card-${t.id}" class="raffle-countdown-box">${cdObj.text}</div>
+
                     <button class="btn-send" style="width:100%; margin:0; padding:10px; font-size:0.95rem;" onclick="openTalonarioDetalleModal('${t.id}')"><i class="fas fa-hand-pointer"></i> ELEGIR NÚMEROS Y PARTICIPAR</button>
                 </div>`;
             }
@@ -793,8 +886,9 @@
         let t = (window.localTalonariosArray || []).find(item => item.id === talId);
         if (!t) return;
 
-        let now = Date.now();
-        let isTimeClosed = t.fechaSorteoISO && (now >= new Date(t.fechaSorteoISO).getTime());
+        let cdObj = formatCountdownObj(t.fechaSorteoISO);
+        let isTimeClosed = cdObj.expired;
+        let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
 
         let headerContainer = document.getElementById('talonario-detalle-header');
         let mediaHtml = t.img ? `<img src="${t.img}" class="talonario-card-img" style="max-height: 250px;">` : '';
@@ -806,7 +900,10 @@
                 <span style="font-size:1.1rem; font-weight:bold; color:#00ffcc;">₡${(t.price || 0).toLocaleString()} c/u</span>
             </div>
             <div style="font-size:0.8rem; color:#ccc; margin-bottom:10px;">${t.desc || ''}</div>
-            <div style="font-size:0.78rem; color:#aaa; margin-bottom:12px; background:#1c1c1c; padding:6px 10px; border-radius:6px; border:1px solid #333;"><i class="fas fa-calendar-check" style="color:#00ffcc;"></i> Juega con la Lotería Nacional del: <b>${t.fechaSorteo || 'Sáb/Dom'}</b></div>
+            <div style="font-size:0.78rem; color:#aaa; margin-bottom:10px; background:#1c1c1c; padding:8px 10px; border-radius:6px; border:1px solid #333;">
+                <div><i class="fas fa-calendar-check" style="color:#00ffcc;"></i> Fecha de Sorteo: <b>${formattedDateStr}</b></div>
+                <div id="raffle-countdown-detail-${t.id}" style="color:#00ffcc; font-weight:bold; font-size:0.95rem; margin-top:4px; text-align:center;">${cdObj.text}</div>
+            </div>
         `;
 
         // MANEJO DE LA NOTIFICACIÓN DE NÚMEROS RESERVADOS EN ANARANJADO (🟠)
@@ -814,6 +911,7 @@
         let reservedText = document.getElementById('talonario-reserved-text');
         let numbersMap = t.numbersMap || {};
         let activeReservedNums = [];
+        let now = Date.now();
 
         for (let i = 0; i <= 99; i++) {
             let numStr = i.toString().padStart(2, '0');
@@ -886,12 +984,13 @@
         let t = (window.localTalonariosArray || []).find(item => item.id === talId);
         if (!t) return;
 
-        let now = Date.now();
-        if (t.fechaSorteoISO && (now >= new Date(t.fechaSorteoISO).getTime())) {
+        let cdObj = formatCountdownObj(t.fechaSorteoISO);
+        if (cdObj.expired) {
             customAlert("Se ha alcanzado la hora límite para comprar en este sorteo.", "🔒 Sorteo Cerrado");
             return;
         }
 
+        let now = Date.now();
         let numbersMap = t.numbersMap || {};
         let item = numbersMap[numStr] || {};
 
@@ -1001,7 +1100,7 @@
 
         numsCopy.forEach(numStr => {
             updateData[`numbersMap.${numStr}`] = {
-                status: 'reserved', // Cambia oficialmente al estado Anaranjado
+                status: 'reserved',
                 devId: getDeviceId(),
                 name: uName,
                 phone: uPhone,
@@ -1051,7 +1150,6 @@
                 <div class="admin-field"><label>Título del Talonario / Rifa</label><input type="text" class="admin-input" value="${t.title || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'title', this.value)"></div>
                 <div class="admin-field"><label>Precio por Número (₡)</label><input type="number" class="admin-input" value="${t.price || 0}" onchange="adminUpdateTalonarioField('${t.id}', 'price', parseFloat(this.value)||0)"></div>
                 <div class="admin-field"><label>Premio / Descripción</label><input type="text" class="admin-input" value="${t.desc || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'desc', this.value)"></div>
-                <div class="admin-field"><label>Nombre del Sorteo (Ej: Domingo de Lotería)</label><input type="text" class="admin-input" value="${t.fechaSorteo || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'fechaSorteo', this.value)"></div>
                 <div class="admin-field"><label style="color:#00ffcc;"><i class="fas fa-clock"></i> Fecha y Hora Límite del Sorteo (Cierre automático)</label><input type="datetime-local" class="admin-input" value="${t.fechaSorteoISO || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'fechaSorteoISO', this.value)"></div>
                 
                 <div class="admin-field">
@@ -1090,7 +1188,6 @@
                 title: "Nueva Rifa",
                 price: 1000,
                 desc: "Descripción del premio...",
-                fechaSorteo: "Domingo de Lotería",
                 fechaSorteoISO: "",
                 img: "",
                 numeroGanador: "",
@@ -1233,11 +1330,12 @@
 
         let numbersMap = t.numbersMap || {};
         let item = numbersMap[numStr] || {};
+        let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
 
         db.collection("talonarios").doc(talId).set({
             [`numbersMap.${numStr}.status`]: 'paid'
         }, { merge: true }).then(() => {
-            let msg = `Hola, *${item.name || 'Cliente'}*. Confirmamos tu pago. El número que elegiste fue el *${numStr}*, para jugar en combinación con la Lotería Nacional del *${t.fechaSorteo || 'Sorteo'}*. Participás por *${t.title}* en Cooking Pollos. 🍗🎟️ ¡Muchísima suerte! 🍀`;
+            let msg = `Hola, *${item.name || 'Cliente'}*. Confirmamos tu pago. El número que elegiste fue el *${numStr}*, para el sorteo del *${formattedDateStr}*. Participás por *${t.title}* en Cooking Pollos. 🍗🎟️ ¡Muchísima suerte! 🍀`;
             let waUrl = `https://wa.me/506${item.phone || currentGlobalWhatsApp}?text=${msg}`;
             window.open(waUrl, '_blank');
             adminRenderBuyersUI(talId);
