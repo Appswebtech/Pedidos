@@ -258,6 +258,7 @@
             <div>1. ⚪ <b>Gris:</b> Disponibles para comprar.</div>
             <div>2. 🟢 <b>Verde:</b> Tus números seleccionados (Tenés <b>5 minutos</b> para elegir tus números y rellenar tus datos).</div>
             <div>3. 🟡 <b>Amarillo (Reservados):</b> Al confirmar, tus números se reservan durante <b>1 hora</b> para realizar el pago.</div>
+            <div>4. 🟣 <b>Morado:</b> En proceso de selección por otro cliente en vivo.</div>
             <div style="color: #ff9900; margin-top: 4px;">⚠️ <b>Atención:</b> Si el temporizador de 1 hora llega a cero sin confirmación de pago, tus números serán liberados automáticamente a gris.</div>
         </div>
 
@@ -567,7 +568,7 @@
     window.localTalonariosArray = [];
     let currentActiveTalonarioId = null, currentAdminTalonarioId = null, localSelectedNumbers = [];
 
-    // TEMPORIZADOR EN TIEMPO REAL (AHORA DE 5 MINUTOS = 300 SEGUNDOS)
+    // TEMPORIZADOR EN TIEMPO REAL (5 MINUTOS = 300 SEGUNDOS)
     let selectionTimerInterval = null, selectionTimeLeft = 300;
 
     function startSelectionTimer() {
@@ -618,14 +619,26 @@
         }
         modalStack.push(id); document.getElementById(id).style.display = "flex"; checkModalLock();
     }
+
     function closeModalTop() {
         if (modalStack.length > 0) {
-            let closedId = modalStack.pop(); document.getElementById(closedId).style.display = "none";
-            if (closedId === 'talonarioDetalleModal') stopSelectionTimer();
+            let closedId = modalStack.pop(); 
+            document.getElementById(closedId).style.display = "none";
+            
+            // Si cerramos el modal del detalle del talonario y teníamos números en selección temporal, los liberamos
+            if (closedId === 'talonarioDetalleModal') {
+                if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
+                    cancelTalonarioSelection(currentActiveTalonarioId);
+                } else {
+                    stopSelectionTimer();
+                }
+            }
+
             if (modalStack.length > 0) document.getElementById(modalStack[modalStack.length - 1]).style.display = "flex";
             checkModalLock();
         }
     }
+
     function closeModals() { 
         if (modalStack.length > 0) { 
             modalStack.forEach(id => { 
@@ -633,7 +646,11 @@
                 if (m) m.style.display = "none"; 
             }); 
             modalStack = []; 
-            stopSelectionTimer();
+            if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
+                cancelTalonarioSelection(currentActiveTalonarioId);
+            } else {
+                stopSelectionTimer();
+            }
             checkModalLock(); 
         } 
     }
@@ -896,11 +913,13 @@
 
     function cancelTalonarioSelection(talId) {
         stopSelectionTimer();
-        localSelectedNumbers.forEach(numStr => {
-            db.collection("talonarios").doc(talId).set({
-                [`numbersMap.${numStr}`]: { status: 'available' }
-            }, { merge: true }).catch(() => {});
-        });
+        if (localSelectedNumbers.length > 0 && talId) {
+            let updateObj = {};
+            localSelectedNumbers.forEach(numStr => {
+                updateObj[`numbersMap.${numStr}`] = { status: 'available' };
+            });
+            db.collection("talonarios").doc(talId).set(updateObj, { merge: true }).catch(() => {});
+        }
         localSelectedNumbers = [];
         renderTalonarioGridUI(talId);
     }
@@ -1006,7 +1025,6 @@
         container.innerHTML = html;
     }
 
-    /* FUNCIÓN CORREGIDA CON MANEJO EXPLÍCITO DE ID Y EXCEPCIONES */
     async function adminAddTalonario() {
         try {
             let newRef = db.collection("talonarios").doc();
@@ -1800,7 +1818,7 @@
     function deleteAdminBannerItem(idx) { window.localBannersArray.splice(idx, 1); renderAdminBannersUI(); renderAdminTextBannersUI(); }
     function addAdminTextBannerItem() { window.localTextBannersArray.push({ active: true, text: "Escribe un aviso publicitario aquí...", fontSize: 24, lineHeight: 140, letterSpacing: 0, position: "start", url: "", fontUrl: "", useFont: true, strokeSize: 0, strokeColor: "#000000", textColor: "#ffffff", ledStroke: false }); renderAdminTextBannersUI(); }
     function updateAdminTextBannerField(idx, field, val) { window.localTextBannersArray[idx][field] = val; }
-    function deleteAdminTextBannerItem(idx) { window.localTextBannersArray.splice(idx, 1); renderAdminTextBannerItem(); }
+    function deleteAdminTextBannerItem(idx) { window.localTextBannersArray.splice(idx, 1); renderAdminTextBannersUI(); }
 
     async function uploadTextBannerMediaFile(input, idx) {
         let file = input.files[0]; if(!file) return; customAlert("Subiendo archivo a ImageKit...", "Subiendo Asset");
