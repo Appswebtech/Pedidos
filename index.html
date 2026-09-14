@@ -66,6 +66,7 @@
         .talonario-badge-limit { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: bold; background: #0026ff; color: white; margin-bottom: 6px; }
         @keyframes flashRedAlert { 0%, 100% { background: #ea4335; box-shadow: 0 0 10px #ea4335; } 50% { background: #ff0055; box-shadow: 0 0 2px #ff0055; } }
         .talonario-badge-limit.critical { animation: flashRedAlert 1s infinite; }
+        .talonario-badge-closed { background: #ea4335; color: white; font-weight: bold; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; display: inline-block; margin-bottom: 8px; }
         
         .talonario-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin: 12px 0; max-height: 320px; overflow-y: auto; padding: 4px; background: #0a0a0a; border-radius: 8px; border: 1px solid #222; }
         .num-cell { aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; user-select: none; transition: 0.15s; border: 1px solid #333; position: relative; }
@@ -74,7 +75,7 @@
         .num-grey:hover { background: #333; border-color: #0026ff; }
         .num-green { background: #25D366 !important; color: #000 !important; border-color: #00ffcc !important; font-weight: 900; }
         .num-purple { background: #9900ff !important; color: #fff !important; border-color: #c13584 !important; opacity: 0.85; pointer-events: none; }
-        .num-yellow { background: #ffcc00 !important; color: #000 !important; border-color: #ffaa00 !important; font-weight: bold; }
+        .num-orange { background: #ff9900 !important; color: #000 !important; border-color: #ffaa00 !important; font-weight: bold; }
         .num-paid { display: none !important; }
         .num-paid-admin { background: #0026ff !important; color: #fff !important; border-color: #00ffcc !important; }
 
@@ -251,15 +252,21 @@
 <div id="talonarioDetalleModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #121212; color: white; border: 2px solid #25D366; max-width: 440px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 18px;">
         <div id="talonario-detalle-header"></div>
+
+        <!-- CUADRO DE NOTIFICACIÓN DE NÚMEROS EN RESERVA ANARANJADA -->
+        <div id="talonario-reserved-notification" style="display:none; background: rgba(255, 153, 0, 0.12); border: 1.5px solid #ff9900; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.78rem; line-height: 1.45; color: #fff;">
+            <strong style="color: #ffaa00; display: block; margin-bottom: 4px;"><i class="fas fa-exclamation-circle"></i> NÚMEROS EN RESERVA PENDIENTE:</strong>
+            <span id="talonario-reserved-text"></span>
+        </div>
         
         <!-- CUADRO INFORMATIVO DE REGLAS Y ESTADOS -->
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: left; font-size: 0.78rem; line-height: 1.45;">
             <strong style="color: #00ffcc; display: block; margin-bottom: 4px;"><i class="fas fa-info-circle"></i> REGLAS Y ESTADOS DE COMPRA:</strong>
             <div>1. ⚪ <b>Gris:</b> Disponibles para comprar.</div>
-            <div>2. 🟢 <b>Verde:</b> Tus números seleccionados (Tenés <b>5 minutos</b> para elegir tus números y rellenar tus datos).</div>
-            <div>3. 🟡 <b>Amarillo (Reservados):</b> Al confirmar, tus números se reservan durante <b>1 hora</b> para realizar el pago.</div>
-            <div>4. 🟣 <b>Morado:</b> En proceso de selección por otro cliente en vivo.</div>
-            <div style="color: #ff9900; margin-top: 4px;">⚠️ <b>Atención:</b> Si el temporizador de 1 hora llega a cero sin confirmación de pago, tus números serán liberados automáticamente a gris.</div>
+            <div>2. 🟢 <b>Verde:</b> Tus números seleccionados (Tenés <b>5 minutos</b> para elegir e ingresar tus datos).</div>
+            <div>3. 🟣 <b>Morado:</b> En proceso de selección por otro cliente en vivo.</div>
+            <div>4. 🟠 <b>Anaranjado (Reservados):</b> Al confirmar, tus números se reservan durante <b>1 hora</b> para el pago.</div>
+            <div style="color: #ff9900; margin-top: 4px;">⚠️ <b>Atención:</b> Si el pago no se confirma en 1 hora, los números anaranjados serán liberados a gris.</div>
         </div>
 
         <div id="talonario-grid-wrapper"></div>
@@ -271,7 +278,7 @@
                 <span>Tiempo de Selección: <b id="selection-timer-display" style="color:#00ffcc; font-size:1.1rem; font-weight:900;">05:00</b></span>
             </div>
             <div style="font-size:0.75rem; color:#bbb; font-weight:normal; margin-top:2px; text-align:center;">
-                Elige tus números y completa tus datos (nombre y teléfono) en menos de 05:00 min antes de que se liberen.
+                Completa tus datos en menos de 05:00 min antes de que tus números en verde se liberen.
             </div>
         </div>
 
@@ -625,7 +632,7 @@
             let closedId = modalStack.pop(); 
             document.getElementById(closedId).style.display = "none";
             
-            // Si cerramos el modal del detalle del talonario y teníamos números en selección temporal, los liberamos
+            // Liberación automática al cerrar el detalle del talonario
             if (closedId === 'talonarioDetalleModal') {
                 if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
                     cancelTalonarioSelection(currentActiveTalonarioId);
@@ -715,6 +722,7 @@
             return;
         }
 
+        let now = Date.now();
         let html = "";
         activeList.forEach(t => {
             let numbersMap = t.numbersMap || {};
@@ -727,6 +735,7 @@
             let criticalClass = availableCount <= 9 ? "critical" : "";
 
             let isWinnerDeclared = t.numeroGanador && t.numeroGanador.trim() !== "";
+            let isTimeClosed = t.fechaSorteoISO && (now >= new Date(t.fechaSorteoISO).getTime());
 
             if (isWinnerDeclared) {
                 html += `
@@ -738,6 +747,16 @@
                         <div style="font-size:0.8rem; color:#aaa;">SORTEO CON LA LOTERÍA NACIONAL DEL ${t.fechaSorteo || 'SÁBADO'}</div>
                         <div style="font-size:1.3rem; font-weight:bold; color:#00ffcc; margin:4px 0;">🎉 ¡Ganador(a): ${t.nombreGanador || 'Sorteado'}!</div>
                         <div style="font-size:1rem; color:#fff; font-weight:bold;">Número Premiado: <span style="background:#00ffcc; color:#000; padding:2px 8px; border-radius:4px;">${t.numeroGanador}</span></div>
+                    </div>
+                </div>`;
+            } else if (isTimeClosed) {
+                html += `
+                <div class="talonario-card" style="border-color: #ea4335;">
+                    <span class="talonario-badge-closed"><i class="fas fa-lock"></i> SORTEO CERRADO</span>
+                    <h3 style="margin:4px 0; color:#fff; font-size:1.1rem;">${t.title}</h3>
+                    <p style="font-size:0.82rem; color:#bbb; margin:6px 0 10px 0; line-height:1.35;">${t.desc || ''}</p>
+                    <div style="background:rgba(234,67,53,0.15); border:1px solid #ea4335; padding:10px; border-radius:8px; text-align:center; font-size:0.85rem; color:#ff9999; font-weight:bold;">
+                        🔒 Se alcanzó la hora límite del sorteo. No se admiten más compras.
                     </div>
                 </div>`;
             } else {
@@ -774,6 +793,9 @@
         let t = (window.localTalonariosArray || []).find(item => item.id === talId);
         if (!t) return;
 
+        let now = Date.now();
+        let isTimeClosed = t.fechaSorteoISO && (now >= new Date(t.fechaSorteoISO).getTime());
+
         let headerContainer = document.getElementById('talonario-detalle-header');
         let mediaHtml = t.img ? `<img src="${t.img}" class="talonario-card-img" style="max-height: 250px;">` : '';
         
@@ -787,10 +809,29 @@
             <div style="font-size:0.78rem; color:#aaa; margin-bottom:12px; background:#1c1c1c; padding:6px 10px; border-radius:6px; border:1px solid #333;"><i class="fas fa-calendar-check" style="color:#00ffcc;"></i> Juega con la Lotería Nacional del: <b>${t.fechaSorteo || 'Sáb/Dom'}</b></div>
         `;
 
-        let gridWrapper = document.getElementById('talonario-grid-wrapper');
+        // MANEJO DE LA NOTIFICACIÓN DE NÚMEROS RESERVADOS EN ANARANJADO (🟠)
+        let reservedBox = document.getElementById('talonario-reserved-notification');
+        let reservedText = document.getElementById('talonario-reserved-text');
         let numbersMap = t.numbersMap || {};
+        let activeReservedNums = [];
+
+        for (let i = 0; i <= 99; i++) {
+            let numStr = i.toString().padStart(2, '0');
+            let item = numbersMap[numStr];
+            if (item && item.status === 'reserved' && item.expiresAt && now <= item.expiresAt) {
+                activeReservedNums.push(numStr);
+            }
+        }
+
+        if (activeReservedNums.length > 0 && reservedBox && reservedText) {
+            reservedBox.style.display = "block";
+            reservedText.innerHTML = `Los número(s) <b style="color:#ffaa00;">${activeReservedNums.join(', ')}</b> están reservados en espera de pago. Serán liberados a gris en menos de 1 hora si no se efectúa la compra.`;
+        } else if (reservedBox) {
+            reservedBox.style.display = "none";
+        }
+
+        let gridWrapper = document.getElementById('talonario-grid-wrapper');
         let myDevId = getDeviceId();
-        let now = Date.now();
 
         let gridHtml = `<div class="talonario-grid">`;
 
@@ -808,7 +849,7 @@
             if (status === 'paid') {
                 cellClass = "num-paid";
             } else if (status === 'reserved') {
-                cellClass = "num-yellow";
+                cellClass = "num-orange";
                 let remainingMins = Math.max(0, Math.ceil((item.expiresAt - now) / 60000));
                 timerText = `<span class="num-timer">⏱️${remainingMins}m</span>`;
             } else if (status === 'temp_selected') {
@@ -829,23 +870,38 @@
         gridHtml += `</div>`;
         gridWrapper.innerHTML = gridHtml;
 
+        if (isTimeClosed) {
+            gridWrapper.style.pointerEvents = "none";
+            gridWrapper.style.opacity = "0.5";
+            customAlert("Se ha alcanzado la hora límite de este sorteo. No se pueden seleccionar nuevos números.", "🔒 Sorteo Cerrado");
+        } else {
+            gridWrapper.style.pointerEvents = "auto";
+            gridWrapper.style.opacity = "1";
+        }
+
         renderMiniTicketUI(talId);
     }
 
     function toggleSelectNumber(talId, numStr) {
         let t = (window.localTalonariosArray || []).find(item => item.id === talId);
         if (!t) return;
+
+        let now = Date.now();
+        if (t.fechaSorteoISO && (now >= new Date(t.fechaSorteoISO).getTime())) {
+            customAlert("Se ha alcanzado la hora límite para comprar en este sorteo.", "🔒 Sorteo Cerrado");
+            return;
+        }
+
         let numbersMap = t.numbersMap || {};
         let item = numbersMap[numStr] || {};
-        let now = Date.now();
 
         if (item.status === 'paid') return;
         if (item.status === 'reserved' && item.expiresAt && now <= item.expiresAt) {
-            customAlert("Este número se encuentra reservado en proceso de pago.", "Número Reservado");
+            customAlert(`El número #${numStr} se encuentra reservado en color anaranjado en espera de pago.`, "Número Reservado");
             return;
         }
         if (item.status === 'temp_selected' && item.devId !== getDeviceId() && item.tempExpiresAt && now <= item.tempExpiresAt) {
-            customAlert("Otro cliente está eligiendo este número en este momento.", "Número en Selección");
+            customAlert(`El número #${numStr} está siendo seleccionado por otro cliente en este momento.`, "Número en Selección");
             return;
         }
 
@@ -945,7 +1001,7 @@
 
         numsCopy.forEach(numStr => {
             updateData[`numbersMap.${numStr}`] = {
-                status: 'reserved',
+                status: 'reserved', // Cambia oficialmente al estado Anaranjado
                 devId: getDeviceId(),
                 name: uName,
                 phone: uPhone,
@@ -995,7 +1051,8 @@
                 <div class="admin-field"><label>Título del Talonario / Rifa</label><input type="text" class="admin-input" value="${t.title || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'title', this.value)"></div>
                 <div class="admin-field"><label>Precio por Número (₡)</label><input type="number" class="admin-input" value="${t.price || 0}" onchange="adminUpdateTalonarioField('${t.id}', 'price', parseFloat(this.value)||0)"></div>
                 <div class="admin-field"><label>Premio / Descripción</label><input type="text" class="admin-input" value="${t.desc || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'desc', this.value)"></div>
-                <div class="admin-field"><label>Fecha del Sorteo (Ej: Domingo 20 Septiembre)</label><input type="text" class="admin-input" value="${t.fechaSorteo || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'fechaSorteo', this.value)"></div>
+                <div class="admin-field"><label>Nombre del Sorteo (Ej: Domingo de Lotería)</label><input type="text" class="admin-input" value="${t.fechaSorteo || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'fechaSorteo', this.value)"></div>
+                <div class="admin-field"><label style="color:#00ffcc;"><i class="fas fa-clock"></i> Fecha y Hora Límite del Sorteo (Cierre automático)</label><input type="datetime-local" class="admin-input" value="${t.fechaSorteoISO || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'fechaSorteoISO', this.value)"></div>
                 
                 <div class="admin-field">
                     <label>Imagen del Premio</label>
@@ -1034,6 +1091,7 @@
                 price: 1000,
                 desc: "Descripción del premio...",
                 fechaSorteo: "Domingo de Lotería",
+                fechaSorteoISO: "",
                 img: "",
                 numeroGanador: "",
                 nombreGanador: "",
@@ -1138,12 +1196,12 @@
 
             let cellClass = "num-grey";
             if (status === 'paid') { cellClass = "num-paid-admin"; countPaid++; }
-            else if (status === 'reserved') { cellClass = "num-yellow"; countReserved++; }
+            else if (status === 'reserved') { cellClass = "num-orange"; countReserved++; }
 
             gridHtml += `<div class="num-cell ${cellClass}"><span>${numStr}</span></div>`;
 
             if (status === 'reserved' || status === 'paid') {
-                let statusBadge = status === 'paid' ? `<span style="color:#25D366; font-weight:bold;">[PAGADO]</span>` : `<span style="color:#ffcc00; font-weight:bold;">[RESERVADO]</span>`;
+                let statusBadge = status === 'paid' ? `<span style="color:#25D366; font-weight:bold;">[PAGADO]</span>` : `<span style="color:#ffaa00; font-weight:bold;">[RESERVADO]</span>`;
                 listHtml += `
                 <div style="background:#1c1c1c; border:1px solid #333; padding:8px 10px; border-radius:6px; margin-bottom:6px; font-size:0.8rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1163,7 +1221,7 @@
         listHtml += `</div>`;
 
         container.innerHTML = `
-            <div style="font-size:0.85rem; color:#fff; margin-bottom:8px;"><b>Resumen:</b> <span style="color:#25D366;">${countPaid} Pagados</span> | <span style="color:#ffcc00;">${countReserved} Reservados</span></div>
+            <div style="font-size:0.85rem; color:#fff; margin-bottom:8px;"><b>Resumen:</b> <span style="color:#25D366;">${countPaid} Pagados</span> | <span style="color:#ffaa00;">${countReserved} Reservados</span></div>
             ${gridHtml}
             ${listHtml}
         `;
@@ -1818,7 +1876,7 @@
     function deleteAdminBannerItem(idx) { window.localBannersArray.splice(idx, 1); renderAdminBannersUI(); renderAdminTextBannersUI(); }
     function addAdminTextBannerItem() { window.localTextBannersArray.push({ active: true, text: "Escribe un aviso publicitario aquí...", fontSize: 24, lineHeight: 140, letterSpacing: 0, position: "start", url: "", fontUrl: "", useFont: true, strokeSize: 0, strokeColor: "#000000", textColor: "#ffffff", ledStroke: false }); renderAdminTextBannersUI(); }
     function updateAdminTextBannerField(idx, field, val) { window.localTextBannersArray[idx][field] = val; }
-    function deleteAdminTextBannerItem(idx) { window.localTextBannersArray.splice(idx, 1); renderAdminTextBannersUI(); }
+    function deleteAdminTextBannerItem(idx) { window.localTextBannersArray.splice(idx, 1); renderAdminTextBannerItem(); }
 
     async function uploadTextBannerMediaFile(input, idx) {
         let file = input.files[0]; if(!file) return; customAlert("Subiendo archivo a ImageKit...", "Subiendo Asset");
@@ -2207,4 +2265,3 @@
 </script>
 </body>
 </html>
-
