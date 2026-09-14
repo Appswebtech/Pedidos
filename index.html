@@ -50,14 +50,19 @@
         }
         .floating-selection-timer {
             background: rgba(0, 38, 255, 0.95); color: white; border: 1.5px solid #00ffcc;
-            padding: 8px 14px; border-radius: 25px; font-weight: bold; font-size: 0.88rem;
-            text-align: center; margin-bottom: 12px; display: flex; align-items: center;
-            justify-content: center; gap: 8px; animation: timerPulse 2s infinite ease-in-out;
+            padding: 10px 14px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;
+            text-align: center; margin: 14px 0 10px 0; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 4px; animation: timerPulse 2s infinite ease-in-out;
         }
 
         /* MODAL Y GRID DE TALONARIOS */
         .talonario-card { background: rgba(20, 20, 20, 0.95); border: 1px solid #333; border-radius: 12px; padding: 14px; margin-bottom: 15px; text-align: left; position: relative; overflow: hidden; }
-        .talonario-card-img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid #444; }
+        
+        .talonario-card-img { 
+            width: 100%; height: auto; max-height: 380px; object-fit: contain; 
+            border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; background: #000; display: block; 
+        }
+
         .talonario-badge-limit { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: bold; background: #0026ff; color: white; margin-bottom: 6px; }
         @keyframes flashRedAlert { 0%, 100% { background: #ea4335; box-shadow: 0 0 10px #ea4335; } 50% { background: #ff0055; box-shadow: 0 0 2px #ff0055; } }
         .talonario-badge-limit.critical { animation: flashRedAlert 1s infinite; }
@@ -73,7 +78,6 @@
         .num-paid { display: none !important; }
         .num-paid-admin { background: #0026ff !important; color: #fff !important; border-color: #00ffcc !important; }
 
-        /* Módulo de Calificación por Estrellas */
         .rating-box { background: rgba(17,17,17,0.85); border: 1px solid #333; border-radius: 14px; padding: 12px 16px; margin: 10px auto 20px auto; backdrop-filter: blur(5px); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
         .rating-stars { display: inline-flex; gap: 8px; font-size: 1.5rem; color: #444; cursor: pointer; margin: 8px 0 4px 0; user-select: none; }
         .rating-stars .star-btn { transition: color 0.2s, transform 0.2s; cursor: pointer; }
@@ -214,8 +218,7 @@
             <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
         </div>
     </div>
-    <!-- ETIQUETA DE VERSIÓN SOLICITADA -->
-    <p class="version-tag">Versión 15.0</p>
+    <p class="version-tag">Versión 15.1</p>
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span><div id="express-fee-badge" style="display:none; font-size:0.8rem; color:#00ffcc; margin-top:2px; font-weight:normal;"></div></div>
         <div class="footer-btns"><button class="btn-ticket" onclick="showTicket()">📋 Ver Detalle</button></div>
@@ -249,22 +252,28 @@
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #121212; color: white; border: 2px solid #25D366; max-width: 440px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 18px;">
         <div id="talonario-detalle-header"></div>
         
-        <!-- RELOJ FLOTANTE EN TIEMPO REAL AL ELEGIR NÚMEROS -->
-        <div id="floating-selection-timer" class="floating-selection-timer" style="display:none;">
-            <i class="fas fa-stopwatch"></i>
-            <span>Elige tus números en: <b id="selection-timer-display" style="color:#00ffcc; font-size:1rem; font-weight:900;">02:00</b></span>
-        </div>
-
         <!-- CUADRO INFORMATIVO DE REGLAS Y ESTADOS -->
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: left; font-size: 0.78rem; line-height: 1.45;">
             <strong style="color: #00ffcc; display: block; margin-bottom: 4px;"><i class="fas fa-info-circle"></i> REGLAS Y ESTADOS DE COMPRA:</strong>
             <div>1. ⚪ <b>Gris:</b> Disponibles para comprar.</div>
-            <div>2. 🟢 <b>Verde:</b> Tus números seleccionados (Tenés <b>2 minutos</b> para elegir tus números y rellenar tus datos).</div>
+            <div>2. 🟢 <b>Verde:</b> Tus números seleccionados (Tenés <b>5 minutos</b> para elegir tus números y rellenar tus datos).</div>
             <div>3. 🟡 <b>Amarillo (Reservados):</b> Al confirmar, tus números se reservan durante <b>1 hora</b> para realizar el pago.</div>
-            <div style="color: #ff9900; margin-top: 4px;">⚠️ <b>Atención:</b> Si el temporizador de 1 hora llega a cero sin confirmación de pago, tus números serán liberados automáticamente a gris para otro comprador.</div>
+            <div style="color: #ff9900; margin-top: 4px;">⚠️ <b>Atención:</b> Si el temporizador de 1 hora llega a cero sin confirmación de pago, tus números serán liberados automáticamente a gris.</div>
         </div>
 
         <div id="talonario-grid-wrapper"></div>
+
+        <!-- RELOJ FLOTANTE UBICADO DEBAJO DEL CUADRO DE NÚMEROS (5 MINUTOS) -->
+        <div id="floating-selection-timer" class="floating-selection-timer" style="display:none;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-stopwatch" style="color:#00ffcc; font-size:1.1rem;"></i>
+                <span>Tiempo de Selección: <b id="selection-timer-display" style="color:#00ffcc; font-size:1.1rem; font-weight:900;">05:00</b></span>
+            </div>
+            <div style="font-size:0.75rem; color:#bbb; font-weight:normal; margin-top:2px; text-align:center;">
+                Elige tus números y completa tus datos (nombre y teléfono) en menos de 05:00 min antes de que se liberen.
+            </div>
+        </div>
+
         <div id="talonario-mini-ticket" style="display:none; background:#1a1a1a; border:1px solid #25D366; padding:12px; border-radius:8px; margin-top:12px;"></div>
 
         <button style="margin-top:15px; width:100%; padding:12px; background:#222; color:white; border:1px solid #444; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">Volver a Rifas</button>
@@ -381,7 +390,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.0)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.1)</h3>
         
         <div class="admin-section-title"><i class="fas fa-chart-line"></i> Estadísticas de Visitas del Negocio</div>
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
@@ -558,12 +567,12 @@
     window.localTalonariosArray = [];
     let currentActiveTalonarioId = null, currentAdminTalonarioId = null, localSelectedNumbers = [];
 
-    // TEMPORIZADOR EN TIEMPO REAL PARA SELECCIÓN DE NÚMEROS (2 MINUTOS)
-    let selectionTimerInterval = null, selectionTimeLeft = 120;
+    // TEMPORIZADOR EN TIEMPO REAL (AHORA DE 5 MINUTOS = 300 SEGUNDOS)
+    let selectionTimerInterval = null, selectionTimeLeft = 300;
 
     function startSelectionTimer() {
         if (selectionTimerInterval) return;
-        selectionTimeLeft = 120;
+        selectionTimeLeft = 300; // 5 minutos exactos
         updateSelectionTimerDisplay();
         let timerBox = document.getElementById('floating-selection-timer');
         if (timerBox) timerBox.style.display = "flex";
@@ -575,7 +584,7 @@
                 stopSelectionTimer();
                 if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
                     cancelTalonarioSelection(currentActiveTalonarioId);
-                    customAlert("Tu tiempo de 2 minutos para elegir números expiró. Los números han sido liberados.", "⏰ Tiempo Agotado");
+                    customAlert("Tu tiempo de 5 minutos para elegir números expiró. Los números han sido liberados.", "⏰ Tiempo Agotado");
                 }
             }
         }, 1000);
@@ -749,7 +758,7 @@
         if (!t) return;
 
         let headerContainer = document.getElementById('talonario-detalle-header');
-        let mediaHtml = t.img ? `<img src="${t.img}" style="width:100%; height:120px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid #333;">` : '';
+        let mediaHtml = t.img ? `<img src="${t.img}" class="talonario-card-img" style="max-height: 250px;">` : '';
         
         headerContainer.innerHTML = `
             ${mediaHtml}
@@ -835,7 +844,7 @@
                 [`numbersMap.${numStr}`]: {
                     status: 'temp_selected',
                     devId: getDeviceId(),
-                    tempExpiresAt: now + (2 * 60 * 1000)
+                    tempExpiresAt: now + (5 * 60 * 1000)
                 }
             }, { merge: true }).catch(() => {});
         }
@@ -896,8 +905,7 @@
         renderTalonarioGridUI(talId);
     }
 
-    /* CORRECCIÓN PARA CODEPEN Y REDIRECCIÓN A WHATSAPP SIN ERROR 404 */
-    function processReserveTalonario(talId) {
+    async function processReserveTalonario(talId) {
         let nameEl = document.getElementById('talonario-user-name');
         let phoneEl = document.getElementById('talonario-user-phone');
         let uName = nameEl ? nameEl.value.trim() : "";
@@ -931,19 +939,18 @@
         let subtotal = numsCopy.length * (t.price || 0);
 
         let msg = `¡Hola! Reservé el/los número(s) *${numsStr}* para la rifa de *${t.title}*.%0A%0A• *Cliente:* ${uName}%0A• *Teléfono:* ${uPhone}%0A• *Monto a Pagar:* ₡${subtotal.toLocaleString()}%0A%0AQuedo atento para enviar el comprobante o cancelar en el local.`;
-
         let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
 
-        db.collection("talonarios").doc(talId).set(updateData, { merge: true }).catch(err => {
-            console.warn("Reserva guardada:", err);
-        });
-
-        stopSelectionTimer();
-        localSelectedNumbers = [];
-        closeModals();
-        
-        // Uso de window.open en lugar de window.location.href para evitar error 404 en CodePen
-        window.open(waUrl, '_blank');
+        try {
+            await db.collection("talonarios").doc(talId).set(updateData, { merge: true });
+            stopSelectionTimer();
+            localSelectedNumbers = [];
+            closeModals();
+            window.open(waUrl, '_blank');
+        } catch (err) {
+            console.error("Error al guardar reserva:", err);
+            customAlert("Error al conectar con la nube: " + (err.message || "Revisa tu conexión"));
+        }
     }
 
     // --- MÓDULO ADMINISTRADOR DE TALONARIOS ---
@@ -999,11 +1006,11 @@
         container.innerHTML = html;
     }
 
-    function adminAddTalonario() {
+    /* FUNCIÓN CORREGIDA CON MANEJO EXPLÍCITO DE ID Y EXCEPCIONES */
+    async function adminAddTalonario() {
         try {
             let newRef = db.collection("talonarios").doc();
             let newTalonario = {
-                id: newRef.id,
                 active: true,
                 title: "Nueva Rifa",
                 price: 1000,
@@ -1015,29 +1022,15 @@
                 numbersMap: {}
             };
 
-            if (!window.localTalonariosArray) window.localTalonariosArray = [];
-            window.localTalonariosArray.unshift(newTalonario);
-            adminRenderTalonariosUI();
-
-            newRef.set({
-                active: newTalonario.active,
-                title: newTalonario.title,
-                price: newTalonario.price,
-                desc: newTalonario.desc,
-                fechaSorteo: newTalonario.fechaSorteo,
-                img: newTalonario.img,
-                numeroGanador: newTalonario.numeroGanador,
-                nombreGanador: newTalonario.nombreGanador,
-                numbersMap: newTalonario.numbersMap
-            }).then(() => {
-                customAlert("¡Talonario creado e integrado a la nube con éxito!", "Éxito");
-            }).catch((err) => {
-                console.error("Error al guardar talonario en Firestore:", err);
-                customAlert("Talonario visible en tu pantalla. (Aviso de red: " + (err.message || "Permisos de base de datos") + ")", "Aviso de Sincronización");
-            });
+            await newRef.set(newTalonario);
+            customAlert("¡Talonario creado e integrado a la nube con éxito!", "Éxito");
         } catch (e) {
             console.error("Error en adminAddTalonario:", e);
-            customAlert("Ocurrió un error al procesar el botón: " + e.message, "Atención");
+            let userMsg = e.message;
+            if (e.code === 'permission-denied') {
+                userMsg = "Permisos insuficientes en Firebase Firestore. Revisa las reglas en Firebase Console.";
+            }
+            customAlert("Error al guardar en la nube: " + userMsg, "Atención");
         }
     }
 
@@ -1051,10 +1044,6 @@
 
     function adminDeleteTalonario(talId) {
         customConfirm("¿Seguro que deseas eliminar este talonario permanentemente?", () => {
-            if (window.localTalonariosArray) {
-                window.localTalonariosArray = window.localTalonariosArray.filter(t => t.id !== talId);
-                adminRenderTalonariosUI();
-            }
             db.collection("talonarios").doc(talId).delete().then(() => {
                 customAlert("Talonario eliminado de la nube.", "Eliminado");
             }).catch((err) => {
@@ -2195,7 +2184,6 @@
         let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`; 
         resetCartAndInputs(); 
         
-        // Uso de window.open en lugar de window.location.href para evitar error 404 en CodePen
         window.open(waUrl, '_blank');
     }
 </script>
