@@ -43,16 +43,16 @@
         .floating-talonario-btn:hover { transform: scale(1.08); }
         .floating-talonario-badge { background: #ea4335; color: white; font-size: 0.68rem; border-radius: 50%; padding: 2px 7px; font-weight: bold; margin-left: 2px; }
 
-        /* RELOJ FLOTANTE EN TIEMPO REAL */
+        /* RELOJ FLOTANTE 15 MINUTOS */
         @keyframes timerPulse {
-            0%, 100% { box-shadow: 0 0 10px rgba(0, 38, 255, 0.6); }
+            0%, 100% { box-shadow: 0 0 10px rgba(37, 211, 102, 0.6); }
             50% { box-shadow: 0 0 18px rgba(0, 255, 204, 0.9); }
         }
         .floating-selection-timer {
-            background: rgba(0, 38, 255, 0.95); color: white; border: 1.5px solid #00ffcc;
-            padding: 10px 14px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;
+            background: rgba(0, 50, 20, 0.95); color: white; border: 1.5px solid #25D366;
+            padding: 12px 14px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;
             text-align: center; margin: 14px 0 10px 0; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; gap: 4px; animation: timerPulse 2s infinite ease-in-out;
+            justify-content: center; gap: 6px; animation: timerPulse 2s infinite ease-in-out;
         }
 
         /* CUENTA REGRESIVA DE SORTEO EN VIVO */
@@ -69,7 +69,6 @@
 
         /* MODAL Y GRID DE TALONARIOS */
         .talonario-card { background: rgba(20, 20, 20, 0.95); border: 1px solid #333; border-radius: 12px; padding: 14px; margin-bottom: 15px; text-align: left; position: relative; overflow: hidden; }
-        
         .talonario-card-img { 
             width: 100%; height: auto; max-height: 380px; object-fit: contain; 
             border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; background: #000; display: block; 
@@ -81,15 +80,11 @@
         .talonario-badge-closed { background: #ea4335; color: white; font-weight: bold; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; display: inline-block; margin-bottom: 8px; }
         
         .talonario-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin: 12px 0; max-height: 320px; overflow-y: auto; padding: 4px; background: #0a0a0a; border-radius: 8px; border: 1px solid #222; }
-        .num-cell { aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; user-select: none; transition: 0.15s; border: 1px solid #333; position: relative; }
-        .num-cell .num-timer { font-size: 0.52rem; line-height: 1; margin-top: 2px; font-weight: normal; }
+        .num-cell { aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; cursor: pointer; user-select: none; transition: 0.15s; border: 1px solid #333; position: relative; }
         .num-grey { background: #222; color: #fff; border-color: #444; }
-        .num-grey:hover { background: #333; border-color: #0026ff; }
-        .num-green { background: #25D366 !important; color: #000 !important; border-color: #00ffcc !important; font-weight: 900; }
-        .num-purple { background: #9900ff !important; color: #fff !important; border-color: #c13584 !important; opacity: 0.85; pointer-events: none; }
-        .num-orange { background: #ff9900 !important; color: #000 !important; border-color: #ffaa00 !important; font-weight: bold; }
+        .num-grey:hover { background: #333; border-color: #25D366; }
+        .num-green { background: #25D366 !important; color: #000 !important; border-color: #00ffcc !important; font-weight: 900; box-shadow: 0 0 8px #25D366; }
         .num-paid { display: none !important; }
-        .num-paid-admin { background: #0026ff !important; color: #fff !important; border-color: #00ffcc !important; }
 
         .rating-box { background: rgba(17,17,17,0.85); border: 1px solid #333; border-radius: 14px; padding: 12px 16px; margin: 10px auto 20px auto; backdrop-filter: blur(5px); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
         .rating-stars { display: inline-flex; gap: 8px; font-size: 1.5rem; color: #444; cursor: pointer; margin: 8px 0 4px 0; user-select: none; }
@@ -231,7 +226,7 @@
             <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
         </div>
     </div>
-    <p class="version-tag">Versión 15.2</p>
+    <p class="version-tag">Versión 15.4</p>
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span><div id="express-fee-badge" style="display:none; font-size:0.8rem; color:#00ffcc; margin-top:2px; font-weight:normal;"></div></div>
         <div class="footer-btns"><button class="btn-ticket" onclick="showTicket()">📋 Ver Detalle</button></div>
@@ -264,33 +259,23 @@
 <div id="talonarioDetalleModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #121212; color: white; border: 2px solid #25D366; max-width: 440px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 18px;">
         <div id="talonario-detalle-header"></div>
-
-        <!-- CUADRO DE NOTIFICACIÓN DE NÚMEROS EN RESERVA ANARANJADA -->
-        <div id="talonario-reserved-notification" style="display:none; background: rgba(255, 153, 0, 0.12); border: 1.5px solid #ff9900; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.78rem; line-height: 1.45; color: #fff;">
-            <strong style="color: #ffaa00; display: block; margin-bottom: 4px;"><i class="fas fa-exclamation-circle"></i> NÚMEROS EN RESERVA PENDIENTE:</strong>
-            <span id="talonario-reserved-text"></span>
-        </div>
         
-        <!-- CUADRO INFORMATIVO DE REGLAS Y ESTADOS -->
-        <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: left; font-size: 0.78rem; line-height: 1.45;">
-            <strong style="color: #00ffcc; display: block; margin-bottom: 4px;"><i class="fas fa-info-circle"></i> REGLAS Y ESTADOS DE COMPRA:</strong>
-            <div>1. ⚪ <b>Gris:</b> Disponibles para comprar.</div>
-            <div>2. 🟢 <b>Verde:</b> Tus números seleccionados (Tenés <b>5 minutos</b> para elegir e ingresar tus datos).</div>
-            <div>3. 🟣 <b>Morado:</b> En proceso de selección por otro cliente en vivo.</div>
-            <div>4. 🟠 <b>Anaranjado (Reservados):</b> Al confirmar, tus números se reservan durante <b>1 hora</b> para el pago.</div>
-            <div style="color: #ff9900; margin-top: 4px;">⚠️ <b>Atención:</b> Si el pago no se confirma en 1 hora, los números anaranjados serán liberados a gris.</div>
+        <!-- CUADRO INFORMATIVO DE TIEMPO Y NORMAS -->
+        <div style="background: rgba(37, 211, 102, 0.08); border: 1.5px solid #25D366; padding: 12px; border-radius: 10px; margin-bottom: 12px; text-align: left; font-size: 0.8rem; line-height: 1.45;">
+            <strong style="color: #00ffcc; display: block; margin-bottom: 4px;"><i class="fas fa-clock"></i> TIEMPO DE RESERVA EN VIVO:</strong>
+            <span style="color: #fff;">El tiempo estimado para elegir tus números y realizar tu pago es de <b>15 minutos</b>. De lo contrario, serán liberados automáticamente para ser vendidos a otra persona.</span>
         </div>
 
         <div id="talonario-grid-wrapper"></div>
 
-        <!-- RELOJ FLOTANTE UBICADO DEBAJO DEL CUADRO DE NÚMEROS (5 MINUTOS) -->
+        <!-- RELOJ FLOTANTE DE 15 MINUTOS -->
         <div id="floating-selection-timer" class="floating-selection-timer" style="display:none;">
             <div style="display:flex; align-items:center; gap:8px;">
-                <i class="fas fa-stopwatch" style="color:#00ffcc; font-size:1.1rem;"></i>
-                <span>Tiempo de Selección: <b id="selection-timer-display" style="color:#00ffcc; font-size:1.1rem; font-weight:900;">05:00</b></span>
+                <i class="fas fa-stopwatch" style="color:#00ffcc; font-size:1.2rem;"></i>
+                <span>Tiempo Restante: <b id="selection-timer-display" style="color:#00ffcc; font-size:1.2rem; font-weight:900;">15:00</b></span>
             </div>
             <div style="font-size:0.75rem; color:#bbb; font-weight:normal; margin-top:2px; text-align:center;">
-                Completa tus datos en menos de 05:00 min antes de que tus números en verde se liberen.
+                Completa tus datos y envía el pedido por WhatsApp antes que expire el reloj.
             </div>
         </div>
 
@@ -304,7 +289,7 @@
 <div id="adminTalonarioBuyersModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #00ffcc; max-width: 440px; max-height: 85vh; overflow-y: auto; text-align: left;">
         <h3 style="margin-top:0; color:#00ffcc; text-align:center;"><i class="fas fa-users"></i> Mapa de Compradores</h3>
-        <p style="font-size:0.8rem; color:#aaa; margin-bottom:12px; text-align:center;">Gestiona pagos y liberaciones de números para esta rifa.</p>
+        <p style="font-size:0.8rem; color:#aaa; margin-bottom:12px; text-align:center;">Gestiona pagos y aprobaciones de números para esta rifa.</p>
         <div id="admin-talonario-buyers-content">Cargando mapa...</div>
         <button style="margin-top:15px; width:100%; padding:12px; background:#222; color:white; border:1px solid #444; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">Cerrar Mapa</button>
     </div>
@@ -410,7 +395,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.2)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.4)</h3>
         
         <div class="admin-section-title"><i class="fas fa-chart-line"></i> Estadísticas de Visitas del Negocio</div>
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
@@ -587,12 +572,12 @@
     window.localTalonariosArray = [];
     let currentActiveTalonarioId = null, currentAdminTalonarioId = null, localSelectedNumbers = [];
 
-    // TEMPORIZADOR EN TIEMPO REAL PARA SELECCIÓN DE NÚMEROS (5 MINUTOS)
-    let selectionTimerInterval = null, selectionTimeLeft = 300;
+    // TEMPORIZADOR ÚNICO EN TIEMPO REAL PARA SELECCIÓN DE NÚMEROS (15 MINUTOS)
+    let selectionTimerInterval = null, selectionTimeLeft = 900; // 15 minutos = 900 segundos
 
     function startSelectionTimer() {
         if (selectionTimerInterval) return;
-        selectionTimeLeft = 300; // 5 minutos exactos
+        selectionTimeLeft = 900; // 15 minutos exactos
         updateSelectionTimerDisplay();
         let timerBox = document.getElementById('floating-selection-timer');
         if (timerBox) timerBox.style.display = "flex";
@@ -604,7 +589,7 @@
                 stopSelectionTimer();
                 if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
                     cancelTalonarioSelection(currentActiveTalonarioId);
-                    customAlert("Tu tiempo de 5 minutos para elegir números expiró. Los números han sido liberados.", "⏰ Tiempo Agotado");
+                    customAlert("Tu tiempo de 15 minutos expiró. Los números han sido liberados.", "⏰ Tiempo Agotado");
                 }
             }
         }, 1000);
@@ -627,7 +612,6 @@
         if (displayEl) displayEl.innerText = formatted;
     }
 
-    // UTILERÍA: FORMATEAR FECHA Y HORA PROGRAMADA EN LENGUAJE NATURAL
     function formatRaffleDateTime(isoStr) {
         if (!isoStr || isoStr.trim() === "") return "Sin fecha programada";
         let d = new Date(isoStr);
@@ -643,7 +627,6 @@
         });
     }
 
-    // UTILERÍA: CALCULAR CUENTA REGRESIVA EN VIVO (DÍAS, HORAS, MINUTOS, SEGUNDOS)
     function formatCountdownObj(targetIso) {
         if (!targetIso || targetIso.trim() === "") return { expired: false, text: "⏳ Tiempo no estipulado", totalMs: 9999999999 };
         let targetMs = new Date(targetIso).getTime();
@@ -672,34 +655,32 @@
         };
     }
 
-    // ACTUALIZADOR GLOBAL SEGUNDO A SEGUNDO DE LAS CUENTAS REGRESIVAS
+    // ACTUALIZADOR GLOBAL SEGUNDO A SEGUNDO
     setInterval(() => {
-        if (!window.localTalonariosArray || window.localTalonariosArray.length === 0) return;
-        window.localTalonariosArray.forEach(t => {
-            let cdObj = formatCountdownObj(t.fechaSorteoISO);
-            
-            // Actualizar tarjeta en la lista principal
-            let cardCdEl = document.getElementById(`raffle-countdown-card-${t.id}`);
-            if (cardCdEl) {
-                cardCdEl.innerText = cdObj.text;
-                if (cdObj.expired) cardCdEl.classList.add('expired');
-                else cardCdEl.classList.remove('expired');
-            }
+        if (window.localTalonariosArray && window.localTalonariosArray.length > 0) {
+            window.localTalonariosArray.forEach(t => {
+                let cdObj = formatCountdownObj(t.fechaSorteoISO);
+                let cardCdEl = document.getElementById(`raffle-countdown-card-${t.id}`);
+                if (cardCdEl) {
+                    cardCdEl.innerText = cdObj.text;
+                    if (cdObj.expired) cardCdEl.classList.add('expired');
+                    else cardCdEl.classList.remove('expired');
+                }
 
-            // Actualizar vista detallada si está abierta
-            let detailCdEl = document.getElementById(`raffle-countdown-detail-${t.id}`);
-            if (detailCdEl) {
-                detailCdEl.innerText = cdObj.text;
-                if (cdObj.expired) {
-                    detailCdEl.style.color = '#ff9999';
-                    let gridWrapper = document.getElementById('talonario-grid-wrapper');
-                    if (gridWrapper && gridWrapper.style.pointerEvents !== "none") {
-                        gridWrapper.style.pointerEvents = "none";
-                        gridWrapper.style.opacity = "0.5";
+                let detailCdEl = document.getElementById(`raffle-countdown-detail-${t.id}`);
+                if (detailCdEl) {
+                    detailCdEl.innerText = cdObj.text;
+                    if (cdObj.expired) {
+                        detailCdEl.style.color = '#ff9999';
+                        let gridWrapper = document.getElementById('talonario-grid-wrapper');
+                        if (gridWrapper && gridWrapper.style.pointerEvents !== "none") {
+                            gridWrapper.style.pointerEvents = "none";
+                            gridWrapper.style.opacity = "0.5";
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }, 1000);
 
     let calViewDate = new Date(), calSelStart = null, calSelEnd = null, galleryTarget = { type: '', catIdx: null, prodIdx: null, bannerIdx: null, talonarioIdx: null }, modalStack = [];
@@ -719,7 +700,6 @@
             let closedId = modalStack.pop(); 
             document.getElementById(closedId).style.display = "none";
             
-            // Liberación automática al cerrar el detalle del talonario
             if (closedId === 'talonarioDetalleModal') {
                 if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
                     cancelTalonarioSelection(currentActiveTalonarioId);
@@ -809,7 +789,6 @@
             return;
         }
 
-        let now = Date.now();
         let html = "";
         activeList.forEach(t => {
             let numbersMap = t.numbersMap || {};
@@ -828,14 +807,15 @@
             let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
 
             if (isWinnerDeclared) {
+                // GANADOR DECLARADO (Muestra Nombre y Apellidos al Público sin número telefónico)
                 html += `
                 <div class="talonario-card" style="background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.92)), url('${t.img || ''}'); background-size: cover; background-position: center; border-color: #00ffcc;">
                     <div style="background:#00ffcc; color:#000; font-weight:900; font-size:0.75rem; padding:3px 8px; border-radius:4px; display:inline-block; margin-bottom:8px;"><i class="fas fa-trophy"></i> RIFA FINALIZADA - GANADOR(A)</div>
                     <h3 style="margin: 0 0 6px 0; color: #fff; font-size:1.1rem;">${t.title}</h3>
                     <p style="font-size:0.8rem; color:#ccc; margin: 0 0 10px 0;">${t.desc || ''}</p>
-                    <div style="background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc; padding: 10px; border-radius: 8px; text-align: center;">
+                    <div style="background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc; padding: 12px; border-radius: 8px; text-align: center;">
                         <div style="font-size:0.78rem; color:#aaa;">SORTEO CELEBRADO EL: <b>${formattedDateStr}</b></div>
-                        <div style="font-size:1.3rem; font-weight:bold; color:#00ffcc; margin:4px 0;">🎉 ¡Ganador(a): ${t.nombreGanador || 'Sorteado'}!</div>
+                        <div style="font-size:1.3rem; font-weight:bold; color:#00ffcc; margin:6px 0;">🎉 ¡Ganador(a): ${t.nombreGanador || 'Sorteado'}!</div>
                         <div style="font-size:1rem; color:#fff; font-weight:bold;">Número Premiado: <span style="background:#00ffcc; color:#000; padding:2px 8px; border-radius:4px;">${t.numeroGanador}</span></div>
                     </div>
                 </div>`;
@@ -906,30 +886,10 @@
             </div>
         `;
 
-        // MANEJO DE LA NOTIFICACIÓN DE NÚMEROS RESERVADOS EN ANARANJADO (🟠)
-        let reservedBox = document.getElementById('talonario-reserved-notification');
-        let reservedText = document.getElementById('talonario-reserved-text');
-        let numbersMap = t.numbersMap || {};
-        let activeReservedNums = [];
-        let now = Date.now();
-
-        for (let i = 0; i <= 99; i++) {
-            let numStr = i.toString().padStart(2, '0');
-            let item = numbersMap[numStr];
-            if (item && item.status === 'reserved' && item.expiresAt && now <= item.expiresAt) {
-                activeReservedNums.push(numStr);
-            }
-        }
-
-        if (activeReservedNums.length > 0 && reservedBox && reservedText) {
-            reservedBox.style.display = "block";
-            reservedText.innerHTML = `Los número(s) <b style="color:#ffaa00;">${activeReservedNums.join(', ')}</b> están reservados en espera de pago. Serán liberados a gris en menos de 1 hora si no se efectúa la compra.`;
-        } else if (reservedBox) {
-            reservedBox.style.display = "none";
-        }
-
         let gridWrapper = document.getElementById('talonario-grid-wrapper');
         let myDevId = getDeviceId();
+        let now = Date.now();
+        let numbersMap = t.numbersMap || {};
 
         let gridHtml = `<div class="talonario-grid">`;
 
@@ -938,31 +898,22 @@
             let item = numbersMap[numStr] || {};
             let status = item.status || 'available';
 
-            if (status === 'reserved' && item.expiresAt && now > item.expiresAt) status = 'available';
-            if (status === 'temp_selected' && item.tempExpiresAt && now > item.tempExpiresAt) status = 'available';
+            if ((status === 'reserved' || status === 'temp_selected') && item.expiresAt && now > item.expiresAt) {
+                status = 'available';
+            }
+
+            // REGLA CLAVE: Los números Pagados DESAPARECEN del talonario
+            if (status === 'paid') {
+                continue; 
+            }
 
             let cellClass = "num-grey";
-            let timerText = "";
-
-            if (status === 'paid') {
-                cellClass = "num-paid";
-            } else if (status === 'reserved') {
-                cellClass = "num-orange";
-                let remainingMins = Math.max(0, Math.ceil((item.expiresAt - now) / 60000));
-                timerText = `<span class="num-timer">⏱️${remainingMins}m</span>`;
-            } else if (status === 'temp_selected') {
-                if (item.devId === myDevId || localSelectedNumbers.includes(numStr)) {
-                    cellClass = "num-green";
-                } else {
-                    cellClass = "num-purple";
-                }
-            } else if (localSelectedNumbers.includes(numStr)) {
+            if (status === 'reserved' || status === 'temp_selected') {
+                // Bloqueado en verde de 15 minutos para todos los dispositivos
                 cellClass = "num-green";
             }
 
-            if (status !== 'paid') {
-                gridHtml += `<div class="num-cell ${cellClass}" onclick="toggleSelectNumber('${talId}', '${numStr}')"><span>${numStr}</span>${timerText}</div>`;
-            }
+            gridHtml += `<div class="num-cell ${cellClass}" onclick="toggleSelectNumber('${talId}', '${numStr}')"><span>${numStr}</span></div>`;
         }
 
         gridHtml += `</div>`;
@@ -995,28 +946,31 @@
         let item = numbersMap[numStr] || {};
 
         if (item.status === 'paid') return;
-        if (item.status === 'reserved' && item.expiresAt && now <= item.expiresAt) {
-            customAlert(`El número #${numStr} se encuentra reservado en color anaranjado en espera de pago.`, "Número Reservado");
-            return;
-        }
-        if (item.status === 'temp_selected' && item.devId !== getDeviceId() && item.tempExpiresAt && now <= item.tempExpiresAt) {
-            customAlert(`El número #${numStr} está siendo seleccionado por otro cliente en este momento.`, "Número en Selección");
+
+        // Si está bloqueado por otro cliente dentro de los 15 minutos
+        if ((item.status === 'reserved' || item.status === 'temp_selected') && item.devId !== getDeviceId() && item.expiresAt && now <= item.expiresAt) {
+            customAlert(`El número #${numStr} está siendo seleccionado por otro cliente en este momento. Estará bloqueado por 15 minutos salvo que se libere.`, "Número Bloqueado");
             return;
         }
 
-        let idx = localSelectedNumbers.indexOf(numStr);
-        if (idx >= 0) {
-            localSelectedNumbers.splice(idx, 1);
+        let myDevId = getDeviceId();
+        let isCurrentlySelectedByMe = ((item.status === 'reserved' || item.status === 'temp_selected') && item.devId === myDevId) || localSelectedNumbers.includes(numStr);
+
+        if (isCurrentlySelectedByMe) {
+            let idx = localSelectedNumbers.indexOf(numStr);
+            if (idx >= 0) localSelectedNumbers.splice(idx, 1);
+
             db.collection("talonarios").doc(talId).set({
                 [`numbersMap.${numStr}`]: { status: 'available' }
             }, { merge: true }).catch(() => {});
         } else {
-            localSelectedNumbers.push(numStr);
+            if (!localSelectedNumbers.includes(numStr)) localSelectedNumbers.push(numStr);
+
             db.collection("talonarios").doc(talId).set({
                 [`numbersMap.${numStr}`]: {
-                    status: 'temp_selected',
-                    devId: getDeviceId(),
-                    tempExpiresAt: now + (5 * 60 * 1000)
+                    status: 'reserved',
+                    devId: myDevId,
+                    expiresAt: now + (15 * 60 * 1000) // 15 Minutos exactos de reserva
                 }
             }, { merge: true }).catch(() => {});
         }
@@ -1047,7 +1001,7 @@
         ticketDiv.innerHTML = `
             <div style="font-weight:bold; color:#25D366; font-size:0.9rem; border-bottom:1px dashed #444; padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
                 <span>🎟️ TU SELECCIÓN (${localSelectedNumbers.length})</span>
-                <span style="color:#00ffcc; font-size:0.8rem;"><i class="fas fa-clock"></i> Selección Activa</span>
+                <span style="color:#00ffcc; font-size:0.8rem;"><i class="fas fa-clock"></i> 15 Minutos de Tiempo</span>
             </div>
             <div style="font-size:0.85rem; color:#fff; margin-bottom:8px;">
                 <b>Números:</b> <span style="color:#00ffcc; font-weight:bold;">${localSelectedNumbers.sort().join(', ')}</span>
@@ -1056,7 +1010,7 @@
                 TOTAL: <span style="color:#25D366;">₡${subtotal.toLocaleString()}</span>
             </div>
             <div style="margin-bottom:10px;">
-                <input type="text" id="talonario-user-name" class="name-input" placeholder="Tu nombre completo..." style="margin-top:0; margin-bottom:8px; font-size:0.85rem; padding:8px;">
+                <input type="text" id="talonario-user-name" class="name-input" placeholder="Tu Nombre y Apellidos completos..." style="margin-top:0; margin-bottom:8px; font-size:0.85rem; padding:8px;">
                 <input type="tel" id="talonario-user-phone" class="name-input" placeholder="Tu número de teléfono..." style="margin-top:0; font-size:0.85rem; padding:8px;">
             </div>
             <div style="display:flex; gap:8px;">
@@ -1085,7 +1039,7 @@
         let uName = nameEl ? nameEl.value.trim() : "";
         let uPhone = phoneEl ? phoneEl.value.trim() : "";
 
-        if (uName === "") { customAlert("Por favor escribe tu nombre completo.", "Dato Requerido"); return; }
+        if (uName === "") { customAlert("Por favor escribe tu Nombre y Apellidos completos.", "Dato Requerido"); return; }
         if (uPhone === "") { customAlert("Por favor escribe tu número de teléfono.", "Dato Requerido"); return; }
         if (localSelectedNumbers.length === 0) { customAlert("Selecciona al menos un número.", "Sin Números"); return; }
 
@@ -1093,7 +1047,8 @@
         if (!t) return;
 
         let now = Date.now();
-        let expires1Hour = now + (60 * 60 * 1000);
+        let expires15Mins = now + (15 * 60 * 1000); // 15 Minutos exactos
+        let resId = "res_" + now + "_" + Math.random().toString(36).substring(2, 6);
 
         let updateData = {};
         let numsCopy = [...localSelectedNumbers];
@@ -1104,22 +1059,43 @@
                 devId: getDeviceId(),
                 name: uName,
                 phone: uPhone,
-                expiresAt: expires1Hour,
+                resId: resId,
+                expiresAt: expires15Mins,
                 createdAt: now
             };
         });
 
         let numsStr = numsCopy.sort().join(', ');
         let subtotal = numsCopy.length * (t.price || 0);
-
-        let msg = `¡Hola! Reservé el/los número(s) *${numsStr}* para la rifa de *${t.title}*.%0A%0A• *Cliente:* ${uName}%0A• *Teléfono:* ${uPhone}%0A• *Monto a Pagar:* ₡${subtotal.toLocaleString()}%0A%0AQuedo atento para enviar el comprobante o cancelar en el local.`;
-        let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
+        let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
 
         try {
+            // GUARDA EL TIQUETE EN FIRESTORE EN LA TIQUETERA ("pedidos")
+            await db.collection("pedidos").add({
+                cliente: uName,
+                telefono: uPhone,
+                tipoEntrega: "RIFA / TALONARIO",
+                metodoPago: "RESERVA PENDIENTE (SINPE/EFECTIVO)",
+                montoTotal: subtotal,
+                items: [{ name: `Rifa: ${t.title} (Números: ${numsStr})`, qty: numsCopy.length, price: t.price || 0, notes: `Tel: ${uPhone}` }],
+                resId: resId,
+                talonarioId: talId,
+                numeros: numsCopy,
+                estado: "pendiente",
+                fechaStr: new Date().toLocaleDateString('es-CR', { timeZone: "America/Costa_Rica", year: 'numeric', month: '2-digit', day: '2-digit' }),
+                horaStr: new Date().toLocaleTimeString('es-CR', { timeZone: "America/Costa_Rica", hour: '2-digit', minute: '2-digit', hour12: true }),
+                timestampRaw: now
+            });
+
+            // Actualizar estado de números en la rifa
             await db.collection("talonarios").doc(talId).set(updateData, { merge: true });
+            
             stopSelectionTimer();
             localSelectedNumbers = [];
             closeModals();
+
+            let msg = `¡Hola! Reservé el/los número(s) *${numsStr}* para la rifa de *${t.title}*.%0A%0A• *Cliente:* ${uName}%0A• *Teléfono:* ${uPhone}%0A• *Monto a Pagar:* ₡${subtotal.toLocaleString()}%0A• *Fecha de Sorteo:* ${formattedDateStr}%0A%0AQuedo atento para realizar el pago por SINPE Móvil o en efectivo.`;
+            let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
             window.open(waUrl, '_blank');
         } catch (err) {
             console.error("Error al guardar reserva:", err);
@@ -1199,20 +1175,14 @@
             customAlert("¡Talonario creado e integrado a la nube con éxito!", "Éxito");
         } catch (e) {
             console.error("Error en adminAddTalonario:", e);
-            let userMsg = e.message;
-            if (e.code === 'permission-denied') {
-                userMsg = "Permisos insuficientes en Firebase Firestore. Revisa las reglas en Firebase Console.";
-            }
-            customAlert("Error al guardar en la nube: " + userMsg, "Atención");
+            customAlert("Error al guardar en la nube: " + e.message, "Atención");
         }
     }
 
     function adminUpdateTalonarioField(talId, field, val) {
         let item = (window.localTalonariosArray || []).find(t => t.id === talId);
         if (item) item[field] = val;
-        db.collection("talonarios").doc(talId).update({ [field]: val }).catch((err) => {
-            console.error("Error al actualizar campo de talonario:", err);
-        });
+        db.collection("talonarios").doc(talId).update({ [field]: val }).catch(() => {});
     }
 
     function adminDeleteTalonario(talId) {
@@ -1242,6 +1212,7 @@
         } catch (e) { customAlert("Fallo en la carga: " + e.message); }
     }
 
+    // DECLARAR GANADOR Y PUBLICAR SU NOMBRE COMPLETO PÚBLICAMENTE (Sin el teléfono)
     function adminSetWinner(talId) {
         let numEl = document.getElementById(`admin-winner-num-${talId}`);
         let winnerNum = numEl ? numEl.value.trim() : "";
@@ -1252,17 +1223,19 @@
 
         let numbersMap = t.numbersMap || {};
         let winnerItem = numbersMap[winnerNum] || {};
-        let winnerName = winnerItem.name ? winnerItem.name.split(' ')[0] : "Ganador Desconocido";
+        
+        // Muestra Nombre y Apellidos completos si existen
+        let winnerFullName = winnerItem.name ? winnerItem.name.trim() : "Ganador Desconocido";
 
         t.numeroGanador = winnerNum;
-        t.nombreGanador = winnerName;
+        t.nombreGanador = winnerFullName;
         adminRenderTalonariosUI();
 
         db.collection("talonarios").doc(talId).update({
             numeroGanador: winnerNum,
-            nombreGanador: winnerName
+            nombreGanador: winnerFullName
         }).then(() => {
-            customAlert(`¡Ganador(a) registrado(a): ${winnerName} con el número ${winnerNum}!`, "¡Ganador Publicado!");
+            customAlert(`¡Ganador(a) registrado(a) públicamente: ${winnerFullName} con el número ${winnerNum}!`, "¡Ganador Publicado!");
         }).catch((err) => {
             customAlert("Error al registrar ganador en la nube: " + err.message, "Error");
         });
@@ -1281,77 +1254,105 @@
         if (!t) return;
 
         let numbersMap = t.numbersMap || {};
-        let gridHtml = `<div class="talonario-grid" style="max-height:220px;">`;
-        let listHtml = `<div style="margin-top:15px; border-top:1px dashed #444; padding-top:10px;">`;
+        let listHtml = `<div style="margin-top:10px;">`;
 
         let countPaid = 0, countReserved = 0;
+        let groupedReservations = {};
 
         for (let i = 0; i <= 99; i++) {
             let numStr = i.toString().padStart(2, '0');
             let item = numbersMap[numStr] || {};
             let status = item.status || 'available';
 
-            let cellClass = "num-grey";
-            if (status === 'paid') { cellClass = "num-paid-admin"; countPaid++; }
-            else if (status === 'reserved') { cellClass = "num-orange"; countReserved++; }
+            if (status === 'paid') countPaid++;
+            else if (status === 'reserved' || status === 'temp_selected') countReserved++;
 
-            gridHtml += `<div class="num-cell ${cellClass}"><span>${numStr}</span></div>`;
-
-            if (status === 'reserved' || status === 'paid') {
-                let statusBadge = status === 'paid' ? `<span style="color:#25D366; font-weight:bold;">[PAGADO]</span>` : `<span style="color:#ffaa00; font-weight:bold;">[RESERVADO]</span>`;
-                listHtml += `
-                <div style="background:#1c1c1c; border:1px solid #333; padding:8px 10px; border-radius:6px; margin-bottom:6px; font-size:0.8rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:bold; color:#00ffcc;">Número #${numStr} ${statusBadge}</span>
-                        <span style="font-size:0.75rem; color:#aaa;">${item.phone || 'Sin tel'}</span>
-                    </div>
-                    <div style="color:#fff; margin-top:2px;"><b>Cliente:</b> ${item.name || 'Anónimo'}</div>
-                    <div style="display:flex; gap:6px; margin-top:6px;">
-                        ${status === 'reserved' ? `<button class="btn-ticket" style="background:#25D366; color:white; border:none; padding:4px 8px; font-size:0.72rem;" onclick="adminConfirmPayment('${talId}', '${numStr}')">Confirmar Pago</button>` : ''}
-                        <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:4px 8px; font-size:0.72rem;" onclick="adminReleaseNumber('${talId}', '${numStr}')">Liberar a Gris</button>
-                    </div>
-                </div>`;
+            if (status === 'reserved' || status === 'temp_selected' || status === 'paid') {
+                let groupKey = item.resId || (item.name + "_" + item.phone);
+                if (!groupedReservations[groupKey]) {
+                    groupedReservations[groupKey] = {
+                        resId: item.resId,
+                        name: item.name || 'Anónimo',
+                        phone: item.phone || '',
+                        status: status,
+                        numbers: []
+                    };
+                }
+                groupedReservations[groupKey].numbers.push(numStr);
             }
         }
 
-        gridHtml += `</div>`;
+        let keys = Object.keys(groupedReservations);
+        if (keys.length === 0) {
+            listHtml += `<p style="color:#888; font-style:italic; text-align:center; font-size:0.8rem; padding:20px;">No hay números ni reservas registradas aún.</p>`;
+        } else {
+            keys.forEach(k => {
+                let g = groupedReservations[k];
+                let numsFormatted = g.numbers.join(', ');
+                let statusBadge = g.status === 'paid' ? `<span style="color:#25D366; font-weight:bold;">[PAGADO]</span>` : `<span style="color:#00ffcc; font-weight:bold;">[SELECCIONADO/RESERVADO]</span>`;
+
+                listHtml += `
+                <div style="background:#1c1c1c; border:1px solid #333; padding:12px; border-radius:8px; margin-bottom:10px; font-size:0.82rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:bold; color:#00ffcc;">👤 ${g.name} ${statusBadge}</span>
+                        <span style="font-size:0.75rem; color:#aaa;">${g.phone}</span>
+                    </div>
+                    <div style="color:#fff; margin-top:6px;"><b>Número(s):</b> <b style="color:#25D366; font-size:0.95rem;">${numsFormatted}</b></div>
+                    <div style="display:flex; gap:8px; margin-top:10px;">
+                        ${g.status !== 'paid' ? `<button class="btn-ticket" style="background:#25D366; color:white; border:none; padding:7px 12px; font-weight:bold; flex:1;" onclick="adminConfirmBatchPayment('${talId}', '${g.resId}', ['${g.numbers.join("','")}'])"><i class="fas fa-check-circle"></i> Marcar como Pagado</button>` : ''}
+                        <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:7px 12px; font-weight:bold; flex:1;" onclick="adminReleaseBatch('${talId}', ['${g.numbers.join("','")}'])"><i class="fas fa-ban"></i> Ignorar / Liberar</button>
+                    </div>
+                </div>`;
+            });
+        }
+
         listHtml += `</div>`;
 
         container.innerHTML = `
-            <div style="font-size:0.85rem; color:#fff; margin-bottom:8px;"><b>Resumen:</b> <span style="color:#25D366;">${countPaid} Pagados</span> | <span style="color:#ffaa00;">${countReserved} Reservados</span></div>
-            ${gridHtml}
+            <div style="font-size:0.85rem; color:#fff; margin-bottom:10px; background:#222; padding:8px 12px; border-radius:6px; display:flex; justify-content:space-between;">
+                <span>Vendido: <b style="color:#25D366;">${countPaid} números</b></span>
+                <span>Bloqueado: <b style="color:#00ffcc;">${countReserved} números</b></span>
+            </div>
             ${listHtml}
         `;
     }
 
-    function adminConfirmPayment(talId, numStr) {
+    // BOTÓN: MARCAR COMO PAGADO (Hace que los números desparezcan del talonario)
+    function adminConfirmBatchPayment(talId, resId, numsArray) {
         let t = (window.localTalonariosArray || []).find(item => item.id === talId);
         if (!t) return;
 
-        let numbersMap = t.numbersMap || {};
-        let item = numbersMap[numStr] || {};
+        let updateObj = {};
+        numsArray.forEach(numStr => {
+            updateObj[`numbersMap.${numStr}.status`] = 'paid';
+        });
+
         let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
 
-        db.collection("talonarios").doc(talId).set({
-            [`numbersMap.${numStr}.status`]: 'paid'
-        }, { merge: true }).then(() => {
-            let msg = `Hola, *${item.name || 'Cliente'}*. Confirmamos tu pago. El número que elegiste fue el *${numStr}*, para el sorteo del *${formattedDateStr}*. Participás por *${t.title}* en Cooking Pollos. 🍗🎟️ ¡Muchísima suerte! 🍀`;
+        db.collection("talonarios").doc(talId).set(updateObj, { merge: true }).then(() => {
+            let firstNum = numsArray[0];
+            let item = (t.numbersMap || {})[firstNum] || {};
+            let msg = `Hola, *${item.name || 'Cliente'}*. Confirmamos el pago de tus números (*${numsArray.join(', ')}*), para el sorteo del *${formattedDateStr}*. Participás por *${t.title}* en Cooking Pollos. 🍗🎟️ ¡Muchísima suerte! 🍀`;
             let waUrl = `https://wa.me/506${item.phone || currentGlobalWhatsApp}?text=${msg}`;
             window.open(waUrl, '_blank');
             adminRenderBuyersUI(talId);
         });
     }
 
-    function adminReleaseNumber(talId, numStr) {
-        customConfirm(`¿Seguro que deseas liberar el número #${numStr} a color gris?`, () => {
-            db.collection("talonarios").doc(talId).set({
-                [`numbersMap.${numStr}`]: { status: 'available' }
-            }, { merge: true }).then(() => {
+    // BOTÓN: IGNORAR / LIBERAR NÚMEROS A COLOR GRIS
+    function adminReleaseBatch(talId, numsArray) {
+        customConfirm(`¿Seguro que deseas ignorar esta compra y liberar los números (${numsArray.join(', ')}) a color gris?`, () => {
+            let updateObj = {};
+            numsArray.forEach(numStr => {
+                updateObj[`numbersMap.${numStr}`] = { status: 'available' };
+            });
+            db.collection("talonarios").doc(talId).set(updateObj, { merge: true }).then(() => {
                 adminRenderBuyersUI(talId);
             });
         });
     }
 
+    // AUTOMATIZACIÓN DE LIBERACIÓN POR TIMEOUT (15 MINUTOS)
     setInterval(() => {
         if (!window.localTalonariosArray) return;
         let now = Date.now();
@@ -1364,11 +1365,7 @@
                 let numStr = i.toString().padStart(2, '0');
                 let item = numbersMap[numStr];
                 if (item) {
-                    if (item.status === 'reserved' && item.expiresAt && now > item.expiresAt) {
-                        updateObj[`numbersMap.${numStr}`] = { status: 'available' };
-                        changed = true;
-                    }
-                    if (item.status === 'temp_selected' && item.tempExpiresAt && now > item.tempExpiresAt) {
+                    if ((item.status === 'reserved' || item.status === 'temp_selected') && item.expiresAt && now > item.expiresAt) {
                         updateObj[`numbersMap.${numStr}`] = { status: 'available' };
                         changed = true;
                     }
@@ -1658,7 +1655,7 @@
         daysOrder.forEach(day => { htmlSchedule += `<div class="schedule-config-row"><span class="schedule-day-label">${daysNames[day]}:</span><select id="input-${day}-status" class="schedule-select" onchange="toggleTimeInputs('${day}')"><option value="abierto">Abierto</option><option value="cerrado">Cerrado</option></select><div id="row-times-${day}" style="display:inline-flex; align-items:center; gap:4px;"><input type="text" id="input-${day}-open" class="schedule-time-input" placeholder="11:30 AM"><span style="font-size:0.75rem; color:#aaa;">a</span><input type="text" id="input-${day}-close" class="schedule-time-input" placeholder="10:00 PM"></div></div>`; });
         scheduleContainer.innerHTML = htmlSchedule; registrarVisitaAnalytics();
 
-        // Escuchador dinámico de Talonarios y Rifas
+        // Escuchador dinámico en tiempo real de Talonarios y Rifas
         db.collection("talonarios").onSnapshot((snapshot) => {
             let list = [];
             snapshot.forEach(doc => {
@@ -1669,7 +1666,24 @@
             window.localTalonariosArray = list;
             renderFloatingTalonarioBtn();
             if (modalStack.includes('talonariosModal')) renderTalonariosListUI();
+            
             if (currentActiveTalonarioId && modalStack.includes('talonarioDetalleModal')) {
+                let currentTalonario = list.find(item => item.id === currentActiveTalonarioId);
+                if (currentTalonario && currentTalonario.numbersMap) {
+                    let myDevId = getDeviceId();
+                    let now = Date.now();
+                    let myTempSelected = [];
+                    for (let i = 0; i <= 99; i++) {
+                        let numStr = i.toString().padStart(2, '0');
+                        let item = currentTalonario.numbersMap[numStr];
+                        if (item && (item.status === 'reserved' || item.status === 'temp_selected') && item.devId === myDevId && item.expiresAt && now <= item.expiresAt) {
+                            myTempSelected.push(numStr);
+                        }
+                    }
+                    localSelectedNumbers = myTempSelected;
+                    if (localSelectedNumbers.length > 0) startSelectionTimer();
+                    else stopSelectionTimer();
+                }
                 renderTalonarioGridUI(currentActiveTalonarioId);
             }
             if (currentAdminTalonarioId && modalStack.includes('adminTalonarioBuyersModal')) {
@@ -2337,28 +2351,37 @@
 
     function sendWhatsApp(method) {
         let userName = document.getElementById('user-name').value.trim(), manualDir = document.getElementById('delivery-address').value.trim(), currentGrandTotal = total + (deliveryMode === "ENVÍO EXPRESS" ? calculatedExpressFee : 0);
-        let msg = `¡Hola, mi pedido para *${currentGlobalTitle || 'Cooking Pollos'}* es! 🍗%0A*${deliveryMode}*%0A*Cliente:* ${userName}%0A%0A`, consolidated = getConsolidatedCart(), orderItemsArray = [];
+        let consolidated = getConsolidatedCart(), itemsSummary = [], itemsForDB = [];
         for (let name in consolidated) {
-            let item = consolidated[name], cNotesStr = item.notes.length > 0 ? item.notes.join(" | ") : "", cNotesFormatted = cNotesStr ? ` (${cNotesStr})` : "";
-            msg += `• ${item.qty}x ${name}    *₡${(item.qty * item.price).toLocaleString()}*${cNotesFormatted}%0A`;
-            orderItemsArray.push({ name: name, qty: item.qty, price: item.price, notes: cNotesStr });
+            let item = consolidated[name], cNotes = item.notes.length > 0 ? ` (${item.notes.join(" | ")})` : "";
+            itemsSummary.push(`• ${item.qty}x ${name}${cNotes} -> ₡${(item.qty * item.price).toLocaleString()}`);
+            itemsForDB.push({ name: name, qty: item.qty, price: item.price, notes: item.notes.join(" | ") });
         }
-        if (deliveryMode === "ENVÍO EXPRESS" && calculatedExpressFee > 0) msg += `%0A🚚 *Costo Envío Express (${calculatedDistanceKm} km):* ₡${calculatedExpressFee.toLocaleString()}%0A`;
-        msg += `%0A*Total Neto a Pagar: ₡${currentGrandTotal.toLocaleString()}*%0A*Método de Pago:* ${method}`;
-        if (method.includes('EFECTIVO')) msg += (changeNeeded > 0) ? `%0A*Paga con:* ₡${cashPaidAmount.toLocaleString()}%0A*Llevar vuelto:* ₡${changeNeeded.toLocaleString()}` : `%0A*Paga con:* Monto Exacto`;
-        if (deliveryMode === "ENVÍO EXPRESS") { if (gpsCoords !== "") msg += `%0A📍 *Ruta Exacta GPS:* https://www.google.com/maps?q=loc:${gpsCoords}`; if (manualDir !== "") msg += `%0A🏠 *Señas/Dirección:* ${manualDir}`; }
-
-        try {
-            let nowObj = new Date();
-            db.collection("pedidos").add({
-                cliente: userName, tipoEntrega: deliveryMode, costoEnvio: calculatedExpressFee, distanciaKm: calculatedDistanceKm, direccion: manualDir, gps: gpsCoords, metodoPago: method, montoTotal: currentGrandTotal, pagaCon: cashPaidAmount, vuelto: changeNeeded, items: orderItemsArray, fechaStr: nowObj.toLocaleDateString('es-CR', { timeZone: "America/Costa_Rica", year: 'numeric', month: '2-digit', day: '2-digit' }), horaStr: nowObj.toLocaleTimeString('es-CR', { timeZone: "America/Costa_Rica", hour: '2-digit', minute: '2-digit', hour12: true }), timestampRaw: Date.now()
-            }).catch(e => {});
-        } catch (e) {}
-        closeModals(); 
-        let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`; 
-        resetCartAndInputs(); 
+        let now = Date.now(), fechaActualStr = new Date().toLocaleDateString('es-CR', { timeZone: "America/Costa_Rica", year: 'numeric', month: '2-digit', day: '2-digit' }), horaActualStr = new Date().toLocaleTimeString('es-CR', { timeZone: "America/Costa_Rica", hour: '2-digit', minute: '2-digit', hour12: true });
         
-        window.open(waUrl, '_blank');
+        let dbOrderData = {
+            cliente: userName, tipoEntrega: deliveryMode, direccion: manualDir, gps: gpsCoords, costoEnvio: calculatedExpressFee, distanciaKm: calculatedDistanceKm,
+            metodoPago: method, pagaCon: cashPaidAmount, vuelto: changeNeeded, montoTotal: currentGrandTotal, items: itemsForDB, fechaStr: fechaActualStr, horaStr: horaActualStr, timestampRaw: now
+        };
+
+        db.collection("pedidos").add(dbOrderData).then(() => {
+            let msg = `*NUEVO PEDIDO - ${currentGlobalTitle.toUpperCase()}*%0A%0A• *Cliente:* ${userName}%0A• *Entrega:* ${deliveryMode}%0A`;
+            if (deliveryMode === "ENVÍO EXPRESS") {
+                if (calculatedExpressFee > 0) msg += `• *Costo Envío:* ₡${calculatedExpressFee.toLocaleString('en-US')} (${calculatedDistanceKm} km)%0A`;
+                if (manualDir) msg += `• *Señas Dirección:* ${manualDir}%0A`;
+                if (gpsCoords) msg += `• *Ubicación GPS:* https://www.google.com/maps?q=loc:${gpsCoords}%0A`;
+            }
+            msg += `%0A*DETALLE DE PRODUCTOS:*%0A${itemsSummary.join('%0A')}%0A%0A• *TOTAL A PAGAR:* ₡${currentGrandTotal.toLocaleString()}%0A• *Forma de Pago:* ${method}%0A`;
+            if (method.includes('EFECTIVO') && cashPaidAmount > 0) {
+                if (changeNeeded > 0) msg += `• *Paga con:* ₡${cashPaidAmount.toLocaleString()} (Vuelto: ₡${changeNeeded.toLocaleString()})%0A`;
+                else msg += `• *Paga con:* Monto Exacto%0A`;
+            }
+            msg += `%0A_¡Muchas gracias por su preferencia!_`;
+            resetCartAndInputs(); closeModals();
+            window.open(`https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`, '_blank');
+        }).catch((err) => {
+            customAlert("Error al enviar el pedido: " + err.message);
+        });
     }
 </script>
 </body>
