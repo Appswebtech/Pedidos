@@ -43,18 +43,6 @@
         .floating-talonario-btn:hover { transform: scale(1.08); }
         .floating-talonario-badge { background: #ea4335; color: white; font-size: 0.68rem; border-radius: 50%; padding: 2px 7px; font-weight: bold; margin-left: 2px; }
 
-        /* RELOJ FLOTANTE 15 MINUTOS */
-        @keyframes timerPulse {
-            0%, 100% { box-shadow: 0 0 10px rgba(37, 211, 102, 0.6); }
-            50% { box-shadow: 0 0 18px rgba(0, 255, 204, 0.9); }
-        }
-        .floating-selection-timer {
-            background: rgba(0, 50, 20, 0.95); color: white; border: 1.5px solid #25D366;
-            padding: 12px 14px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;
-            text-align: center; margin: 14px 0 10px 0; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; gap: 6px; animation: timerPulse 2s infinite ease-in-out;
-        }
-
         /* CUENTA REGRESIVA DE SORTEO EN VIVO */
         .raffle-countdown-box {
             background: rgba(0, 38, 255, 0.15); border: 1px solid #0026ff;
@@ -84,7 +72,6 @@
         .num-grey { background: #222; color: #fff; border-color: #444; }
         .num-grey:hover { background: #333; border-color: #25D366; }
         .num-green { background: #25D366 !important; color: #000 !important; border-color: #00ffcc !important; font-weight: 900; box-shadow: 0 0 8px #25D366; }
-        .num-paid { display: none !important; }
 
         .rating-box { background: rgba(17,17,17,0.85); border: 1px solid #333; border-radius: 14px; padding: 12px 16px; margin: 10px auto 20px auto; backdrop-filter: blur(5px); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
         .rating-stars { display: inline-flex; gap: 8px; font-size: 1.5rem; color: #444; cursor: pointer; margin: 8px 0 4px 0; user-select: none; }
@@ -226,7 +213,7 @@
             <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
         </div>
     </div>
-    <p class="version-tag">Versión 15.4</p>
+    <p class="version-tag">Versión 15.6</p>
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span><div id="express-fee-badge" style="display:none; font-size:0.8rem; color:#00ffcc; margin-top:2px; font-weight:normal;"></div></div>
         <div class="footer-btns"><button class="btn-ticket" onclick="showTicket()">📋 Ver Detalle</button></div>
@@ -260,24 +247,12 @@
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #121212; color: white; border: 2px solid #25D366; max-width: 440px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 18px;">
         <div id="talonario-detalle-header"></div>
         
-        <!-- CUADRO INFORMATIVO DE TIEMPO Y NORMAS -->
         <div style="background: rgba(37, 211, 102, 0.08); border: 1.5px solid #25D366; padding: 12px; border-radius: 10px; margin-bottom: 12px; text-align: left; font-size: 0.8rem; line-height: 1.45;">
-            <strong style="color: #00ffcc; display: block; margin-bottom: 4px;"><i class="fas fa-clock"></i> TIEMPO DE RESERVA EN VIVO:</strong>
-            <span style="color: #fff;">El tiempo estimado para elegir tus números y realizar tu pago es de <b>15 minutos</b>. De lo contrario, serán liberados automáticamente para ser vendidos a otra persona.</span>
+            <strong style="color: #00ffcc; display: block; margin-bottom: 4px;"><i class="fas fa-info-circle"></i> INSTRUCCIONES:</strong>
+            <span style="color: #fff;">Toca los números que deseas adquirir, llena tus datos y confirma tu pedido enviando la lista por WhatsApp.</span>
         </div>
 
         <div id="talonario-grid-wrapper"></div>
-
-        <!-- RELOJ FLOTANTE DE 15 MINUTOS -->
-        <div id="floating-selection-timer" class="floating-selection-timer" style="display:none;">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <i class="fas fa-stopwatch" style="color:#00ffcc; font-size:1.2rem;"></i>
-                <span>Tiempo Restante: <b id="selection-timer-display" style="color:#00ffcc; font-size:1.2rem; font-weight:900;">15:00</b></span>
-            </div>
-            <div style="font-size:0.75rem; color:#bbb; font-weight:normal; margin-top:2px; text-align:center;">
-                Completa tus datos y envía el pedido por WhatsApp antes que expire el reloj.
-            </div>
-        </div>
 
         <div id="talonario-mini-ticket" style="display:none; background:#1a1a1a; border:1px solid #25D366; padding:12px; border-radius:8px; margin-top:12px;"></div>
 
@@ -395,7 +370,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.4)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.6)</h3>
         
         <div class="admin-section-title"><i class="fas fa-chart-line"></i> Estadísticas de Visitas del Negocio</div>
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
@@ -572,46 +547,6 @@
     window.localTalonariosArray = [];
     let currentActiveTalonarioId = null, currentAdminTalonarioId = null, localSelectedNumbers = [];
 
-    // TEMPORIZADOR ÚNICO EN TIEMPO REAL PARA SELECCIÓN DE NÚMEROS (15 MINUTOS)
-    let selectionTimerInterval = null, selectionTimeLeft = 900; // 15 minutos = 900 segundos
-
-    function startSelectionTimer() {
-        if (selectionTimerInterval) return;
-        selectionTimeLeft = 900; // 15 minutos exactos
-        updateSelectionTimerDisplay();
-        let timerBox = document.getElementById('floating-selection-timer');
-        if (timerBox) timerBox.style.display = "flex";
-
-        selectionTimerInterval = setInterval(() => {
-            selectionTimeLeft--;
-            updateSelectionTimerDisplay();
-            if (selectionTimeLeft <= 0) {
-                stopSelectionTimer();
-                if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
-                    cancelTalonarioSelection(currentActiveTalonarioId);
-                    customAlert("Tu tiempo de 15 minutos expiró. Los números han sido liberados.", "⏰ Tiempo Agotado");
-                }
-            }
-        }, 1000);
-    }
-
-    function stopSelectionTimer() {
-        if (selectionTimerInterval) {
-            clearInterval(selectionTimerInterval);
-            selectionTimerInterval = null;
-        }
-        let timerBox = document.getElementById('floating-selection-timer');
-        if (timerBox) timerBox.style.display = "none";
-    }
-
-    function updateSelectionTimerDisplay() {
-        let mins = Math.floor(selectionTimeLeft / 60);
-        let secs = selectionTimeLeft % 60;
-        let formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        let displayEl = document.getElementById('selection-timer-display');
-        if (displayEl) displayEl.innerText = formatted;
-    }
-
     function formatRaffleDateTime(isoStr) {
         if (!isoStr || isoStr.trim() === "") return "Sin fecha programada";
         let d = new Date(isoStr);
@@ -701,11 +636,7 @@
             document.getElementById(closedId).style.display = "none";
             
             if (closedId === 'talonarioDetalleModal') {
-                if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
-                    cancelTalonarioSelection(currentActiveTalonarioId);
-                } else {
-                    stopSelectionTimer();
-                }
+                localSelectedNumbers = [];
             }
 
             if (modalStack.length > 0) document.getElementById(modalStack[modalStack.length - 1]).style.display = "flex";
@@ -720,11 +651,7 @@
                 if (m) m.style.display = "none"; 
             }); 
             modalStack = []; 
-            if (currentActiveTalonarioId && localSelectedNumbers.length > 0) {
-                cancelTalonarioSelection(currentActiveTalonarioId);
-            } else {
-                stopSelectionTimer();
-            }
+            localSelectedNumbers = [];
             checkModalLock(); 
         } 
     }
@@ -792,12 +719,12 @@
         let html = "";
         activeList.forEach(t => {
             let numbersMap = t.numbersMap || {};
-            let paidCount = 0;
+            let unavailableCount = 0;
             for (let i = 0; i <= 99; i++) {
                 let numStr = i.toString().padStart(2, '0');
-                if (numbersMap[numStr] && numbersMap[numStr].status === 'paid') paidCount++;
+                if (numbersMap[numStr] && (numbersMap[numStr].status === 'paid' || numbersMap[numStr].status === 'reserved')) unavailableCount++;
             }
-            let availableCount = 100 - paidCount;
+            let availableCount = 100 - unavailableCount;
             let criticalClass = availableCount <= 9 ? "critical" : "";
 
             let isWinnerDeclared = t.numeroGanador && t.numeroGanador.trim() !== "";
@@ -807,7 +734,7 @@
             let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
 
             if (isWinnerDeclared) {
-                // GANADOR DECLARADO (Muestra Nombre y Apellidos al Público sin número telefónico)
+                // MOSTRAR GANADOR PÚBLICO (Nombre visible, número telefónico OCULTO)
                 html += `
                 <div class="talonario-card" style="background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.92)), url('${t.img || ''}'); background-size: cover; background-position: center; border-color: #00ffcc;">
                     <div style="background:#00ffcc; color:#000; font-weight:900; font-size:0.75rem; padding:3px 8px; border-radius:4px; display:inline-block; margin-bottom:8px;"><i class="fas fa-trophy"></i> RIFA FINALIZADA - GANADOR(A)</div>
@@ -857,7 +784,6 @@
     function openTalonarioDetalleModal(talId) {
         currentActiveTalonarioId = talId;
         localSelectedNumbers = [];
-        stopSelectionTimer();
         renderTalonarioGridUI(talId);
         openModal('talonarioDetalleModal');
     }
@@ -887,8 +813,6 @@
         `;
 
         let gridWrapper = document.getElementById('talonario-grid-wrapper');
-        let myDevId = getDeviceId();
-        let now = Date.now();
         let numbersMap = t.numbersMap || {};
 
         let gridHtml = `<div class="talonario-grid">`;
@@ -898,18 +822,13 @@
             let item = numbersMap[numStr] || {};
             let status = item.status || 'available';
 
-            if ((status === 'reserved' || status === 'temp_selected') && item.expiresAt && now > item.expiresAt) {
-                status = 'available';
-            }
-
-            // REGLA CLAVE: Los números Pagados DESAPARECEN del talonario
-            if (status === 'paid') {
+            // Si el número ya fue reservado o pagado, DESAPARECE COMPLETAMENTE del talonario público
+            if (status === 'reserved' || status === 'paid') {
                 continue; 
             }
 
             let cellClass = "num-grey";
-            if (status === 'reserved' || status === 'temp_selected') {
-                // Bloqueado en verde de 15 minutos para todos los dispositivos
+            if (localSelectedNumbers.includes(numStr)) {
                 cellClass = "num-green";
             }
 
@@ -941,44 +860,18 @@
             return;
         }
 
-        let now = Date.now();
         let numbersMap = t.numbersMap || {};
         let item = numbersMap[numStr] || {};
 
-        if (item.status === 'paid') return;
-
-        // Si está bloqueado por otro cliente dentro de los 15 minutos
-        if ((item.status === 'reserved' || item.status === 'temp_selected') && item.devId !== getDeviceId() && item.expiresAt && now <= item.expiresAt) {
-            customAlert(`El número #${numStr} está siendo seleccionado por otro cliente en este momento. Estará bloqueado por 15 minutos salvo que se libere.`, "Número Bloqueado");
+        if (item.status === 'paid' || item.status === 'reserved') {
             return;
         }
 
-        let myDevId = getDeviceId();
-        let isCurrentlySelectedByMe = ((item.status === 'reserved' || item.status === 'temp_selected') && item.devId === myDevId) || localSelectedNumbers.includes(numStr);
-
-        if (isCurrentlySelectedByMe) {
-            let idx = localSelectedNumbers.indexOf(numStr);
-            if (idx >= 0) localSelectedNumbers.splice(idx, 1);
-
-            db.collection("talonarios").doc(talId).set({
-                [`numbersMap.${numStr}`]: { status: 'available' }
-            }, { merge: true }).catch(() => {});
+        let idx = localSelectedNumbers.indexOf(numStr);
+        if (idx >= 0) {
+            localSelectedNumbers.splice(idx, 1);
         } else {
-            if (!localSelectedNumbers.includes(numStr)) localSelectedNumbers.push(numStr);
-
-            db.collection("talonarios").doc(talId).set({
-                [`numbersMap.${numStr}`]: {
-                    status: 'reserved',
-                    devId: myDevId,
-                    expiresAt: now + (15 * 60 * 1000) // 15 Minutos exactos de reserva
-                }
-            }, { merge: true }).catch(() => {});
-        }
-
-        if (localSelectedNumbers.length > 0) {
-            startSelectionTimer();
-        } else {
-            stopSelectionTimer();
+            localSelectedNumbers.push(numStr);
         }
 
         renderTalonarioGridUI(talId);
@@ -1001,7 +894,6 @@
         ticketDiv.innerHTML = `
             <div style="font-weight:bold; color:#25D366; font-size:0.9rem; border-bottom:1px dashed #444; padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
                 <span>🎟️ TU SELECCIÓN (${localSelectedNumbers.length})</span>
-                <span style="color:#00ffcc; font-size:0.8rem;"><i class="fas fa-clock"></i> 15 Minutos de Tiempo</span>
             </div>
             <div style="font-size:0.85rem; color:#fff; margin-bottom:8px;">
                 <b>Números:</b> <span style="color:#00ffcc; font-weight:bold;">${localSelectedNumbers.sort().join(', ')}</span>
@@ -1014,21 +906,13 @@
                 <input type="tel" id="talonario-user-phone" class="name-input" placeholder="Tu número de teléfono..." style="margin-top:0; font-size:0.85rem; padding:8px;">
             </div>
             <div style="display:flex; gap:8px;">
-                <button class="btn-ticket" style="flex:1; background:#ea4335; border:none; color:white; font-weight:bold; padding:8px;" onclick="cancelTalonarioSelection('${talId}')">Cancelar</button>
+                <button class="btn-ticket" style="flex:1; background:#ea4335; border:none; color:white; font-weight:bold; padding:8px;" onclick="cancelTalonarioSelection('${talId}')">Limpiar</button>
                 <button class="btn-send" style="flex:2; margin:0; padding:10px; font-size:0.85rem;" onclick="processReserveTalonario('${talId}')"><i class="fab fa-whatsapp"></i> Confirmar y Reservar</button>
             </div>
         `;
     }
 
     function cancelTalonarioSelection(talId) {
-        stopSelectionTimer();
-        if (localSelectedNumbers.length > 0 && talId) {
-            let updateObj = {};
-            localSelectedNumbers.forEach(numStr => {
-                updateObj[`numbersMap.${numStr}`] = { status: 'available' };
-            });
-            db.collection("talonarios").doc(talId).set(updateObj, { merge: true }).catch(() => {});
-        }
         localSelectedNumbers = [];
         renderTalonarioGridUI(talId);
     }
@@ -1047,7 +931,6 @@
         if (!t) return;
 
         let now = Date.now();
-        let expires15Mins = now + (15 * 60 * 1000); // 15 Minutos exactos
         let resId = "res_" + now + "_" + Math.random().toString(36).substring(2, 6);
 
         let updateData = {};
@@ -1060,7 +943,6 @@
                 name: uName,
                 phone: uPhone,
                 resId: resId,
-                expiresAt: expires15Mins,
                 createdAt: now
             };
         });
@@ -1087,10 +969,9 @@
                 timestampRaw: now
             });
 
-            // Actualizar estado de números en la rifa
+            // Actualizar estado de números en la rifa para que desaparezcan del talonario público y aparezcan en Ver Compradores
             await db.collection("talonarios").doc(talId).set(updateData, { merge: true });
             
-            stopSelectionTimer();
             localSelectedNumbers = [];
             closeModals();
 
@@ -1212,7 +1093,7 @@
         } catch (e) { customAlert("Fallo en la carga: " + e.message); }
     }
 
-    // DECLARAR GANADOR Y PUBLICAR SU NOMBRE COMPLETO PÚBLICAMENTE (Sin el teléfono)
+    // DECLARAR GANADOR Y PUBLICAR SU NOMBRE COMPLETO PÚBLICAMENTE (Reservando el número de teléfono)
     function adminSetWinner(talId) {
         let numEl = document.getElementById(`admin-winner-num-${talId}`);
         let winnerNum = numEl ? numEl.value.trim() : "";
@@ -1224,7 +1105,6 @@
         let numbersMap = t.numbersMap || {};
         let winnerItem = numbersMap[winnerNum] || {};
         
-        // Muestra Nombre y Apellidos completos si existen
         let winnerFullName = winnerItem.name ? winnerItem.name.trim() : "Ganador Desconocido";
 
         t.numeroGanador = winnerNum;
@@ -1254,9 +1134,7 @@
         if (!t) return;
 
         let numbersMap = t.numbersMap || {};
-        let listHtml = `<div style="margin-top:10px;">`;
-
-        let countPaid = 0, countReserved = 0;
+        let countReserved = 0, countPaid = 0;
         let groupedReservations = {};
 
         for (let i = 0; i <= 99; i++) {
@@ -1265,16 +1143,16 @@
             let status = item.status || 'available';
 
             if (status === 'paid') countPaid++;
-            else if (status === 'reserved' || status === 'temp_selected') countReserved++;
-
-            if (status === 'reserved' || status === 'temp_selected' || status === 'paid') {
+            
+            // Solo mostramos en la lista de compradores los tiquetes pendientes de pago
+            if (status === 'reserved') {
+                countReserved++;
                 let groupKey = item.resId || (item.name + "_" + item.phone);
                 if (!groupedReservations[groupKey]) {
                     groupedReservations[groupKey] = {
                         resId: item.resId,
                         name: item.name || 'Anónimo',
                         phone: item.phone || '',
-                        status: status,
                         numbers: []
                     };
                 }
@@ -1283,24 +1161,25 @@
         }
 
         let keys = Object.keys(groupedReservations);
+        let listHtml = `<div style="margin-top:10px;">`;
+
         if (keys.length === 0) {
-            listHtml += `<p style="color:#888; font-style:italic; text-align:center; font-size:0.8rem; padding:20px;">No hay números ni reservas registradas aún.</p>`;
+            listHtml += `<p style="color:#888; font-style:italic; text-align:center; font-size:0.8rem; padding:20px;">No hay tiquetes pendientes por pagar.</p>`;
         } else {
             keys.forEach(k => {
                 let g = groupedReservations[k];
                 let numsFormatted = g.numbers.join(', ');
-                let statusBadge = g.status === 'paid' ? `<span style="color:#25D366; font-weight:bold;">[PAGADO]</span>` : `<span style="color:#00ffcc; font-weight:bold;">[SELECCIONADO/RESERVADO]</span>`;
 
                 listHtml += `
                 <div style="background:#1c1c1c; border:1px solid #333; padding:12px; border-radius:8px; margin-bottom:10px; font-size:0.82rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:bold; color:#00ffcc;">👤 ${g.name} ${statusBadge}</span>
-                        <span style="font-size:0.75rem; color:#aaa;">${g.phone}</span>
+                        <span style="font-weight:bold; color:#00ffcc;">👤 ${g.name}</span>
+                        <span style="font-size:0.75rem; color:#25D366; font-weight:bold;">${g.phone}</span>
                     </div>
-                    <div style="color:#fff; margin-top:6px;"><b>Número(s):</b> <b style="color:#25D366; font-size:0.95rem;">${numsFormatted}</b></div>
+                    <div style="color:#fff; margin-top:6px;"><b>Número(s):</b> <b style="color:#00ffcc; font-size:0.95rem;">${numsFormatted}</b></div>
                     <div style="display:flex; gap:8px; margin-top:10px;">
-                        ${g.status !== 'paid' ? `<button class="btn-ticket" style="background:#25D366; color:white; border:none; padding:7px 12px; font-weight:bold; flex:1;" onclick="adminConfirmBatchPayment('${talId}', '${g.resId}', ['${g.numbers.join("','")}'])"><i class="fas fa-check-circle"></i> Marcar como Pagado</button>` : ''}
-                        <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:7px 12px; font-weight:bold; flex:1;" onclick="adminReleaseBatch('${talId}', ['${g.numbers.join("','")}'])"><i class="fas fa-ban"></i> Ignorar / Liberar</button>
+                        <button class="btn-ticket" style="background:#25D366; color:white; border:none; padding:8px 12px; font-weight:bold; flex:2;" onclick="adminConfirmBatchPayment('${talId}', '${g.resId}', ['${g.numbers.join("','")}'])"><i class="fas fa-check-circle"></i> Tiquete Pago</button>
+                        <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:8px 12px; font-weight:bold; flex:1;" onclick="adminReleaseBatch('${talId}', ['${g.numbers.join("','")}'])" title="Eliminar Tiquete y Liberar Números"><i class="fas fa-trash-alt"></i> Eliminar</button>
                     </div>
                 </div>`;
             });
@@ -1310,14 +1189,14 @@
 
         container.innerHTML = `
             <div style="font-size:0.85rem; color:#fff; margin-bottom:10px; background:#222; padding:8px 12px; border-radius:6px; display:flex; justify-content:space-between;">
-                <span>Vendido: <b style="color:#25D366;">${countPaid} números</b></span>
-                <span>Bloqueado: <b style="color:#00ffcc;">${countReserved} números</b></span>
+                <span>Pendientes: <b style="color:#ff9900;">${countReserved} números</b></span>
+                <span>Pagados: <b style="color:#25D366;">${countPaid} números</b></span>
             </div>
             ${listHtml}
         `;
     }
 
-    // BOTÓN: MARCAR COMO PAGADO (Hace que los números desparezcan del talonario)
+    // BOTÓN: MARCAR COMO TIQUETE PAGO (El tiquete desaparece del panel y los números continúan ocultos del talonario)
     function adminConfirmBatchPayment(talId, resId, numsArray) {
         let t = (window.localTalonariosArray || []).find(item => item.id === talId);
         if (!t) return;
@@ -1332,51 +1211,27 @@
         db.collection("talonarios").doc(talId).set(updateObj, { merge: true }).then(() => {
             let firstNum = numsArray[0];
             let item = (t.numbersMap || {})[firstNum] || {};
-            let msg = `Hola, *${item.name || 'Cliente'}*. Confirmamos el pago de tus números (*${numsArray.join(', ')}*), para el sorteo del *${formattedDateStr}*. Participás por *${t.title}* en Cooking Pollos. 🍗🎟️ ¡Muchísima suerte! 🍀`;
-            let waUrl = `https://wa.me/506${item.phone || currentGlobalWhatsApp}?text=${msg}`;
-            window.open(waUrl, '_blank');
+            if (item.phone) {
+                let msg = `Hola, *${item.name || 'Cliente'}*. Confirmamos el pago de tus números (*${numsArray.join(', ')}*), para el sorteo del *${formattedDateStr}*. Participás por *${t.title}* en Cooking Pollos. 🍗🎟️ ¡Muchísima suerte! 🍀`;
+                let waUrl = `https://wa.me/506${item.phone || currentGlobalWhatsApp}?text=${msg}`;
+                window.open(waUrl, '_blank');
+            }
             adminRenderBuyersUI(talId);
         });
     }
 
-    // BOTÓN: IGNORAR / LIBERAR NÚMEROS A COLOR GRIS
+    // BOTÓN: BOTECITO DE BASURA / ELIMINAR (Elimina el tiquete y los números VUELVEN a aparecer en el talonario público)
     function adminReleaseBatch(talId, numsArray) {
-        customConfirm(`¿Seguro que deseas ignorar esta compra y liberar los números (${numsArray.join(', ')}) a color gris?`, () => {
+        customConfirm(`¿Seguro que deseas eliminar este tiquete y liberar los números (${numsArray.join(', ')}) para que vuelvan a aparecer en el talonario público?`, () => {
             let updateObj = {};
             numsArray.forEach(numStr => {
-                updateObj[`numbersMap.${numStr}`] = { status: 'available' };
+                updateObj[`numbersMap.${numStr}`] = firebase.firestore.FieldValue.delete();
             });
-            db.collection("talonarios").doc(talId).set(updateObj, { merge: true }).then(() => {
+            db.collection("talonarios").doc(talId).update(updateObj).then(() => {
                 adminRenderBuyersUI(talId);
             });
         });
     }
-
-    // AUTOMATIZACIÓN DE LIBERACIÓN POR TIMEOUT (15 MINUTOS)
-    setInterval(() => {
-        if (!window.localTalonariosArray) return;
-        let now = Date.now();
-        window.localTalonariosArray.forEach(t => {
-            let numbersMap = t.numbersMap || {};
-            let changed = false;
-            let updateObj = {};
-
-            for (let i = 0; i <= 99; i++) {
-                let numStr = i.toString().padStart(2, '0');
-                let item = numbersMap[numStr];
-                if (item) {
-                    if ((item.status === 'reserved' || item.status === 'temp_selected') && item.expiresAt && now > item.expiresAt) {
-                        updateObj[`numbersMap.${numStr}`] = { status: 'available' };
-                        changed = true;
-                    }
-                }
-            }
-
-            if (changed) {
-                db.collection("talonarios").doc(t.id).set(updateObj, { merge: true }).catch(() => {});
-            }
-        });
-    }, 5000);
 
     function getUserRating() {
         let devId = getDeviceId();
@@ -1668,22 +1523,6 @@
             if (modalStack.includes('talonariosModal')) renderTalonariosListUI();
             
             if (currentActiveTalonarioId && modalStack.includes('talonarioDetalleModal')) {
-                let currentTalonario = list.find(item => item.id === currentActiveTalonarioId);
-                if (currentTalonario && currentTalonario.numbersMap) {
-                    let myDevId = getDeviceId();
-                    let now = Date.now();
-                    let myTempSelected = [];
-                    for (let i = 0; i <= 99; i++) {
-                        let numStr = i.toString().padStart(2, '0');
-                        let item = currentTalonario.numbersMap[numStr];
-                        if (item && (item.status === 'reserved' || item.status === 'temp_selected') && item.devId === myDevId && item.expiresAt && now <= item.expiresAt) {
-                            myTempSelected.push(numStr);
-                        }
-                    }
-                    localSelectedNumbers = myTempSelected;
-                    if (localSelectedNumbers.length > 0) startSelectionTimer();
-                    else stopSelectionTimer();
-                }
                 renderTalonarioGridUI(currentActiveTalonarioId);
             }
             if (currentAdminTalonarioId && modalStack.includes('adminTalonarioBuyersModal')) {
