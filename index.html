@@ -213,7 +213,7 @@
             <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
         </div>
     </div>
-    <p class="version-tag">Versión 15.6</p>
+    <p class="version-tag">Versión 15.7</p>
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span><div id="express-fee-badge" style="display:none; font-size:0.8rem; color:#00ffcc; margin-top:2px; font-weight:normal;"></div></div>
         <div class="footer-btns"><button class="btn-ticket" onclick="showTicket()">📋 Ver Detalle</button></div>
@@ -247,9 +247,10 @@
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #121212; color: white; border: 2px solid #25D366; max-width: 440px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 18px;">
         <div id="talonario-detalle-header"></div>
         
-        <div style="background: rgba(37, 211, 102, 0.08); border: 1.5px solid #25D366; padding: 12px; border-radius: 10px; margin-bottom: 12px; text-align: left; font-size: 0.8rem; line-height: 1.45;">
-            <strong style="color: #00ffcc; display: block; margin-bottom: 4px;"><i class="fas fa-info-circle"></i> INSTRUCCIONES:</strong>
-            <span style="color: #fff;">Toca los números que deseas adquirir, llena tus datos y confirma tu pedido enviando la lista por WhatsApp.</span>
+        <!-- TEXTO SOLICITADO SOBRE LOS NÚMEROS -->
+        <div style="background: rgba(255, 153, 0, 0.12); border: 1.5px solid #ff9900; padding: 12px; border-radius: 10px; margin-bottom: 12px; text-align: left; font-size: 0.82rem; line-height: 1.45;">
+            <strong style="color: #ff9900; display: block; margin-bottom: 4px;"><i class="fas fa-exclamation-circle"></i> INFORMACIÓN DE COMPRA:</strong>
+            <span style="color: #fff;">Estimado cliente, a partir de enviar los números por WhatsApp tienes una hora para realizar el pago. De lo contrario, los números serán liberados para que sean comprados por otra persona.</span>
         </div>
 
         <div id="talonario-grid-wrapper"></div>
@@ -264,7 +265,7 @@
 <div id="adminTalonarioBuyersModal" class="modal-overlay" onclick="closeModalTop()">
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #141414; color: white; border: 2px solid #00ffcc; max-width: 440px; max-height: 85vh; overflow-y: auto; text-align: left;">
         <h3 style="margin-top:0; color:#00ffcc; text-align:center;"><i class="fas fa-users"></i> Mapa de Compradores</h3>
-        <p style="font-size:0.8rem; color:#aaa; margin-bottom:12px; text-align:center;">Gestiona pagos y aprobaciones de números para esta rifa.</p>
+        <p style="font-size:0.8rem; color:#aaa; margin-bottom:12px; text-align:center;">Gestiona pagos y tiquetes de números reservado para esta rifa.</p>
         <div id="admin-talonario-buyers-content">Cargando mapa...</div>
         <button style="margin-top:15px; width:100%; padding:12px; background:#222; color:white; border:1px solid #444; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModalTop()">Cerrar Mapa</button>
     </div>
@@ -370,7 +371,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.6)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v15.7)</h3>
         
         <div class="admin-section-title"><i class="fas fa-chart-line"></i> Estadísticas de Visitas del Negocio</div>
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
@@ -734,7 +735,6 @@
             let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
 
             if (isWinnerDeclared) {
-                // MOSTRAR GANADOR PÚBLICO (Nombre visible, número telefónico OCULTO)
                 html += `
                 <div class="talonario-card" style="background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.92)), url('${t.img || ''}'); background-size: cover; background-position: center; border-color: #00ffcc;">
                     <div style="background:#00ffcc; color:#000; font-weight:900; font-size:0.75rem; padding:3px 8px; border-radius:4px; display:inline-block; margin-bottom:8px;"><i class="fas fa-trophy"></i> RIFA FINALIZADA - GANADOR(A)</div>
@@ -822,7 +822,7 @@
             let item = numbersMap[numStr] || {};
             let status = item.status || 'available';
 
-            // Si el número ya fue reservado o pagado, DESAPARECE COMPLETAMENTE del talonario público
+            // Si el número ya fue reservado o pagado, SE OCULTA COMPLETAMENTE del talonario público
             if (status === 'reserved' || status === 'paid') {
                 continue; 
             }
@@ -952,7 +952,7 @@
         let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
 
         try {
-            // GUARDA EL TIQUETE EN FIRESTORE EN LA TIQUETERA ("pedidos")
+            // Guarda pedido en Firestore
             await db.collection("pedidos").add({
                 cliente: uName,
                 telefono: uPhone,
@@ -969,7 +969,7 @@
                 timestampRaw: now
             });
 
-            // Actualizar estado de números en la rifa para que desaparezcan del talonario público y aparezcan en Ver Compradores
+            // Oculta los números del talonario público
             await db.collection("talonarios").doc(talId).set(updateData, { merge: true });
             
             localSelectedNumbers = [];
@@ -1007,7 +1007,7 @@
                 <div class="admin-field"><label>Título del Talonario / Rifa</label><input type="text" class="admin-input" value="${t.title || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'title', this.value)"></div>
                 <div class="admin-field"><label>Precio por Número (₡)</label><input type="number" class="admin-input" value="${t.price || 0}" onchange="adminUpdateTalonarioField('${t.id}', 'price', parseFloat(this.value)||0)"></div>
                 <div class="admin-field"><label>Premio / Descripción</label><input type="text" class="admin-input" value="${t.desc || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'desc', this.value)"></div>
-                <div class="admin-field"><label style="color:#00ffcc;"><i class="fas fa-clock"></i> Fecha y Hora Límite del Sorteo (Cierre automático)</label><input type="datetime-local" class="admin-input" value="${t.fechaSorteoISO || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'fechaSorteoISO', this.value)"></div>
+                <div class="admin-field"><label style="color:#00ffcc;"><i class="fas fa-clock"></i> Fecha y Hora Límite del Sorteo</label><input type="datetime-local" class="admin-input" value="${t.fechaSorteoISO || ''}" onchange="adminUpdateTalonarioField('${t.id}', 'fechaSorteoISO', this.value)"></div>
                 
                 <div class="admin-field">
                     <label>Imagen del Premio</label>
@@ -1093,7 +1093,6 @@
         } catch (e) { customAlert("Fallo en la carga: " + e.message); }
     }
 
-    // DECLARAR GANADOR Y PUBLICAR SU NOMBRE COMPLETO PÚBLICAMENTE (Reservando el número de teléfono)
     function adminSetWinner(talId) {
         let numEl = document.getElementById(`admin-winner-num-${talId}`);
         let winnerNum = numEl ? numEl.value.trim() : "";
@@ -1127,6 +1126,7 @@
         openModal('adminTalonarioBuyersModal');
     }
 
+    // LISTADO Y GESTIÓN DE TIQUETES EN EL PANEL ADMINISTRADOR
     function adminRenderBuyersUI(talId) {
         let container = document.getElementById('admin-talonario-buyers-content');
         if (!container) return;
@@ -1136,15 +1136,13 @@
         let numbersMap = t.numbersMap || {};
         let countReserved = 0, countPaid = 0;
         let groupedReservations = {};
+        let groupedPaid = {};
 
         for (let i = 0; i <= 99; i++) {
             let numStr = i.toString().padStart(2, '0');
             let item = numbersMap[numStr] || {};
             let status = item.status || 'available';
 
-            if (status === 'paid') countPaid++;
-            
-            // Solo mostramos en la lista de compradores los tiquetes pendientes de pago
             if (status === 'reserved') {
                 countReserved++;
                 let groupKey = item.resId || (item.name + "_" + item.phone);
@@ -1157,29 +1155,71 @@
                     };
                 }
                 groupedReservations[groupKey].numbers.push(numStr);
+            } else if (status === 'paid') {
+                countPaid++;
+                let groupKey = item.resId || (item.name + "_" + item.phone + "_paid");
+                if (!groupedPaid[groupKey]) {
+                    groupedPaid[groupKey] = {
+                        resId: item.resId,
+                        name: item.name || 'Anónimo',
+                        phone: item.phone || '',
+                        numbers: []
+                    };
+                }
+                groupedPaid[groupKey].numbers.push(numStr);
             }
         }
 
-        let keys = Object.keys(groupedReservations);
+        let pendingKeys = Object.keys(groupedReservations);
+        let paidKeys = Object.keys(groupedPaid);
+
         let listHtml = `<div style="margin-top:10px;">`;
 
-        if (keys.length === 0) {
-            listHtml += `<p style="color:#888; font-style:italic; text-align:center; font-size:0.8rem; padding:20px;">No hay tiquetes pendientes por pagar.</p>`;
+        // TIQUETES PENDIENTES DE PAGO
+        listHtml += `<div style="font-weight:bold; color:#ff9900; font-size:0.85rem; margin-bottom:8px;"><i class="fas fa-clock"></i> TIQUETES PENDIENTES DE PAGO (${pendingKeys.length})</div>`;
+        if (pendingKeys.length === 0) {
+            listHtml += `<p style="color:#888; font-style:italic; font-size:0.8rem; margin-bottom:15px;">No hay tiquetes pendientes.</p>`;
         } else {
-            keys.forEach(k => {
+            pendingKeys.forEach(k => {
                 let g = groupedReservations[k];
                 let numsFormatted = g.numbers.join(', ');
+                let numsArrayStr = JSON.stringify(g.numbers).replace(/"/g, '&quot;');
 
                 listHtml += `
-                <div style="background:#1c1c1c; border:1px solid #333; padding:12px; border-radius:8px; margin-bottom:10px; font-size:0.82rem;">
+                <div style="background:#1c1c1c; border:1px solid #ff9900; padding:12px; border-radius:8px; margin-bottom:10px; font-size:0.82rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <span style="font-weight:bold; color:#00ffcc;">👤 ${g.name}</span>
-                        <span style="font-size:0.75rem; color:#25D366; font-weight:bold;">${g.phone}</span>
+                        <span style="font-size:0.75rem; color:#25D366; font-weight:bold;"><i class="fas fa-phone"></i> ${g.phone}</span>
                     </div>
-                    <div style="color:#fff; margin-top:6px;"><b>Número(s):</b> <b style="color:#00ffcc; font-size:0.95rem;">${numsFormatted}</b></div>
+                    <div style="color:#fff; margin-top:6px;"><b>Número(s) elegidos:</b> <b style="color:#00ffcc; font-size:0.95rem;">${numsFormatted}</b></div>
                     <div style="display:flex; gap:8px; margin-top:10px;">
-                        <button class="btn-ticket" style="background:#25D366; color:white; border:none; padding:8px 12px; font-weight:bold; flex:2;" onclick="adminConfirmBatchPayment('${talId}', '${g.resId}', ['${g.numbers.join("','")}'])"><i class="fas fa-check-circle"></i> Tiquete Pago</button>
-                        <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:8px 12px; font-weight:bold; flex:1;" onclick="adminReleaseBatch('${talId}', ['${g.numbers.join("','")}'])" title="Eliminar Tiquete y Liberar Números"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                        <button class="btn-ticket" style="background:#25D366; color:white; border:none; padding:8px 12px; font-weight:bold; flex:2; cursor:pointer;" onclick="adminConfirmBatchPayment('${talId}', '${g.resId}', ${numsArrayStr})"><i class="fas fa-check-circle"></i> Pago Recibido</button>
+                        <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:8px 12px; font-weight:bold; flex:1; cursor:pointer;" onclick="adminReleaseBatch('${talId}', ${numsArrayStr})" title="Eliminar Tiquete y Liberar Números"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                    </div>
+                </div>`;
+            });
+        }
+
+        // TIQUETES PAGADOS Y CONFIRMADOS (SE MANTIENEN HASTA LA FECHA DE LA RIFA)
+        listHtml += `<div style="font-weight:bold; color:#25D366; font-size:0.85rem; margin:15px 0 8px 0;"><i class="fas fa-check-circle"></i> TIQUETES PAGADOS Y AL DÍA (${paidKeys.length})</div>`;
+        if (paidKeys.length === 0) {
+            listHtml += `<p style="color:#888; font-style:italic; font-size:0.8rem;">No hay tiquetes pagados aún.</p>`;
+        } else {
+            paidKeys.forEach(k => {
+                let g = groupedPaid[k];
+                let numsFormatted = g.numbers.join(', ');
+                let numsArrayStr = JSON.stringify(g.numbers).replace(/"/g, '&quot;');
+
+                listHtml += `
+                <div style="background:#152219; border:1px solid #25D366; padding:12px; border-radius:8px; margin-bottom:10px; font-size:0.82rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:bold; color:#fff;">👤 ${g.name}</span>
+                        <span style="font-size:0.75rem; color:#25D366; font-weight:bold;"><i class="fas fa-phone"></i> ${g.phone}</span>
+                    </div>
+                    <div style="color:#fff; margin-top:6px;"><b>Números comprados:</b> <b style="color:#25D366; font-size:0.95rem;">${numsFormatted}</b></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                        <span style="background:#25D366; color:#000; font-weight:bold; padding:2px 8px; border-radius:4px; font-size:0.72rem;">✓ PAGO CONFIRMADO</span>
+                        <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:6px 10px; font-weight:bold; cursor:pointer;" onclick="adminReleaseBatch('${talId}', ${numsArrayStr})" title="Eliminar Tiquete y Liberar Números"><i class="fas fa-trash-alt"></i> Eliminar</button>
                     </div>
                 </div>`;
             });
@@ -1196,7 +1236,7 @@
         `;
     }
 
-    // BOTÓN: MARCAR COMO TIQUETE PAGO (El tiquete desaparece del panel y los números continúan ocultos del talonario)
+    // BOTÓN PAGO RECIBIDO: REGISTRA EL TIQUETE COMO PAGO DE FORMA PERMANENTE
     function adminConfirmBatchPayment(talId, resId, numsArray) {
         let t = (window.localTalonariosArray || []).find(item => item.id === talId);
         if (!t) return;
@@ -1220,7 +1260,7 @@
         });
     }
 
-    // BOTÓN: BOTECITO DE BASURA / ELIMINAR (Elimina el tiquete y los números VUELVEN a aparecer en el talonario público)
+    // BOTECITO DE BASURA: ELIMINA EL TIQUETE Y LIBERA LOS NÚMEROS EN EL TALONARIO PÚBLICO
     function adminReleaseBatch(talId, numsArray) {
         customConfirm(`¿Seguro que deseas eliminar este tiquete y liberar los números (${numsArray.join(', ')}) para que vuelvan a aparecer en el talonario público?`, () => {
             let updateObj = {};
