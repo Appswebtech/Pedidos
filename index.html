@@ -176,7 +176,7 @@
 
 <!-- BOTÓN FLOTANTE NEÓN DE TALONARIOS / RIFAS -->
 <div id="floating-talonario-btn" class="floating-talonario-btn" onclick="openTalonariosModal()">
-    <i class="fas fa-ticket-alt"></i> <span>TALONARIO</span>
+    <i class="fas fa-ticket-alt"></i> <span>CUPONES</span>
     <span id="floating-talonario-badge" class="floating-talonario-badge" style="display:none;">0</span>
 </div>
 
@@ -213,7 +213,7 @@
             <a id="link-tk" class="social-row-btn" href="#" target="_blank" style="color: #ffffff;"><i class="fab fa-tiktok"></i> <span id="text-tk" style="color:white;">TikTok</span></a>
         </div>
     </div>
-    <p class="version-tag">Versión 16.2</p>
+    <p class="version-tag">Versión 16.3</p>
     <div class="cart-footer">
         <div class="total-container">Total Orden: ₡<span id="grand-total">0</span><div id="express-fee-badge" style="display:none; font-size:0.8rem; color:#00ffcc; margin-top:2px; font-weight:normal;"></div></div>
         <div class="footer-btns"><button class="btn-ticket" onclick="showTicket()">📋 Ver Detalle</button></div>
@@ -247,10 +247,9 @@
     <div class="modal-box" onclick="event.stopPropagation()" style="background: #121212; color: white; border: 2px solid #25D366; max-width: 440px; max-height: 90vh; overflow-y: auto; text-align: left; padding: 18px;">
         <div id="talonario-detalle-header"></div>
         
-        <div style="background: rgba(255, 153, 0, 0.12); border: 1.5px solid #ff9900; padding: 12px; border-radius: 10px; margin-bottom: 12px; text-align: left; font-size: 0.82rem; line-height: 1.45;">
-            <strong style="color: #ff9900; display: block; margin-bottom: 4px;"><i class="fas fa-exclamation-circle"></i> INFORMACIÓN DE COMPRA:</strong>
-            <span style="color: #fff;">Estimado cliente, a partir de enviar los números por WhatsApp tienes una hora para realizar el pago. De lo contrario, los números serán liberados para que sean comprados por otra persona.</span>
-        </div>
+        <button id="btn-copy-available" style="width:100%; margin-bottom:12px; padding:10px; background:rgba(0, 38, 255, 0.15); border: 1px solid #0026ff; color:#00ffcc; border-radius:8px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="copyAvailableNumbers(currentActiveTalonarioId)">
+            <i class="fas fa-copy"></i> Copiar Números Disponibles
+        </button>
 
         <div id="talonario-grid-wrapper"></div>
 
@@ -370,7 +369,7 @@
 
 <div id="adminModal" class="modal-overlay" onclick="closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v16.2)</h3>
+        <h3 style="margin-top:0; color: #0026ff; text-align: center;"><i class="fas fa-cogs"></i> Configuración Cloud (v16.3)</h3>
         
         <div class="admin-section-title"><i class="fas fa-chart-line"></i> Estadísticas de Visitas del Negocio</div>
         <div style="background: rgba(0, 38, 255, 0.08); border: 1px solid #0026ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
@@ -546,6 +545,59 @@
     window.currentScheduleData = {}; window.localMenuArray = []; window.adminExpandedCats = {}; window.localBannersArray = []; window.localTextBannersArray = []; window.globalGalleryArray = []; window.rawOrdersList = []; window.ratingsData = {};
     window.localTalonariosArray = [];
     let currentActiveTalonarioId = null, currentAdminTalonarioId = null, localSelectedNumbers = [];
+
+    function copyAvailableNumbers(talId) {
+        if (!talId) return;
+        let t = (window.localTalonariosArray || []).find(item => item.id === talId);
+        if (!t) return;
+        
+        let numbersMap = t.numbersMap || {};
+        let available = [];
+        
+        for (let i = 0; i <= 99; i++) {
+            let numStr = i.toString().padStart(2, '0');
+            let item = numbersMap[numStr] || {};
+            let status = item.status || 'available';
+            
+            if (status !== 'reserved' && status !== 'paid') {
+                available.push(numStr);
+            }
+        }
+        
+        if (available.length === 0) {
+            customAlert("Ya no hay números disponibles en esta rifa.", "Sin números libres");
+            return;
+        }
+        
+        let textToCopy = `🎟️ *Rifa: ${t.title}*\n\n✅ *Números disponibles (${available.length}):*\n${available.join(', ')}`;
+        
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                customAlert("Se han copiado al portapapeles todos los números disponibles. ¡Ya puedes pegarlos en WhatsApp!", "¡Copiado con Éxito!");
+            }).catch(err => {
+                fallbackCopyText(textToCopy);
+            });
+        } else {
+            fallbackCopyText(textToCopy);
+        }
+    }
+
+    function fallbackCopyText(text) {
+        let textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.top = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            customAlert("Se han copiado al portapapeles todos los números disponibles. ¡Ya puedes pegarlos en WhatsApp!", "¡Copiado con Éxito!");
+        } catch (err) {
+            customAlert("Tu dispositivo no soporta el copiado automático.", "Error al Copiar");
+        }
+        document.body.removeChild(textArea);
+    }
 
     function formatRaffleDateTime(isoStr) {
         if (!isoStr || isoStr.trim() === "") return "Sin fecha programada";
@@ -921,7 +973,7 @@
             </div>
             <div style="display:flex; gap:8px;">
                 <button class="btn-ticket" style="flex:1; background:#ea4335; border:none; color:white; font-weight:bold; padding:8px;" onclick="cancelTalonarioSelection('${talId}')">Limpiar</button>
-                <button class="btn-send" style="flex:2; margin:0; padding:10px; font-size:0.85rem;" onclick="processReserveTalonario('${talId}')"><i class="fab fa-whatsapp"></i> Confirmar y Reservar</button>
+                <button class="btn-send" style="flex:2; margin:0; padding:10px; font-size:0.85rem; background:#25D366;" onclick="processReserveTalonario('${talId}')"><i class="fas fa-save"></i> Guardar</button>
             </div>
         `;
     }
@@ -995,9 +1047,8 @@
             localSelectedNumbers = [];
             closeModals();
 
-            let msg = `¡Hola! Reservé el/los número(s) *${numsStr}* para la rifa de *${t.title}*.%0A%0A• *Cliente:* ${uName}%0A• *Teléfono:* ${uPhone}%0A• *Monto a Pagar:* ₡${subtotal.toLocaleString()}%0A• *Fecha de Sorteo:* ${formattedDateStr}%0A%0AQuedo atento para realizar el pago por SINPE Móvil o en efectivo.`;
-            let waUrl = `https://wa.me/506${currentGlobalWhatsApp}?text=${msg}`;
-            window.open(waUrl, '_blank');
+            // Mensaje de éxito interno, sin abrir WhatsApp
+            customAlert("Los números han sido guardados en el panel de administración exitosamente.", "Reserva Guardada");
 
         } catch (err) {
             console.error("Error al registrar tiquete en la nube:", err);
@@ -1239,8 +1290,9 @@
                         <span style="font-size:0.75rem; color:#25D366; font-weight:bold;"><i class="fas fa-phone"></i> ${g.phone}</span>
                     </div>
                     <div style="color:#fff; margin-top:6px;"><b>Número(s) elegidos:</b> <b style="color:#00ffcc; font-size:0.95rem;">${numsFormatted}</b></div>
-                    <div style="display:flex; gap:8px; margin-top:10px;">
-                        <button class="btn-ticket" style="background:#25D366; color:white; border:none; padding:8px 12px; font-weight:bold; flex:2; cursor:pointer;" onclick="adminConfirmBatchPayment('${talId}', '${g.resId}', ${numsArrayStr})"><i class="fas fa-check-circle"></i> Pago Recibido</button>
+                    <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                        <button class="btn-ticket" style="background:#0026ff; color:white; border:none; padding:8px 12px; font-weight:bold; flex:1; cursor:pointer;" onclick="adminSendCouponWA('${talId}', '${g.name.replace(/'/g, "\\'")}', '${g.phone}', ${numsArrayStr})"><i class="fab fa-whatsapp"></i> Enviar Cupón</button>
+                        <button class="btn-ticket" style="background:#25D366; color:white; border:none; padding:8px 12px; font-weight:bold; flex:1; cursor:pointer;" onclick="adminConfirmBatchPayment('${talId}', '${g.resId}', ${numsArrayStr})"><i class="fas fa-check-circle"></i> Pagado</button>
                         <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:8px 12px; font-weight:bold; flex:1; cursor:pointer;" onclick="adminReleaseBatch('${talId}', ${numsArrayStr})" title="Eliminar Tiquete y Liberar Números"><i class="fas fa-trash-alt"></i> Eliminar</button>
                     </div>
                 </div>`;
@@ -1263,9 +1315,12 @@
                         <span style="font-size:0.75rem; color:#25D366; font-weight:bold;"><i class="fas fa-phone"></i> ${g.phone}</span>
                     </div>
                     <div style="color:#fff; margin-top:6px;"><b>Números comprados:</b> <b style="color:#25D366; font-size:0.95rem;">${numsFormatted}</b></div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                        <span style="background:#25D366; color:#000; font-weight:bold; padding:2px 8px; border-radius:4px; font-size:0.72rem;">✓ PAGO CONFIRMADO</span>
-                        <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:6px 10px; font-weight:bold; cursor:pointer;" onclick="adminReleaseBatch('${talId}', ${numsArrayStr})" title="Eliminar Tiquete y Liberar Números"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap; gap:8px;">
+                        <span style="background:#25D366; color:#000; font-weight:bold; padding:4px 8px; border-radius:4px; font-size:0.75rem; flex:1; text-align:center;">✓ PAGO CONFIRMADO</span>
+                        <div style="display:flex; gap:8px; flex:2;">
+                            <button class="btn-ticket" style="background:#0026ff; color:white; border:none; padding:6px 10px; font-weight:bold; flex:1; cursor:pointer;" onclick="adminSendCouponWA('${talId}', '${g.name.replace(/'/g, "\\'")}', '${g.phone}', ${numsArrayStr})"><i class="fab fa-whatsapp"></i> Enviar Cupón</button>
+                            <button class="btn-ticket" style="background:#ea4335; color:white; border:none; padding:6px 10px; font-weight:bold; flex:1; cursor:pointer;" onclick="adminReleaseBatch('${talId}', ${numsArrayStr})" title="Eliminar Tiquete y Liberar Números"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                        </div>
                     </div>
                 </div>`;
             });
@@ -1280,6 +1335,19 @@
             </div>
             ${listHtml}
         `;
+    }
+
+    function adminSendCouponWA(talId, cName, cPhone, numsArray) {
+        let t = (window.localTalonariosArray || []).find(item => item.id === talId);
+        if (!t) return;
+
+        let formattedDateStr = formatRaffleDateTime(t.fechaSorteoISO);
+        let numsStr = numsArray.sort().join(', ');
+        
+        let msg = `👋 Hola *${cName}*\n\n🎟️ *Número(s) de cupón:* ${numsStr}\n📅 *Fecha del sorteo:* ${formattedDateStr}\n🎁 *Participas por:* ${t.title}\n\n🍀 ¡Muchísima Suerte! ✨`;
+        
+        let waUrl = `https://wa.me/506${cPhone}?text=${encodeURIComponent(msg)}`;
+        window.open(waUrl, '_blank');
     }
 
     // CORRECCIÓN CLAVE DE CONFIRMACIÓN DE PAGO EN UN SOLO CLIC
